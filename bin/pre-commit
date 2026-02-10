@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+#
+# Pre-commit hook for WP Pinch.
+#
+# Runs PHPCS and PHPStan on staged PHP files only.
+# Install: make setup-hooks
+#
+set -euo pipefail
+
+# Colours.
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+NC='\033[0m' # No colour.
+
+# Collect staged PHP files (excluding deleted).
+STAGED_PHP=$(git diff --cached --name-only --diff-filter=d -- '*.php' | grep -E '^(includes/|wp-pinch\.php|uninstall\.php)' || true)
+
+if [ -z "$STAGED_PHP" ]; then
+	# No PHP files in this commit — skip checks.
+	exit 0
+fi
+
+echo -e "${YELLOW}Running pre-commit checks on staged PHP files...${NC}"
+echo ""
+
+FAILED=0
+
+# ── PHPCS ──────────────────────────────────────────────────────────────
+echo -n "  PHPCS ... "
+if vendor/bin/phpcs --standard=phpcs.xml.dist $STAGED_PHP --report=summary --no-colors -q 2>/dev/null; then
+	echo -e "${GREEN}passed${NC}"
+else
+	echo -e "${RED}failed${NC}"
+	echo ""
+	echo -e "${RED}PHPCS violations found. Run 'composer lint:fix' to auto-fix, or 'composer lint' to see details.${NC}"
+	FAILED=1
+fi
+
+# ── PHPStan ────────────────────────────────────────────────────────────
+echo -n "  PHPStan ... "
+if vendor/bin/phpstan analyse --configuration=phpstan.neon.dist --no-progress --error-format=raw $STAGED_PHP 2>/dev/null; then
+	echo -e "${GREEN}passed${NC}"
+else
+	echo -e "${RED}failed${NC}"
+	echo ""
+	echo -e "${RED}PHPStan errors found. Run 'composer phpstan' for details.${NC}"
+	FAILED=1
+fi
+
+echo ""
+
+if [ $FAILED -ne 0 ]; then
+	echo -e "${RED}Pre-commit checks failed. Fix the issues above or use --no-verify to skip (not recommended).${NC}"
+	exit 1
+fi
+
+echo -e "${GREEN}All pre-commit checks passed.${NC}"

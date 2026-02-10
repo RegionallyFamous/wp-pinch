@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<phpunit
+	bootstrap="tests/bootstrap.php"
+	backupGlobals="false"
+	colors="true"
+>
+	<testsuites>
+		<testsuite name="WP Pinch">
+			<directory prefix="test-" suffix=".php">./tests/</directory>
+		</testsuite>
+	</testsuites>
+
+	<php>
+		<const name="WP_TESTS_MULTISITE" value="0" />
+	</php>
+</phpunit>

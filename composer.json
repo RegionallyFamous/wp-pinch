@@ -1,0 +1,45 @@
+{
+    "name": "regionallyfamous/wp-pinch",
+    "description": "OpenClaw + WordPress integration via Abilities API, MCP Adapter, webhooks, governance, and chat block.",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "homepage": "https://github.com/RegionallyFamous/wp-pinch",
+    "support": {
+        "issues": "https://github.com/RegionallyFamous/wp-pinch/issues",
+        "source": "https://github.com/RegionallyFamous/wp-pinch"
+    },
+    "authors": [
+        {
+            "name": "Nick Hamze",
+            "homepage": "https://github.com/RegionallyFamous"
+        }
+    ],
+    "require": {
+        "php": ">=8.1",
+        "woocommerce/action-scheduler": "^3.9",
+        "automattic/jetpack-autoloader": "^5.0"
+    },
+    "require-dev": {
+        "yoast/phpunit-polyfills": "^4.0",
+        "wp-coding-standards/wpcs": "^3.0",
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+        "phpstan/phpstan": "^2.0",
+        "szepeviktor/phpstan-wordpress": "^2.0"
+    },
+    "autoload": {
+        "classmap": [
+            "includes/"
+        ]
+    },
+    "config": {
+        "allow-plugins": {
+            "automattic/jetpack-autoloader": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    },
+    "scripts": {
+        "lint": "phpcs",
+        "lint:fix": "phpcbf",
+        "phpstan": "phpstan analyse --configuration=phpstan.neon.dist --memory-limit=2G"
+    }
+}

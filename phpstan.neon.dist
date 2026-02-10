@@ -1,0 +1,82 @@
+includes:
+    - vendor/szepeviktor/phpstan-wordpress/extension.neon
+
+parameters:
+    level: 6
+    paths:
+        - includes/
+        - wp-pinch.php
+
+    # Don't fail when an ignored pattern has no matching errors (e.g. conditional code paths).
+    reportUnmatchedIgnoredErrors: false
+
+    # Treat PHPDoc types as uncertain to avoid false positives on is_array() checks, etc.
+    treatPhpDocTypesAsCertain: false
+
+    # Plugin constants defined in the main plugin file (wp-pinch.php).
+    bootstrapFiles:
+        - tests/phpstan-bootstrap.php
+
+    ignoreErrors:
+        # =====================================================================
+        # External functions/classes not available to PHPStan.
+        # =====================================================================
+
+        # WordPress Abilities API (WordPress 6.9+).
+        - '#Function wp_register_ability not found#'
+
+        # Action Scheduler (optional dependency).
+        - '#Function as_has_scheduled_action not found#'
+        - '#Function as_schedule_recurring_action not found#'
+        - '#Function as_unschedule_all_actions not found#'
+        - '#Function as_schedule_single_action not found#'
+
+        # WordPress AI API (WordPress 6.9+).
+        - '#Function wp_ai_generate_text not found#'
+
+        # MCP Adapter plugin (optional dependency).
+        - '#Class WP\\\\MCP\\\\McpAdapter not found#'
+
+        # WooCommerce (optional dependency).
+        - '#Class WooCommerce not found#'
+        - '#Function wc_get_product not found#'
+        - '#Function wc_get_order not found#'
+        - '#Function wc_get_order_notes not found#'
+
+        # WP-CLI (only loaded in CLI context).
+        -
+            message: '#class WP_CLI#'
+            path: includes/class-cli.php
+        -
+            message: '#Function WP_CLI\\Utils\\format_items not found#'
+            path: includes/class-cli.php
+        -
+            message: '#Function WP_CLI\\Utils\\get_flag_value not found#'
+            path: includes/class-cli.php
+
+        # =====================================================================
+        # Level 6 array value type strictness (baseline).
+        # These are all safe — the methods accept/return associative arrays
+        # whose shape varies by ability. Adding full shapes would be 2000+ lines
+        # of PHPDoc for minimal safety gain. Revisit when moving to level 7.
+        # =====================================================================
+        - identifier: missingType.iterableValue
+
+        # =====================================================================
+        # Nav menu item properties.
+        # wp_setup_nav_menu_item() dynamically adds title, url, type, object,
+        # object_id, menu_item_parent, target, classes to WP_Post objects.
+        # =====================================================================
+        -
+            message: '#Access to an undefined property WP_Post::\$(title|url|type|object|object_id|menu_item_parent|target|classes)#'
+            path: includes/class-abilities.php
+
+        # =====================================================================
+        # Minor false positives.
+        # =====================================================================
+
+        # Offset 0 on non-empty-list always exists — safe null-coalesce for defensive coding.
+        - identifier: nullCoalesce.offset
+
+        # Unable to resolve template type T in array_values — safe usage.
+        - identifier: argument.templateType

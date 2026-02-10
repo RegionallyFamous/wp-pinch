@@ -1,0 +1,55 @@
+/**
+ * WP Pinch admin styles.
+ */
+
+/* Tab content area. */
+.wp-pinch-tab-content {
+	margin-top: 1em;
+}
+
+.wp-pinch-tab-content .form-table th {
+	width: 250px;
+}
+
+/* MCP endpoint info box. */
+.wp-pinch-mcp-info {
+	max-width: 600px;
+	margin-top: 2em;
+	padding: 1em;
+	background: #f0f0f1;
+	border-left: 4px solid #2271b1;
+}
+
+.wp-pinch-mcp-info h3 {
+	margin-top: 0;
+}
+
+.wp-pinch-mcp-info .description {
+	margin-top: 0.5em;
+}
+
+.wp-pinch-mcp-info code {
+	display: block;
+	padding: 8px 12px;
+	background: #fff;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	font-size: 13px;
+	word-break: break-all;
+}
+
+/* Test connection button and result. */
+#wp-pinch-test-connection {
+	vertical-align: middle;
+}
+
+#wp-pinch-connection-result {
+	margin-left: 0.5em;
+	font-weight: 600;
+	font-size: 13px;
+}
+
+/* Audit log pagination. */
+.wp-pinch-audit-nav {
+	margin-top: 1em;
+}

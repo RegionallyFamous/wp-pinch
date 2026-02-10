@@ -1,0 +1,20 @@
+{
+    "name": "wp-pinch",
+    "version": "1.0.1",
+    "description": "OpenClaw + WordPress integration plugin",
+    "private": true,
+    "scripts": {
+        "build": "wp-scripts build",
+        "start": "wp-scripts start",
+        "lint:js": "wp-scripts lint-js",
+        "lint:css": "wp-scripts lint-style",
+        "wp-env": "wp-env"
+    },
+    "devDependencies": {
+        "@wordpress/env": "^10.37.0",
+        "@wordpress/scripts": "^31.3.0"
+    },
+    "dependencies": {
+        "@wordpress/interactivity": "^6.39.0"
+    }
+}

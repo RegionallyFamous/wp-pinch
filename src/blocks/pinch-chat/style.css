@@ -1,0 +1,219 @@
+/**
+ * Pinch Chat — Frontend + Editor shared styles.
+ */
+
+.wp-pinch-chat {
+	border: 1px solid #e0e0e0;
+	border-radius: 12px;
+	overflow: hidden;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
+	background: #fff;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+@media (prefers-color-scheme: dark) {
+	.wp-pinch-chat {
+		background: #1e1e1e;
+		border-color: #333;
+		color: #e0e0e0;
+	}
+}
+
+/* Header */
+.wp-pinch-chat__header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 12px 16px;
+	background: #f7f7f7;
+	border-bottom: 1px solid #e0e0e0;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+@media (prefers-color-scheme: dark) {
+	.wp-pinch-chat__header {
+		background: #2a2a2a;
+		border-bottom-color: #333;
+	}
+}
+
+.wp-pinch-chat__header-title {
+	flex: 1;
+}
+
+.wp-pinch-chat__status-dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: #ccc;
+	flex-shrink: 0;
+}
+
+.wp-pinch-chat__status-dot--connected {
+	background: #46b450;
+}
+
+.wp-pinch-chat__status-dot--loading {
+	background: #ffb900;
+	animation: wp-pinch-pulse 1s ease-in-out infinite;
+}
+
+.wp-pinch-chat__status-dot--preview {
+	background: #72aee6;
+}
+
+@keyframes wp-pinch-pulse {
+	0%, 100% { opacity: 1; }
+	50% { opacity: 0.4; }
+}
+
+.wp-pinch-chat__typing {
+	font-size: 12px;
+	font-weight: 400;
+	color: #757575;
+	font-style: italic;
+}
+
+/* Messages */
+.wp-pinch-chat__messages {
+	padding: 16px;
+	overflow-y: auto;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	min-height: 100px;
+	scroll-behavior: smooth;
+}
+
+.wp-pinch-chat__message {
+	padding: 10px 14px;
+	border-radius: 12px;
+	max-width: 80%;
+	word-break: break-word;
+	line-height: 1.5;
+	font-size: 14px;
+}
+
+.wp-pinch-chat__message--user {
+	align-self: flex-end;
+	background: #2271b1;
+	color: #fff;
+	border-bottom-right-radius: 4px;
+}
+
+.wp-pinch-chat__message--agent {
+	align-self: flex-start;
+	background: #f0f0f1;
+	color: #1e1e1e;
+	border-bottom-left-radius: 4px;
+}
+
+@media (prefers-color-scheme: dark) {
+	.wp-pinch-chat__message--agent {
+		background: #333;
+		color: #e0e0e0;
+	}
+}
+
+.wp-pinch-chat__message--system {
+	align-self: center;
+	background: transparent;
+	color: #757575;
+	font-style: italic;
+	font-size: 13px;
+	text-align: center;
+}
+
+/* Input area */
+.wp-pinch-chat__input-area {
+	display: flex;
+	gap: 8px;
+	padding: 12px 16px;
+	border-top: 1px solid #e0e0e0;
+	background: #fafafa;
+}
+
+@media (prefers-color-scheme: dark) {
+	.wp-pinch-chat__input-area {
+		background: #2a2a2a;
+		border-top-color: #333;
+	}
+}
+
+.wp-pinch-chat__input {
+	flex: 1;
+	padding: 10px 14px;
+	border: 1px solid #ddd;
+	border-radius: 8px;
+	font-size: 14px;
+	outline: 2px solid transparent;
+	outline-offset: 2px;
+	transition: border-color 0.2s, outline-color 0.2s;
+	background: #fff;
+	color: #1e1e1e;
+}
+
+@media (prefers-color-scheme: dark) {
+	.wp-pinch-chat__input {
+		background: #1e1e1e;
+		border-color: #444;
+		color: #e0e0e0;
+	}
+}
+
+.wp-pinch-chat__input:focus {
+	border-color: #2271b1;
+	box-shadow: 0 0 0 1px #2271b1;
+	outline-color: #2271b1;
+}
+
+.wp-pinch-chat__input:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.wp-pinch-chat__send {
+	padding: 10px 16px;
+	background: #2271b1;
+	color: #fff;
+	border: none;
+	border-radius: 8px;
+	cursor: pointer;
+	font-size: 14px;
+	transition: background-color 0.2s;
+	flex-shrink: 0;
+}
+
+.wp-pinch-chat__send:hover:not(:disabled) {
+	background: #135e96;
+}
+
+.wp-pinch-chat__send:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+/* Login notice */
+.wp-pinch-chat__login-notice {
+	padding: 16px;
+	text-align: center;
+	color: #757575;
+	font-style: italic;
+	border-top: 1px solid #e0e0e0;
+}
+
+/* Mobile responsive */
+@media (max-width: 600px) {
+	.wp-pinch-chat__message {
+		max-width: 90%;
+	}
+
+	.wp-pinch-chat__header {
+		padding: 10px 12px;
+	}
+
+	.wp-pinch-chat__input-area {
+		padding: 10px 12px;
+	}
+}

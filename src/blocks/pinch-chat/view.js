@@ -1,0 +1,204 @@
+/**
+ * Pinch Chat — Frontend Interactivity API store.
+ *
+ * @package WP_Pinch
+ */
+
+import { store, getElement } from '@wordpress/interactivity';
+
+let msgCounter = 0;
+
+const { state, actions } = store( 'wp-pinch/chat', {
+	state: {
+		get messageCount() {
+			return state.messages.length;
+		},
+	},
+
+	actions: {
+		/**
+		 * Update the input value from the text field.
+		 *
+		 * @param {Event} event Input event.
+		 */
+		updateInput( event ) {
+			state.inputValue = event.target.value;
+		},
+
+		/**
+		 * Handle keydown — send on Enter.
+		 *
+		 * @param {KeyboardEvent} event Keyboard event.
+		 */
+		handleKeyDown( event ) {
+			if ( event.key === 'Enter' && ! event.shiftKey ) {
+				event.preventDefault();
+				actions.sendMessage();
+			}
+		},
+
+		/**
+		 * Send a chat message to the WP Pinch REST API.
+		 */
+		async sendMessage() {
+			const text = state.inputValue.trim();
+			if ( ! text || state.isLoading ) {
+				return;
+			}
+
+			// Add user message.
+			const userMsg = {
+				id: 'msg-' + Date.now() + '-' + ++msgCounter,
+				text,
+				isUser: true,
+				timestamp: new Date().toISOString(),
+			};
+			state.messages = [ ...state.messages, userMsg ];
+			state.inputValue = '';
+			state.isLoading = true;
+
+			// Persist to session storage.
+			actions.saveSession();
+
+			try {
+				const response = await fetch( state.restUrl, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'X-WP-Nonce': state.nonce,
+					},
+					body: JSON.stringify( {
+						message: text,
+						session_key: state.sessionKey,
+					} ),
+				} );
+
+				let data;
+				try {
+					data = await response.json();
+				} catch ( parseErr ) {
+					throw new Error( 'Server returned an invalid response.' );
+				}
+
+				if ( response.ok ) {
+					const agentMsg = {
+						id: 'msg-' + Date.now() + '-' + ++msgCounter,
+						text: data.reply || data.message || 'No response received.',
+						isUser: false,
+						timestamp: new Date().toISOString(),
+					};
+					state.messages = [ ...state.messages, agentMsg ];
+
+					// Announce for screen readers.
+					if ( window.wp?.a11y?.speak ) {
+						window.wp.a11y.speak( agentMsg.text, 'polite' );
+					}
+				} else {
+					const errorMsg = {
+						id: 'msg-' + Date.now() + '-' + ++msgCounter,
+						text: data.message || 'Something went wrong.',
+						isUser: false,
+						timestamp: new Date().toISOString(),
+					};
+					state.messages = [ ...state.messages, errorMsg ];
+				}
+			} catch ( err ) {
+				const errorMsg = {
+					id: 'msg-' + Date.now() + '-' + ++msgCounter,
+					text: 'Network error. Please check your connection.',
+					isUser: false,
+					timestamp: new Date().toISOString(),
+				};
+				state.messages = [ ...state.messages, errorMsg ];
+				state.isConnected = false;
+			} finally {
+				state.isLoading = false;
+				actions.saveSession();
+				actions.scrollToBottom();
+				actions.focusInput();
+			}
+		},
+
+		/**
+		 * Save messages to sessionStorage for persistence across page loads.
+		 */
+		saveSession() {
+			try {
+				const key = 'wp-pinch-chat-' + ( state.blockId || 'default' );
+				sessionStorage.setItem( key, JSON.stringify( state.messages ) );
+			} catch ( e ) {
+				// Silent fail — sessionStorage may be full or unavailable.
+			}
+		},
+
+		/**
+		 * Restore messages from sessionStorage.
+		 */
+		restoreSession() {
+			try {
+				const key = 'wp-pinch-chat-' + ( state.blockId || 'default' );
+				const saved = sessionStorage.getItem( key );
+				if ( saved ) {
+					const parsed = JSON.parse( saved );
+					if ( Array.isArray( parsed ) ) {
+						state.messages = parsed;
+					}
+				}
+			} catch ( e ) {
+				// Silent fail.
+			}
+		},
+
+		/**
+		 * Scroll the message container to the bottom.
+		 */
+		scrollToBottom() {
+			requestAnimationFrame( () => {
+				const el = getElement();
+				const root = el?.ref?.closest( '.wp-pinch-chat' );
+				if ( root ) {
+					const container = root.querySelector( '.wp-pinch-chat__messages' );
+					if ( container ) {
+						container.scrollTop = container.scrollHeight;
+					}
+				} else {
+					// Fallback: scroll all containers (e.g. called outside directive context).
+					const containers = document.querySelectorAll( '.wp-pinch-chat__messages' );
+					containers.forEach( ( c ) => {
+						c.scrollTop = c.scrollHeight;
+					} );
+				}
+			} );
+		},
+
+		/**
+		 * Return focus to the input field after sending.
+		 */
+		focusInput() {
+			requestAnimationFrame( () => {
+				const el = getElement();
+				const root = el?.ref?.closest( '.wp-pinch-chat' );
+				if ( root ) {
+					const input = root.querySelector( '.wp-pinch-chat__input' );
+					if ( input && ! input.disabled ) {
+						input.focus();
+					}
+				} else {
+					const input = document.querySelector( '.wp-pinch-chat__input' );
+					if ( input && ! input.disabled ) {
+						input.focus();
+					}
+				}
+			} );
+		},
+	},
+
+	callbacks: {
+		/**
+		 * Initialize — restore session on mount.
+		 */
+		init() {
+			actions.restoreSession();
+		},
+	},
+} );

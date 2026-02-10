@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<ruleset name="WP Pinch">
+	<description>WordPress coding standards for WP Pinch.</description>
+
+	<!-- What to scan -->
+	<file>./includes/</file>
+	<file>./wp-pinch.php</file>
+	<file>./uninstall.php</file>
+
+	<!-- Only check PHP files -->
+	<arg name="extensions" value="php"/>
+
+	<!-- Show progress and use colors -->
+	<arg value="ps"/>
+	<arg name="colors"/>
+
+	<!-- Parallel processing for speed -->
+	<arg name="parallel" value="8"/>
+
+	<!-- ================================================================= -->
+	<!-- Standards                                                          -->
+	<!-- ================================================================= -->
+
+	<!-- WordPress-Extra includes WordPress-Core + common mistake checks -->
+	<rule ref="WordPress-Extra"/>
+
+	<!-- WordPress.Security catches escaping, sanitization, nonce issues -->
+	<rule ref="WordPress.Security"/>
+
+	<!-- ================================================================= -->
+	<!-- Configuration                                                     -->
+	<!-- ================================================================= -->
+
+	<!-- Set the text domain for i18n checks -->
+	<config name="text_domain" value="wp-pinch"/>
+
+	<!-- Set minimum supported WordPress version -->
+	<config name="minimum_wp_version" value="6.9"/>
+
+	<!-- Prefixes for functions, classes, hooks, etc. -->
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="wp_pinch"/>
+				<element value="WP_Pinch"/>
+				<element value="WP_PINCH"/>
+			</property>
+		</properties>
+	</rule>
+
+	<!-- ================================================================= -->
+	<!-- Exclusions (necessary for plugin architecture)                    -->
+	<!-- ================================================================= -->
+
+	<!-- Allow short array syntax (WordPress standard still prefers array()) -->
+	<!-- We use array() throughout, but don't fail on short syntax in case -->
+	<!-- a contributor uses it -->
+
+	<!-- Allow the MCP Server class to use dynamic hook names -->
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound">
+		<severity>0</severity>
+	</rule>
+
+	<!-- File name conventions: we use class-*.php which is correct -->
+
+	<!-- Allow unused parameters required by WordPress hook/callback signatures -->
+	<rule ref="Generic.CodeAnalysis.UnusedFunctionParameter">
+		<severity>0</severity>
+	</rule>
+
+	<!-- Allow reserved-keyword parameter names that match WordPress conventions ($new, $readonly) -->
+	<rule ref="Universal.NamingConventions.NoReservedKeywordParameterNames">
+		<severity>0</severity>
+	</rule>
+
+	<!-- Exclude node_modules, vendor, build, tests from scanning -->
+	<exclude-pattern>/node_modules/*</exclude-pattern>
+	<exclude-pattern>/vendor/*</exclude-pattern>
+	<exclude-pattern>/build/*</exclude-pattern>
+	<exclude-pattern>/tests/*</exclude-pattern>
+	<exclude-pattern>/dist/*</exclude-pattern>
+</ruleset>

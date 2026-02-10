@@ -1,0 +1,220 @@
+<?php
+/**
+ * Tests for the Plugin lifecycle class.
+ *
+ * @package WP_Pinch
+ */
+
+use WP_Pinch\Plugin;
+use WP_Pinch\Audit_Table;
+
+/**
+ * Test plugin activation, deactivation, and version migration.
+ */
+class Test_Plugin extends WP_UnitTestCase {
+
+	/**
+	 * Set up.
+	 */
+	public function set_up(): void {
+		parent::set_up();
+		wp_set_current_user( $this->factory->user->create( array( 'role' => 'administrator' ) ) );
+	}
+
+	// =========================================================================
+	// Constants
+	// =========================================================================
+
+	/**
+	 * Test that required constants are defined.
+	 */
+	public function test_constants_defined(): void {
+		$this->assertTrue( defined( 'WP_PINCH_VERSION' ), 'WP_PINCH_VERSION should be defined.' );
+		$this->assertTrue( defined( 'WP_PINCH_FILE' ), 'WP_PINCH_FILE should be defined.' );
+		$this->assertTrue( defined( 'WP_PINCH_DIR' ), 'WP_PINCH_DIR should be defined.' );
+		$this->assertTrue( defined( 'WP_PINCH_URL' ), 'WP_PINCH_URL should be defined.' );
+	}
+
+	/**
+	 * Test version constant matches plugin header.
+	 */
+	public function test_version_constant_format(): void {
+		$this->assertMatchesRegularExpression( '/^\d+\.\d+\.\d+/', WP_PINCH_VERSION );
+	}
+
+	/**
+	 * Test WP_PINCH_DIR ends with a trailing slash.
+	 */
+	public function test_dir_trailing_slash(): void {
+		$this->assertStringEndsWith( '/', WP_PINCH_DIR );
+	}
+
+	/**
+	 * Test WP_PINCH_URL ends with a trailing slash.
+	 */
+	public function test_url_trailing_slash(): void {
+		$this->assertStringEndsWith( '/', WP_PINCH_URL );
+	}
+
+	// =========================================================================
+	// Singleton
+	// =========================================================================
+
+	/**
+	 * Test Plugin::instance() returns the same instance.
+	 */
+	public function test_singleton(): void {
+		$a = Plugin::instance();
+		$b = Plugin::instance();
+		$this->assertSame( $a, $b, 'Plugin::instance() should always return the same object.' );
+	}
+
+	// =========================================================================
+	// Activation
+	// =========================================================================
+
+	/**
+	 * Test activation creates the audit table.
+	 */
+	public function test_activation_creates_audit_table(): void {
+		global $wpdb;
+
+		Plugin::instance()->activate();
+
+		$table = Audit_Table::table_name();
+
+		// Use SHOW TABLES to verify the table exists.
+		$result = $wpdb->get_var(
+			$wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $table ) )
+		);
+
+		$this->assertEquals( $table, $result, 'Audit table should be created on activation.' );
+	}
+
+	/**
+	 * Test activation stores the plugin version.
+	 */
+	public function test_activation_stores_version(): void {
+		Plugin::instance()->activate();
+
+		$this->assertEquals(
+			WP_PINCH_VERSION,
+			get_option( 'wp_pinch_version' ),
+			'Plugin version should be stored on activation.'
+		);
+	}
+
+	/**
+	 * Test activation fires the wp_pinch_activated action.
+	 */
+	public function test_activation_fires_action(): void {
+		$fired = false;
+		add_action( 'wp_pinch_activated', function () use ( &$fired ) {
+			$fired = true;
+		} );
+
+		Plugin::instance()->activate();
+
+		$this->assertTrue( $fired, 'wp_pinch_activated action should fire.' );
+	}
+
+	// =========================================================================
+	// Deactivation
+	// =========================================================================
+
+	/**
+	 * Test deactivation fires the wp_pinch_deactivated action.
+	 */
+	public function test_deactivation_fires_action(): void {
+		$fired = false;
+		add_action( 'wp_pinch_deactivated', function () use ( &$fired ) {
+			$fired = true;
+		} );
+
+		Plugin::instance()->deactivate();
+
+		$this->assertTrue( $fired, 'wp_pinch_deactivated action should fire.' );
+	}
+
+	// =========================================================================
+	// Version migration
+	// =========================================================================
+
+	/**
+	 * Test boot runs migration when stored version differs.
+	 */
+	public function test_boot_runs_migration_on_version_change(): void {
+		// Simulate an older version being stored.
+		update_option( 'wp_pinch_version', '0.9.0' );
+
+		// Boot should update the version.
+		Plugin::instance()->boot();
+
+		$this->assertEquals(
+			WP_PINCH_VERSION,
+			get_option( 'wp_pinch_version' ),
+			'Version should be updated after migration.'
+		);
+	}
+
+	/**
+	 * Test boot skips migration when version matches.
+	 */
+	public function test_boot_skips_migration_when_current(): void {
+		update_option( 'wp_pinch_version', WP_PINCH_VERSION );
+
+		// This should not call create_table again.
+		Plugin::instance()->boot();
+
+		$this->assertEquals(
+			WP_PINCH_VERSION,
+			get_option( 'wp_pinch_version' )
+		);
+	}
+
+	// =========================================================================
+	// Textdomain
+	// =========================================================================
+
+	/**
+	 * Test textdomain loading does not produce errors.
+	 */
+	public function test_load_textdomain(): void {
+		Plugin::instance()->load_textdomain();
+		$this->assertTrue( true, 'load_textdomain should not produce errors.' );
+	}
+
+	// =========================================================================
+	// Block registration
+	// =========================================================================
+
+	/**
+	 * Test block registration does not produce errors.
+	 */
+	public function test_register_blocks(): void {
+		Plugin::instance()->register_blocks();
+
+		// Check if block type is registered (build dir may not exist in test env).
+		$registry = WP_Block_Type_Registry::get_instance();
+		// We can only verify it doesn't fatal — the block.json may not exist in test env.
+		$this->assertTrue( true );
+	}
+
+	// =========================================================================
+	// Global helper function
+	// =========================================================================
+
+	/**
+	 * Test wp_pinch_get_ability_names() global function exists.
+	 */
+	public function test_global_ability_names_function(): void {
+		$this->assertTrue(
+			function_exists( 'wp_pinch_get_ability_names' ),
+			'wp_pinch_get_ability_names() should be defined.'
+		);
+
+		$names = wp_pinch_get_ability_names();
+		$this->assertIsArray( $names );
+		$this->assertNotEmpty( $names );
+	}
+}

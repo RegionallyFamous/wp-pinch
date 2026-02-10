@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+#
+# Set up GitHub branch protection rules for the main branch.
+#
+# Requires: gh CLI authenticated (run `gh auth login` first).
+#
+# What this does:
+# - Requires PRs (no direct push to main)
+# - Requires all 4 CI checks to pass before merge:
+#   PHPCS, PHPStan, PHPUnit (PHP 8.2 / WP latest), Build
+# - Blocks force pushes and branch deletion
+#
+# Usage: ./bin/setup-branch-protection
+#
+set -euo pipefail
+
+REPO="RegionallyFamous/wp-pinch"
+BRANCH="main"
+
+echo "Setting up branch protection for ${REPO}@${BRANCH}..."
+
+gh api \
+  --method PUT \
+  "/repos/${REPO}/branches/${BRANCH}/protection" \
+  --input - <<'EOF'
+{
+  "required_status_checks": {
+    "strict": true,
+    "contexts": [
+      "PHPCS",
+      "PHPStan",
+      "PHPUnit (PHP 8.2, WP latest)",
+      "Build"
+    ]
+  },
+  "enforce_admins": false,
+  "required_pull_request_reviews": {
+    "required_approving_review_count": 0
+  },
+  "restrictions": null,
+  "allow_force_pushes": false,
+  "allow_deletions": false
+}
+EOF
+
+echo ""
+echo "Branch protection configured:"
+echo "  ✓ PRs required (no direct push to main)"
+echo "  ✓ PHPCS must pass"
+echo "  ✓ PHPStan must pass"
+echo "  ✓ PHPUnit must pass"
+echo "  ✓ Build must pass"
+echo "  ✓ Force push and branch deletion blocked"

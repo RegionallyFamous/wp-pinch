@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Build output
+build/
+dist/
+
+# Distribution zips
+*.zip
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE / Editor
+.cursor/
+.cursorrules
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# WordPress local dev
+.wp-env.override.json
+
+# Logs
+*.log
+npm-debug.log*
+debug.log
+
+# Environment
+.env
+.env.*
