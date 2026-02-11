@@ -219,9 +219,10 @@ Releases are managed by project maintainers. The general process is:
 1. Merge approved pull requests into `main`.
 2. Update the version number in the plugin header, `readme.txt`, and any other relevant files.
 3. Update the changelog.
-4. Tag the release and publish.
+4. **Run `make zip`** — this builds JS/CSS assets and creates the distributable zip. The zip must include the `build/` directory or users will get 404 errors for admin.js/admin.css.
+5. Tag the release and publish. Attach the generated zip (e.g. `wp-pinch-1.0.1.zip`) to the GitHub release. For "latest" download compatibility, consider also attaching a copy named `wp-pinch.zip`.
 
-Contributors do not need to worry about versioning or releases -- simply target the `main` branch with your pull requests.
+Contributors do not need to worry about versioning or releases — simply target the `main` branch with your pull requests.
 
 ## License
 

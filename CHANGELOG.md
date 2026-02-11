@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-02-11
+
+### Fixed
+- Admin settings page 404 for admin.js/admin.css when running from source — added FAQ entry documenting the `npm run build` requirement.
+
+### Changed
+- Release process in CONTRIBUTING.md now documents the `make zip` step so release packages include built assets.
+
 ## [1.0.1] - 2026-02-10
 
 ### Fixed
@@ -56,6 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Admin settings page with connection testing, webhook configuration, and governance controls.
 - GitHub Actions CI pipeline with PHPUnit, build verification, and plugin check.
 
-[Unreleased]: https://github.com/RegionallyFamous/wp-pinch/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/RegionallyFamous/wp-pinch/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/RegionallyFamous/wp-pinch/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/RegionallyFamous/wp-pinch/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/RegionallyFamous/wp-pinch/releases/tag/v1.0.0

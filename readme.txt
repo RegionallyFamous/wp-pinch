@@ -4,7 +4,7 @@ Tags: ai, agent, openclaw, mcp, automation
 Requires at least: 6.9
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -155,6 +155,10 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 
 == Changelog ==
 
+= 1.0.2 =
+* Fixed: Admin settings page 404 for admin.js/admin.css when running from source — documented build requirement (npm run build) in FAQ.
+* Changed: Release process now documents `make zip` step so release packages include built assets.
+
 = 1.0.1 =
 * Fixed: Screen reader announcements now work on the frontend (wp-a11y enqueued for Pinch Chat block).
 * Fixed: Session storage scoped per block instance — no more message cross-contamination with multiple chat blocks.
@@ -188,6 +192,9 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 * 12+ developer filters and 6+ action hooks for extensibility.
 
 == Upgrade Notice ==
+
+= 1.0.2 =
+Documentation fix: FAQ for admin.js/admin.css 404 when running from source, plus release process updates.
 
 = 1.0.1 =
 Bug fixes for accessibility, multi-block support, and security hardening. The lobster got sharper claws.
