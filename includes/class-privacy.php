@@ -142,6 +142,10 @@ class Privacy {
 						'value' => $entry['message'],
 					),
 					array(
+						'name'  => __( 'Context', 'wp-pinch' ),
+						'value' => $entry['context'] ?? '',
+					),
+					array(
 						'name'  => __( 'Date', 'wp-pinch' ),
 						'value' => $entry['created_at'],
 					),

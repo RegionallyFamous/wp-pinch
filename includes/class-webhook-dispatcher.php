@@ -134,7 +134,6 @@ class Webhook_Dispatcher {
 			array(
 				'user_id'      => $user_id,
 				'display_name' => $user->display_name,
-				'email'        => $user->user_email,
 				'roles'        => $user->roles,
 			)
 		);

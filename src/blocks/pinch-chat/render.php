@@ -18,7 +18,9 @@ $show_header = $attributes['showHeader'] ?? true;
 // Validate max-height as a safe CSS dimension (number + unit only).
 $raw_max_height = $attributes['maxHeight'] ?? '400px';
 $max_height     = preg_match( '/^\d+(\.\d+)?(px|em|rem|vh|%)$/', $raw_max_height ) ? $raw_max_height : '400px';
-$unique_id   = wp_unique_id( 'wp-pinch-chat-' );
+// Use the stable blockId attribute (persisted in post content) for session storage keys.
+// Fall back to wp_unique_id only for legacy blocks saved before 2.0.0.
+$unique_id = ! empty( $attributes['blockId'] ) ? sanitize_key( $attributes['blockId'] ) : wp_unique_id( 'wp-pinch-chat-' );
 
 // Enqueue wp-a11y on the frontend so screen reader announcements work.
 if ( ! is_admin() ) {
@@ -26,16 +28,18 @@ if ( ! is_admin() ) {
 }
 
 // Set up Interactivity API initial state.
+// Only expose credentials (nonce, REST URL, session key) to users who can actually use the chat.
+$can_chat = is_user_logged_in() && current_user_can( 'edit_posts' );
 wp_interactivity_state(
 	'wp-pinch/chat',
 	array(
 		'messages'    => array(),
 		'inputValue'  => '',
 		'isLoading'   => false,
-		'isConnected' => true,
-		'restUrl'     => rest_url( 'wp-pinch/v1/chat' ),
-		'nonce'       => wp_create_nonce( 'wp_rest' ),
-		'sessionKey'  => 'wp-pinch-chat-' . get_current_user_id(),
+		'isConnected' => $can_chat,
+		'restUrl'     => $can_chat ? rest_url( 'wp-pinch/v1/chat' ) : '',
+		'nonce'       => $can_chat ? wp_create_nonce( 'wp_rest' ) : '',
+		'sessionKey'  => $can_chat ? 'wp-pinch-chat-' . get_current_user_id() : '',
 		'blockId'     => $unique_id,
 	)
 );

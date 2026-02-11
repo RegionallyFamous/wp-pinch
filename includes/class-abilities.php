@@ -44,6 +44,56 @@ class Abilities {
 	);
 
 	/**
+	 * Options that must NEVER be read or written via abilities, regardless of filters.
+	 *
+	 * @var string[]
+	 */
+	const OPTION_DENYLIST = array(
+		'auth_key',
+		'auth_salt',
+		'logged_in_key',
+		'logged_in_salt',
+		'nonce_key',
+		'nonce_salt',
+		'secure_auth_key',
+		'secure_auth_salt',
+		'active_plugins',
+		'users_can_register',
+		'default_role',
+		'wp_pinch_api_token',
+	);
+
+	/**
+	 * Core WordPress cron hooks that must not be deleted.
+	 *
+	 * @var string[]
+	 */
+	const PROTECTED_CRON_HOOKS = array(
+		'wp_update_plugins',
+		'wp_update_themes',
+		'wp_version_check',
+		'wp_scheduled_delete',
+		'wp_scheduled_auto_draft_delete',
+		'wp_site_health_scheduled_check',
+		'recovery_mode_clean_expired_keys',
+	);
+
+	/**
+	 * Capabilities that indicate a role is administrative / privileged.
+	 *
+	 * @var string[]
+	 */
+	const DANGEROUS_CAPABILITIES = array(
+		'manage_options',
+		'edit_users',
+		'activate_plugins',
+		'delete_users',
+		'create_users',
+		'unfiltered_html',
+		'update_core',
+	);
+
+	/**
 	 * Wire hooks.
 	 */
 	public static function init(): void {
@@ -1128,8 +1178,21 @@ class Abilities {
 	 * @return array
 	 */
 	public static function execute_list_posts( array $input ): array {
+		$post_type = sanitize_key( $input['post_type'] ?? 'post' );
+
+		// Verify type-specific capability when a non-default post type is requested.
+		if ( 'post' !== $post_type ) {
+			$post_type_obj = get_post_type_object( $post_type );
+			if ( ! $post_type_obj ) {
+				return array( 'error' => __( 'Invalid post type.', 'wp-pinch' ) );
+			}
+			if ( ! current_user_can( $post_type_obj->cap->edit_posts ) ) {
+				return array( 'error' => __( 'Insufficient permissions for this post type.', 'wp-pinch' ) );
+			}
+		}
+
 		$args = array(
-			'post_type'      => sanitize_key( $input['post_type'] ?? 'post' ),
+			'post_type'      => $post_type,
 			'post_status'    => sanitize_key( $input['status'] ?? 'publish' ),
 			'posts_per_page' => max( 1, min( absint( $input['per_page'] ?? 20 ), 100 ) ),
 			'paged'          => max( 1, absint( $input['page'] ?? 1 ) ),
@@ -1234,6 +1297,10 @@ class Abilities {
 			return array( 'error' => __( 'Post not found.', 'wp-pinch' ) );
 		}
 
+		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+			return array( 'error' => __( 'You do not have permission to edit this post.', 'wp-pinch' ) );
+		}
+
 		$post_data = array( 'ID' => $post_id );
 
 		if ( isset( $input['title'] ) ) {
@@ -1274,6 +1341,10 @@ class Abilities {
 
 		if ( ! get_post( $post_id ) ) {
 			return array( 'error' => __( 'Post not found.', 'wp-pinch' ) );
+		}
+
+		if ( ! current_user_can( 'delete_post', $post_id ) ) {
+			return array( 'error' => __( 'You do not have permission to delete this post.', 'wp-pinch' ) );
 		}
 
 		$force  = ! empty( $input['force'] );
@@ -1463,6 +1534,12 @@ class Abilities {
 
 		$url = esc_url_raw( $input['url'] );
 
+		// Only allow HTTP/HTTPS URLs.
+		$scheme = wp_parse_url( $url, PHP_URL_SCHEME );
+		if ( ! in_array( $scheme, array( 'http', 'https' ), true ) ) {
+			return array( 'error' => __( 'Only HTTP and HTTPS URLs are allowed.', 'wp-pinch' ) );
+		}
+
 		$tmp = download_url( $url );
 		if ( is_wp_error( $tmp ) ) {
 			return array( 'error' => $tmp->get_error_message() );
@@ -1562,7 +1639,6 @@ class Abilities {
 				return array(
 					'id'           => $user->ID,
 					'login'        => $user->user_login,
-					'email'        => $user->user_email,
 					'display_name' => $user->display_name,
 					'roles'        => $user->roles,
 					'registered'   => $user->user_registered,
@@ -1592,7 +1668,6 @@ class Abilities {
 		return array(
 			'id'           => $user->ID,
 			'login'        => $user->user_login,
-			'email'        => $user->user_email,
 			'display_name' => $user->display_name,
 			'roles'        => $user->roles,
 			'registered'   => $user->user_registered,
@@ -1617,16 +1692,22 @@ class Abilities {
 			return array( 'error' => __( 'Invalid role.', 'wp-pinch' ) );
 		}
 
+		// Always block administrator role, regardless of filters.
+		if ( 'administrator' === $role ) {
+			return array( 'error' => __( 'The "administrator" role cannot be assigned via abilities.', 'wp-pinch' ) );
+		}
+
 		/**
-		 * Filter the blocked roles that cannot be assigned via the ability.
+		 * Filter additional blocked roles that cannot be assigned via the ability.
 		 *
 		 * Prevents AI agents from escalating users to privileged roles.
+		 * Note: 'administrator' is always blocked and cannot be unblocked via this filter.
 		 *
 		 * @since 1.0.0
 		 *
-		 * @param string[] $blocked Blocked role slugs.
+		 * @param string[] $blocked Blocked role slugs (in addition to administrator).
 		 */
-		$blocked_roles = apply_filters( 'wp_pinch_blocked_roles', array( 'administrator' ) );
+		$blocked_roles = apply_filters( 'wp_pinch_blocked_roles', array() );
 
 		if ( in_array( $role, $blocked_roles, true ) ) {
 			return array(
@@ -1638,9 +1719,30 @@ class Abilities {
 			);
 		}
 
+		// Block roles with dangerous capabilities (e.g. shop_manager with manage_options).
+		$role_obj = get_role( $role );
+		if ( $role_obj ) {
+			foreach ( self::DANGEROUS_CAPABILITIES as $cap ) {
+				if ( $role_obj->has_cap( $cap ) ) {
+					return array(
+						'error' => sprintf(
+							/* translators: %s: role slug */
+							__( 'The "%s" role has administrative capabilities and cannot be assigned via abilities.', 'wp-pinch' ),
+							$role
+						),
+					);
+				}
+			}
+		}
+
 		// Prevent modifying the current user's own role.
 		if ( get_current_user_id() === $user->ID ) {
 			return array( 'error' => __( 'Cannot modify your own role.', 'wp-pinch' ) );
+		}
+
+		// Prevent downgrading existing administrators.
+		if ( in_array( 'administrator', (array) $user->roles, true ) ) {
+			return array( 'error' => __( 'Cannot modify an administrator\'s role via abilities.', 'wp-pinch' ) );
 		}
 
 		$user->set_role( $role );
@@ -1773,6 +1875,11 @@ class Abilities {
 	public static function execute_get_option( array $input ): array {
 		$key = sanitize_text_field( $input['key'] );
 
+		// Denylist is always enforced, regardless of filter output.
+		if ( in_array( $key, self::OPTION_DENYLIST, true ) ) {
+			return array( 'error' => __( 'This option cannot be read via abilities.', 'wp-pinch' ) );
+		}
+
 		/**
 		 * Filter the option allowlist for reading.
 		 *
@@ -1784,7 +1891,7 @@ class Abilities {
 			'wp_pinch_option_read_allowlist',
 			array_merge(
 				self::OPTION_ALLOWLIST,
-				array( 'siteurl', 'home', 'admin_email', 'WPLANG', 'permalink_structure' )
+				array( 'siteurl', 'home', 'WPLANG', 'permalink_structure' )
 			)
 		);
 
@@ -1806,6 +1913,11 @@ class Abilities {
 	 */
 	public static function execute_update_option( array $input ): array {
 		$key = sanitize_text_field( $input['key'] );
+
+		// Denylist is always enforced, regardless of filter output.
+		if ( in_array( $key, self::OPTION_DENYLIST, true ) ) {
+			return array( 'error' => __( 'This option cannot be modified via abilities.', 'wp-pinch' ) );
+		}
 
 		/**
 		 * Filter the option allowlist for writing.
@@ -2077,12 +2189,27 @@ class Abilities {
 	 * @return array
 	 */
 	public static function execute_search_content( array $input ): array {
+		$post_type = sanitize_key( $input['post_type'] ?? 'any' );
+
+		// Verify type-specific capability when a specific post type is requested.
+		if ( 'any' !== $post_type ) {
+			$post_type_obj = get_post_type_object( $post_type );
+			if ( $post_type_obj && ! current_user_can( $post_type_obj->cap->edit_posts ) ) {
+				return array( 'error' => __( 'Insufficient permissions for this post type.', 'wp-pinch' ) );
+			}
+		}
+
+		// Respect read_private_posts capability.
+		$statuses = current_user_can( 'read_private_posts' )
+			? array( 'publish', 'draft', 'pending', 'private' )
+			: array( 'publish', 'draft', 'pending' );
+
 		$query = new \WP_Query(
 			array(
 				's'              => sanitize_text_field( $input['query'] ),
-				'post_type'      => sanitize_key( $input['post_type'] ?? 'any' ),
+				'post_type'      => $post_type,
 				'posts_per_page' => max( 1, min( absint( $input['per_page'] ?? 20 ), 100 ) ),
-				'post_status'    => 'any',
+				'post_status'    => $statuses,
 			)
 		);
 
@@ -2147,7 +2274,6 @@ class Abilities {
 							return array(
 								'id'           => $u->ID,
 								'login'        => $u->user_login,
-								'email'        => $u->user_email,
 								'display_name' => $u->display_name,
 								'roles'        => $u->roles,
 								'registered'   => $u->user_registered,
@@ -2358,6 +2484,12 @@ class Abilities {
 					return array( 'error' => __( 'Menu item ID required.', 'wp-pinch' ) );
 				}
 
+				// Verify the item is actually a nav_menu_item to prevent deleting arbitrary posts.
+				$item_post = get_post( $item_id );
+				if ( ! $item_post || 'nav_menu_item' !== $item_post->post_type ) {
+					return array( 'error' => __( 'Menu item not found.', 'wp-pinch' ) );
+				}
+
 				$result = wp_delete_post( $item_id, true );
 				if ( ! $result ) {
 					return array( 'error' => __( 'Failed to delete menu item.', 'wp-pinch' ) );
@@ -2502,6 +2634,12 @@ class Abilities {
 		if ( is_string( $value ) ) {
 			$value = sanitize_text_field( $value );
 		} elseif ( is_array( $value ) ) {
+			// Reject nested arrays — only flat arrays of scalar values are supported.
+			foreach ( $value as $v ) {
+				if ( ! is_scalar( $v ) ) {
+					return array( 'error' => __( 'Nested arrays are not supported for post meta values.', 'wp-pinch' ) );
+				}
+			}
 			$value = array_map( 'sanitize_text_field', $value );
 		} elseif ( is_numeric( $value ) ) {
 			// Numeric values are safe as-is.
@@ -2740,7 +2878,8 @@ class Abilities {
 					break;
 
 				case 'delete':
-					$result = wp_delete_post( $post_id, true );
+					// Bulk delete always uses trash for safety — use single delete-post with force for permanent deletion.
+					$result = wp_trash_post( $post_id );
 					if ( ! $result ) {
 						$results[] = array(
 							'id'    => $post_id,
@@ -2750,7 +2889,7 @@ class Abilities {
 					} else {
 						$results[] = array(
 							'id'      => $post_id,
-							'deleted' => true,
+							'trashed' => true,
 						);
 						++$success;
 					}
@@ -2862,11 +3001,25 @@ class Abilities {
 		switch ( $action ) {
 			case 'run':
 				/**
-				 * Run the cron hook immediately.
-				 *
-				 * This fires the hook's callbacks but does not remove it
-				 * from the cron schedule (recurring events stay scheduled).
+				 * Run the cron hook immediately — only if it is an actual
+				 * scheduled cron event. We never call do_action() on arbitrary
+				 * hooks because that would be a code-execution primitive.
 				 */
+				$cron_array   = _get_cron_array();
+				$is_cron_hook = false;
+				if ( is_array( $cron_array ) ) {
+					foreach ( $cron_array as $ts => $hooks ) {
+						if ( isset( $hooks[ $hook ] ) ) {
+							$is_cron_hook = true;
+							break;
+						}
+					}
+				}
+
+				if ( ! $is_cron_hook ) {
+					return array( 'error' => __( 'Hook is not a scheduled cron event.', 'wp-pinch' ) );
+				}
+
 				if ( ! has_action( $hook ) ) {
 					/* translators: %s: WP-Cron hook name. */
 					return array( 'error' => sprintf( __( 'No callbacks registered for hook "%s".', 'wp-pinch' ), $hook ) );
@@ -2887,6 +3040,11 @@ class Abilities {
 				);
 
 			case 'delete':
+				// Protect critical WordPress core cron hooks from deletion.
+				if ( in_array( $hook, self::PROTECTED_CRON_HOOKS, true ) ) {
+					return array( 'error' => __( 'Cannot delete core WordPress cron events.', 'wp-pinch' ) );
+				}
+
 				if ( 0 === $timestamp ) {
 					// Unschedule all events for this hook.
 					$cron    = _get_cron_array();
@@ -3102,19 +3260,16 @@ class Abilities {
 			'currency'     => $order->get_currency(),
 			'date_created' => $order->get_date_created() ? $order->get_date_created()->format( 'Y-m-d H:i:s' ) : null,
 			'customer'     => array(
-				'id'    => $order->get_customer_id(),
-				'email' => $order->get_billing_email(),
-				'name'  => $order->get_billing_first_name() . ' ' . $order->get_billing_last_name(),
+				'id'   => $order->get_customer_id(),
+				'name' => $order->get_billing_first_name(), // First name only — no email/full name to prevent PII leakage.
 			),
 			'items'        => $items,
-			'payment'      => $order->get_payment_method_title(),
 			'shipping'     => $order->get_shipping_total(),
 			'notes'        => array_map(
 				function ( $note ) {
 					return array(
 						'content' => $note->comment_content,
 						'date'    => $note->comment_date,
-						'author'  => $note->comment_author,
 					);
 				},
 				wc_get_order_notes(

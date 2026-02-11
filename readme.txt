@@ -4,7 +4,7 @@ Tags: ai, agent, openclaw, mcp, automation
 Requires at least: 6.9
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 1.0.2
+Stable tag: 2.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -155,6 +155,31 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 
 == Changelog ==
 
+= 2.0.0 =
+* **Major security hardening release** — 38 fixes across 12 files addressing access control, privilege escalation, IDOR, SSRF, information disclosure, PII redaction, input validation, XSS, and rate limiting.
+* Fixed: Chat block sessionStorage instability — messages now persist across page reloads via a stable `blockId` attribute.
+* Security: Post-level capability checks added to update-post, delete-post, list-posts, and search-content.
+* Security: Administrator role assignment unconditionally blocked; roles with dangerous capabilities (manage_options, edit_users, etc.) also blocked.
+* Security: Administrator downgrade prevention.
+* Security: Session key always derived from authenticated user — prevents cross-user session hijacking.
+* Security: Arbitrary post deletion via menu item delete prevented with post type validation.
+* Security: SSRF prevention in broken link checker (private IP blocking, DNS resolution, SSL verification).
+* Security: Media upload restricted to HTTP/HTTPS URL schemes only.
+* Security: Cron "run" action validates hook exists in cron array before firing; core cron hooks protected from deletion.
+* Security: Hardcoded option denylist (auth salts, active_plugins, users_can_register, default_role, API token) enforced before filters.
+* Security: User emails removed from all ability responses (list-users, get-user, export-data, WooCommerce orders).
+* Security: WooCommerce order PII redacted (billing email, last name, payment method title, note authors).
+* Security: Comment sweep PII redacted (author, content excerpt).
+* Security: Webhook user_register payload no longer includes email.
+* Security: API token masked on settings page; gateway errors logged server-side with generic client messages.
+* Security: MCP server no longer exposes get-user-info or get-environment-info publicly.
+* Security: Security scan no longer leaks version numbers for core/plugins/themes.
+* Security: Message length limit (4,000 chars), nested array rejection in post meta, gateway reply XSS sanitization.
+* Security: Retry-After headers on all 429 responses; status endpoint rate-limited; test connection cooldown; configurable rate limit.
+* Security: Bulk delete now trashes posts instead of permanent deletion.
+* Security: Constant redefinition guards, GDPR export completeness, multisite uninstall cleanup.
+* Breaking: User email removed from ability responses. Bulk delete uses trash. admin_email removed from option read allowlist. wp_pinch_blocked_roles filter default changed.
+
 = 1.0.2 =
 * Fixed: Admin settings page 404 for admin.js/admin.css when running from source — documented build requirement (npm run build) in FAQ.
 * Changed: Release process now documents `make zip` step so release packages include built assets.
@@ -192,6 +217,9 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 * 12+ developer filters and 6+ action hooks for extensibility.
 
 == Upgrade Notice ==
+
+= 2.0.0 =
+Major security hardening: 38 fixes for access control, privilege escalation, SSRF, PII exposure, XSS, and more. Breaking changes: user emails removed from ability responses, bulk delete now trashes, administrator role unconditionally blocked. Please review the full changelog before upgrading.
 
 = 1.0.2 =
 Documentation fix: FAQ for admin.js/admin.css 404 when running from source, plus release process updates.

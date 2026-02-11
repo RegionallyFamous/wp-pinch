@@ -89,7 +89,13 @@ class Settings {
 			'wp_pinch_api_token',
 			array(
 				'type'              => 'string',
-				'sanitize_callback' => 'sanitize_text_field',
+				'sanitize_callback' => function ( $value ) {
+					// If the placeholder mask is submitted, keep the existing token.
+					if ( str_repeat( "\u{2022}", 8 ) === $value || '' === $value ) {
+						return get_option( 'wp_pinch_api_token', '' );
+					}
+					return sanitize_text_field( $value );
+				},
 				'default'           => '',
 				'show_in_rest'      => false,
 			)
@@ -200,6 +206,13 @@ class Settings {
 			wp_send_json_error( __( 'Permission denied.', 'wp-pinch' ) );
 		}
 
+		// Rate limit: one test per 5 seconds per user.
+		$cooldown_key = 'wp_pinch_test_cd_' . get_current_user_id();
+		if ( get_transient( $cooldown_key ) ) {
+			wp_send_json_error( __( 'Please wait a few seconds before testing again.', 'wp-pinch' ) );
+		}
+		set_transient( $cooldown_key, 1, 5 );
+
 		$url   = get_option( 'wp_pinch_gateway_url', '' );
 		$token = get_option( 'wp_pinch_api_token', '' );
 
@@ -218,18 +231,18 @@ class Settings {
 		);
 
 		if ( is_wp_error( $response ) ) {
-			wp_send_json_error( $response->get_error_message() );
+			// Log the real error; return a generic message to the client.
+			Audit_Table::insert( 'gateway_error', 'admin', $response->get_error_message() );
+			wp_send_json_error( __( 'Unable to reach the gateway. Check the URL and try again.', 'wp-pinch' ) );
 		}
 
 		$code = wp_remote_retrieve_response_code( $response );
-		$body = wp_remote_retrieve_body( $response );
 
 		if ( $code >= 200 && $code < 300 ) {
 			wp_send_json_success(
 				array(
 					'message' => __( 'Connected successfully!', 'wp-pinch' ),
 					'status'  => $code,
-					'data'    => json_decode( $body, true ),
 				)
 			);
 		} else {
@@ -315,9 +328,10 @@ class Settings {
 						<label for="wp_pinch_api_token"><?php esc_html_e( 'API Token', 'wp-pinch' ); ?></label>
 					</th>
 					<td>
-						<input type="password" id="wp_pinch_api_token" name="wp_pinch_api_token"
-								value="<?php echo esc_attr( get_option( 'wp_pinch_api_token' ) ); ?>"
-								class="regular-text" autocomplete="off" />
+					<?php $has_token = ! empty( get_option( 'wp_pinch_api_token' ) ); ?>
+					<input type="password" id="wp_pinch_api_token" name="wp_pinch_api_token"
+							value="<?php echo $has_token ? esc_attr( str_repeat( "\u{2022}", 8 ) ) : ''; ?>"
+							class="regular-text" autocomplete="off" />
 						<p class="description"><?php esc_html_e( 'Bearer token for authenticating with the OpenClaw webhook API.', 'wp-pinch' ); ?></p>
 					</td>
 				</tr>

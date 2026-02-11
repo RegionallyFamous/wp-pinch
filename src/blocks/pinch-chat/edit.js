@@ -7,6 +7,7 @@
 import { __ } from '@wordpress/i18n';
 import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
 import { PanelBody, TextControl, ToggleControl, UnitControl } from '@wordpress/components';
+import { useEffect } from '@wordpress/element';
 
 import './editor.css';
 
@@ -19,7 +20,15 @@ import './editor.css';
  * @return {Element} Block editor element.
  */
 export default function Edit( { attributes, setAttributes } ) {
-	const { placeholder, showHeader, maxHeight } = attributes;
+	const { placeholder, showHeader, maxHeight, blockId } = attributes;
+
+	// Generate a stable unique ID on first insert. This persists in the saved
+	// block markup so sessionStorage keys remain stable across page loads.
+	useEffect( () => {
+		if ( ! blockId ) {
+			setAttributes( { blockId: 'wp-pinch-chat-' + Math.random().toString( 36 ).slice( 2, 10 ) } );
+		}
+	}, [ blockId, setAttributes ] );
 	const blockProps = useBlockProps( {
 		className: 'wp-pinch-chat',
 	} );

@@ -259,8 +259,6 @@ class Governance {
 					return array(
 						'id'      => (int) $c->comment_ID,
 						'post_id' => (int) $c->comment_post_ID,
-						'author'  => $c->comment_author,
-						'excerpt' => wp_trim_words( $c->comment_content, 20 ),
 						'date'    => $c->comment_date,
 					);
 				},
@@ -297,7 +295,7 @@ class Governance {
 		 *
 		 * @param int $batch_size Number of links per batch. Default 50.
 		 */
-		$batch_size = apply_filters( 'wp_pinch_broken_links_batch_size', 50 );
+		$batch_size = min( absint( apply_filters( 'wp_pinch_broken_links_batch_size', 50 ) ), 200 );
 
 		// Get recent published posts.
 		$posts = get_posts(
@@ -332,24 +330,33 @@ class Governance {
 					break;
 				}
 
-				// Skip anchors, mailto, tel.
-				if ( preg_match( '/^(#|mailto:|tel:|javascript:)/', $url ) ) {
-					continue;
-				}
+			// Skip anchors, mailto, tel, and non-http schemes.
+			if ( preg_match( '/^(#|mailto:|tel:|javascript:|ftp:|data:|gopher:|dict:)/i', $url ) ) {
+				continue;
+			}
 
-				// Make relative URLs absolute.
-				if ( ! preg_match( '/^https?:\/\//', $url ) ) {
-					$url = home_url( $url );
-				}
+			// Make relative URLs absolute.
+			if ( ! preg_match( '/^https?:\/\//', $url ) ) {
+				$url = home_url( $url );
+			}
 
-				$response = wp_remote_head(
-					$url,
-					array(
-						'timeout'     => 5,
-						'redirection' => 3,
-						'sslverify'   => false,
-					)
-				);
+			// Prevent SSRF: resolve hostname and reject private/reserved IPs.
+			$host = wp_parse_url( $url, PHP_URL_HOST );
+			if ( $host ) {
+				$ip = gethostbyname( $host );
+				if ( $ip !== $host && false === filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) ) {
+					continue; // Skip internal/private/reserved IPs.
+				}
+			}
+
+			$response = wp_remote_head(
+				$url,
+				array(
+					'timeout'     => 5,
+					'redirection' => 3,
+					'sslverify'   => true,
+				)
+			);
 
 				++$links_checked;
 
@@ -394,37 +401,32 @@ class Governance {
 
 		$findings = array();
 
-		// Core updates.
+		// Core updates — only report availability, not exact versions (avoids leaking info to external services).
 		$core_updates = get_core_updates();
 		if ( ! empty( $core_updates ) && 'latest' !== ( $core_updates[0]->response ?? '' ) ) {
-			$findings['core_update'] = array(
-				'current'   => get_bloginfo( 'version' ),
-				'available' => $core_updates[0]->version ?? 'unknown',
-			);
+			$findings['core_update_available'] = true;
 		}
 
-		// Plugin updates.
+		// Plugin updates — report names and counts only, not version numbers.
 		$plugin_updates = get_plugin_updates();
 		if ( ! empty( $plugin_updates ) ) {
-			$findings['plugin_updates'] = array();
+			$findings['plugin_updates_count'] = count( $plugin_updates );
+			$findings['plugin_updates']       = array();
 			foreach ( $plugin_updates as $file => $data ) {
 				$findings['plugin_updates'][] = array(
-					'name'      => $data->Name, // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-				'current'       => $data->Version, // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-					'available' => $data->update->new_version ?? 'unknown',
+					'name' => $data->Name, // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 				);
 			}
 		}
 
-		// Theme updates.
+		// Theme updates — report names and counts only, not version numbers.
 		$theme_updates = get_theme_updates();
 		if ( ! empty( $theme_updates ) ) {
-			$findings['theme_updates'] = array();
+			$findings['theme_updates_count'] = count( $theme_updates );
+			$findings['theme_updates']       = array();
 			foreach ( $theme_updates as $slug => $theme ) {
 				$findings['theme_updates'][] = array(
-					'name'      => $theme->get( 'Name' ),
-					'current'   => $theme->get( 'Version' ),
-					'available' => $theme->update['new_version'] ?? 'unknown',
+					'name' => $theme->get( 'Name' ),
 				);
 			}
 		}

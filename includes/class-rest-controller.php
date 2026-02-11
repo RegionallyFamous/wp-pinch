@@ -20,9 +20,15 @@ defined( 'ABSPATH' ) || exit;
 class Rest_Controller {
 
 	/**
-	 * Rate limit: requests per minute per user.
+	 * Default rate limit: requests per minute per user.
+	 * Overridden by the wp_pinch_rate_limit option when set.
 	 */
-	const RATE_LIMIT = 10;
+	const DEFAULT_RATE_LIMIT = 10;
+
+	/**
+	 * Maximum allowed message length in characters.
+	 */
+	const MAX_MESSAGE_LENGTH = 4000;
 
 	/**
 	 * Wire hooks.
@@ -54,6 +60,13 @@ class Rest_Controller {
 									return new \WP_Error(
 										'rest_invalid_param',
 										__( 'Message cannot be empty.', 'wp-pinch' ),
+										array( 'status' => 400 )
+									);
+								}
+								if ( mb_strlen( $value ) > self::MAX_MESSAGE_LENGTH ) {
+									return new \WP_Error(
+										'rest_invalid_param',
+										__( 'Message is too long.', 'wp-pinch' ),
 										array( 'status' => 400 )
 									);
 								}
@@ -211,11 +224,15 @@ class Rest_Controller {
 	 */
 	public static function handle_chat( \WP_REST_Request $request ) {
 		if ( ! self::check_rate_limit() ) {
-			return new \WP_Error(
-				'rate_limited',
-				__( 'Too many requests. Please wait a moment.', 'wp-pinch' ),
-				array( 'status' => 429 )
+			$response = new \WP_REST_Response(
+				array(
+					'code'    => 'rate_limited',
+					'message' => __( 'Too many requests. Please wait a moment.', 'wp-pinch' ),
+				),
+				429
 			);
+			$response->header( 'Retry-After', '60' );
+			return $response;
 		}
 
 		$gateway_url = get_option( 'wp_pinch_gateway_url', '' );
@@ -229,13 +246,11 @@ class Rest_Controller {
 			);
 		}
 
-		$message     = $request->get_param( 'message' );
-		$session_key = $request->get_param( 'session_key' );
-		$user        = wp_get_current_user();
+		$message = $request->get_param( 'message' );
+		$user    = wp_get_current_user();
 
-		if ( empty( $session_key ) ) {
-			$session_key = 'wp-pinch-chat-' . $user->ID;
-		}
+		// Always derive session key from the authenticated user to prevent cross-user session hijacking.
+		$session_key = 'wp-pinch-chat-' . $user->ID;
 
 		$payload = array(
 			'message'    => $message,
@@ -267,9 +282,11 @@ class Rest_Controller {
 		);
 
 		if ( is_wp_error( $response ) ) {
+			// Log the real error server-side; return a generic message to the client.
+			Audit_Table::insert( 'gateway_error', 'chat', $response->get_error_message() );
 			return new \WP_Error(
 				'gateway_error',
-				$response->get_error_message(),
+				__( 'Unable to reach the AI gateway. Please try again later.', 'wp-pinch' ),
 				array( 'status' => 502 )
 			);
 		}
@@ -287,8 +304,10 @@ class Rest_Controller {
 			);
 		}
 
+		// Only return expected string responses; never forward raw gateway body.
+		$reply = $data['response'] ?? $data['message'] ?? null;
 		$result = array(
-			'reply'       => $data['response'] ?? $data['message'] ?? $body,
+			'reply'       => is_string( $reply ) ? wp_kses_post( $reply ) : __( 'Received an unexpected response from the gateway.', 'wp-pinch' ),
 			'session_key' => $session_key,
 		);
 
@@ -319,6 +338,18 @@ class Rest_Controller {
 	 * @return \WP_REST_Response
 	 */
 	public static function handle_status( \WP_REST_Request $request ): \WP_REST_Response {
+		if ( ! self::check_rate_limit() ) {
+			$response = new \WP_REST_Response(
+				array(
+					'code'    => 'rate_limited',
+					'message' => __( 'Too many requests. Please wait a moment.', 'wp-pinch' ),
+				),
+				429
+			);
+			$response->header( 'Retry-After', '60' );
+			return $response;
+		}
+
 		$gateway_url = get_option( 'wp_pinch_gateway_url', '' );
 		$api_token   = get_option( 'wp_pinch_api_token', '' );
 
@@ -368,12 +399,13 @@ class Rest_Controller {
 	private static function check_rate_limit(): bool {
 		$user_id = get_current_user_id();
 		$key     = 'wp_pinch_rest_rate_' . $user_id;
+		$limit   = max( 1, (int) get_option( 'wp_pinch_rate_limit', self::DEFAULT_RATE_LIMIT ) );
 
 		// Prefer object cache when a persistent backend (Redis, Memcached) is available.
 		if ( wp_using_ext_object_cache() ) {
 			$count = (int) wp_cache_get( $key, 'wp-pinch' );
 
-			if ( $count >= self::RATE_LIMIT ) {
+			if ( $count >= $limit ) {
 				return false;
 			}
 
@@ -389,7 +421,7 @@ class Rest_Controller {
 		// Fallback to transients.
 		$count = (int) get_transient( $key );
 
-		if ( $count >= self::RATE_LIMIT ) {
+		if ( $count >= $limit ) {
 			return false;
 		}
 

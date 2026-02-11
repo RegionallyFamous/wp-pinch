@@ -26,10 +26,14 @@ class MCP_Server {
 	 *
 	 * @var string[]
 	 */
+	/**
+	 * Core abilities to include on the WP Pinch MCP server.
+	 *
+	 * Note: get-user-info and get-environment-info are intentionally excluded
+	 * from the public list to prevent leaking sensitive server/user details.
+	 */
 	const CORE_ABILITIES = array(
 		'core/get-site-info',
-		'core/get-user-info',
-		'core/get-environment-info',
 	);
 
 	/**
