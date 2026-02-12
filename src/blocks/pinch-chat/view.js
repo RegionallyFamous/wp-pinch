@@ -13,10 +13,10 @@
  * - Keyboard shortcuts (Escape to clear input)
  * - Error boundary for graceful failure
  *
- * @package WP_Pinch
+ * @package
  */
 
-/* global sessionStorage, requestAnimationFrame, navigator, ClipboardItem */
+/* global sessionStorage, requestAnimationFrame, navigator */
 
 import { store, getElement } from '@wordpress/interactivity';
 
@@ -30,6 +30,9 @@ const MAX_MESSAGE_LENGTH = 4000;
 /**
  * Global error handler — catches unhandled errors in the chat block
  * and renders a friendly fallback instead of a blank widget.
+ *
+ * @param {Error}  error   The error that was caught.
+ * @param {string} context Description of where the error occurred.
  */
 function handleChatError( error, context ) {
 	// eslint-disable-next-line no-console
@@ -153,7 +156,11 @@ const { state, actions } = store( 'wp-pinch/chat', {
 		async sendMessage() {
 			try {
 				const text = state.inputValue.trim();
-				if ( ! text || state.isLoading || text.length > MAX_MESSAGE_LENGTH ) {
+				if (
+					! text ||
+					state.isLoading ||
+					text.length > MAX_MESSAGE_LENGTH
+				) {
 					return;
 				}
 
@@ -203,8 +210,9 @@ const { state, actions } = store( 'wp-pinch/chat', {
 					}
 
 					// Track rate limit info from response headers.
-					const remaining =
-						response.headers.get( 'X-RateLimit-Remaining' );
+					const remaining = response.headers.get(
+						'X-RateLimit-Remaining'
+					);
 					if ( remaining !== null ) {
 						state.rateLimitRemaining = parseInt( remaining, 10 );
 					}
@@ -287,7 +295,11 @@ const { state, actions } = store( 'wp-pinch/chat', {
 				);
 				if ( nonceRes.ok ) {
 					const newNonce = await nonceRes.text();
-					if ( newNonce && newNonce.length > 0 && newNonce.length < 20 ) {
+					if (
+						newNonce &&
+						newNonce.length > 0 &&
+						newNonce.length < 20
+					) {
 						state.nonce = newNonce.trim();
 						return true;
 					}
@@ -313,9 +325,7 @@ const { state, actions } = store( 'wp-pinch/chat', {
 		 */
 		async copyMessage( event ) {
 			try {
-				const btn = event.target.closest(
-					'.wp-pinch-chat__copy-btn'
-				);
+				const btn = event.target.closest( '.wp-pinch-chat__copy-btn' );
 				if ( ! btn ) {
 					return;
 				}
@@ -329,9 +339,7 @@ const { state, actions } = store( 'wp-pinch/chat', {
 				const textEl = msgEl.querySelector(
 					'.wp-pinch-chat__message-text'
 				);
-				const text = textEl
-					? textEl.textContent
-					: msgEl.textContent;
+				const text = textEl ? textEl.textContent : msgEl.textContent;
 
 				await navigator.clipboard.writeText( text );
 
@@ -351,12 +359,8 @@ const { state, actions } = store( 'wp-pinch/chat', {
 		 */
 		saveSession() {
 			try {
-				const key =
-					'wp-pinch-chat-' + ( state.blockId || 'default' );
-				sessionStorage.setItem(
-					key,
-					JSON.stringify( state.messages )
-				);
+				const key = 'wp-pinch-chat-' + ( state.blockId || 'default' );
+				sessionStorage.setItem( key, JSON.stringify( state.messages ) );
 			} catch ( e ) {
 				// Silent fail — sessionStorage may be full or unavailable.
 			}
@@ -367,8 +371,7 @@ const { state, actions } = store( 'wp-pinch/chat', {
 		 */
 		restoreSession() {
 			try {
-				const key =
-					'wp-pinch-chat-' + ( state.blockId || 'default' );
+				const key = 'wp-pinch-chat-' + ( state.blockId || 'default' );
 				const saved = sessionStorage.getItem( key );
 				if ( saved ) {
 					const parsed = JSON.parse( saved );
@@ -420,9 +423,7 @@ const { state, actions } = store( 'wp-pinch/chat', {
 				const el = getElement();
 				const root = el?.ref?.closest( '.wp-pinch-chat' );
 				if ( root ) {
-					const input = root.querySelector(
-						'.wp-pinch-chat__input'
-					);
+					const input = root.querySelector( '.wp-pinch-chat__input' );
 					if ( input && ! input.disabled ) {
 						input.focus();
 					}
