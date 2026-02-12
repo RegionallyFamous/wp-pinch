@@ -195,12 +195,12 @@
 	line-height: 1;
 }
 
-.wp-pinch-chat__message:hover .wp-pinch-chat__copy-btn {
-	opacity: 1;
-}
-
 .wp-pinch-chat__copy-btn:hover {
 	background: rgba(0, 0, 0, 0.06);
+}
+
+.wp-pinch-chat__message:hover .wp-pinch-chat__copy-btn {
+	opacity: 1;
 }
 
 @media (prefers-color-scheme: dark) {
