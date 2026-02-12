@@ -76,7 +76,12 @@ function wp_pinch_cleanup_site() {
 
 // Handle multisite: iterate all sites. Single site: clean up once.
 if ( is_multisite() ) {
-	$wp_pinch_sites = get_sites( array( 'fields' => 'ids', 'number' => 0 ) );
+	$wp_pinch_sites = get_sites(
+		array(
+			'fields' => 'ids',
+			'number' => 0,
+		)
+	);
 	foreach ( $wp_pinch_sites as $wp_pinch_site_id ) {
 		switch_to_blog( $wp_pinch_site_id );
 		wp_pinch_cleanup_site();

@@ -4,6 +4,8 @@
  * @package
  */
 
+/* global sessionStorage, requestAnimationFrame */
+
 import { store, getElement } from '@wordpress/interactivity';
 
 let msgCounter = 0;

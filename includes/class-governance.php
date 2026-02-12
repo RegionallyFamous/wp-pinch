@@ -151,8 +151,9 @@ class Governance {
 				);
 			}
 
+			$stale_count = count( $stale );
 			++$page;
-		} while ( count( $stale ) === 100 && $page <= 10 ); // Cap at 1000 posts max.
+		} while ( 100 === $stale_count && $page <= 10 ); // Cap at 1000 posts max.
 
 		self::deliver_findings(
 			'content_freshness',
@@ -184,52 +185,53 @@ class Governance {
 				)
 			);
 
-		foreach ( $posts as $post ) {
-			$issues = array();
+			foreach ( $posts as $post ) {
+				$issues = array();
 
-			// Short title.
-			if ( mb_strlen( $post->post_title ) < 20 ) {
-				$issues[] = 'Title is shorter than 20 characters.';
-			}
+				// Short title.
+				if ( mb_strlen( $post->post_title ) < 20 ) {
+					$issues[] = 'Title is shorter than 20 characters.';
+				}
 
-			// Very long title.
-			if ( mb_strlen( $post->post_title ) > 60 ) {
-				$issues[] = 'Title exceeds 60 characters (may truncate in SERPs).';
-			}
+				// Very long title.
+				if ( mb_strlen( $post->post_title ) > 60 ) {
+					$issues[] = 'Title exceeds 60 characters (may truncate in SERPs).';
+				}
 
-			// Thin content — uses preg_match for Unicode-aware word counting (CJK-safe).
-			$stripped   = wp_strip_all_tags( $post->post_content );
-			$word_count = preg_match_all( '/[\w\p{L}\p{N}]+/u', $stripped );
-			if ( $word_count < 100 ) {
-				$issues[] = 'Content has fewer than 100 words.';
-			}
+				// Thin content — uses preg_match for Unicode-aware word counting (CJK-safe).
+				$stripped   = wp_strip_all_tags( $post->post_content );
+				$word_count = preg_match_all( '/[\w\p{L}\p{N}]+/u', $stripped );
+				if ( $word_count < 100 ) {
+					$issues[] = 'Content has fewer than 100 words.';
+				}
 
-			// Missing featured image.
-			if ( ! has_post_thumbnail( $post->ID ) ) {
-				$issues[] = 'No featured image set.';
-			}
+				// Missing featured image.
+				if ( ! has_post_thumbnail( $post->ID ) ) {
+					$issues[] = 'No featured image set.';
+				}
 
-			// Images without alt text (alt="" is valid for decorative images).
-			preg_match_all( '/<img[^>]+>/i', $post->post_content, $img_matches );
-			foreach ( $img_matches[0] as $img ) {
-				if ( ! preg_match( '/\balt\s*=\s*["\']/', $img ) ) {
-					$issues[] = 'Image found without alt attribute.';
-					break; // One finding is enough.
+				// Images without alt text (alt="" is valid for decorative images).
+				preg_match_all( '/<img[^>]+>/i', $post->post_content, $img_matches );
+				foreach ( $img_matches[0] as $img ) {
+					if ( ! preg_match( '/\balt\s*=\s*["\']/', $img ) ) {
+						$issues[] = 'Image found without alt attribute.';
+						break; // One finding is enough.
+					}
+				}
+
+				if ( ! empty( $issues ) ) {
+					$findings[] = array(
+						'post_id' => $post->ID,
+						'title'   => $post->post_title,
+						'url'     => get_permalink( $post->ID ),
+						'issues'  => $issues,
+					);
 				}
 			}
 
-			if ( ! empty( $issues ) ) {
-				$findings[] = array(
-					'post_id' => $post->ID,
-					'title'   => $post->post_title,
-					'url'     => get_permalink( $post->ID ),
-					'issues'  => $issues,
-				);
-			}
-		}
-
+			$posts_count = count( $posts );
 			++$page;
-		} while ( count( $posts ) === 100 && $page <= 10 ); // Cap at 1000 posts max.
+		} while ( 100 === $posts_count && $page <= 10 ); // Cap at 1000 posts max.
 
 		if ( empty( $findings ) ) {
 			return;
@@ -337,33 +339,33 @@ class Governance {
 					break;
 				}
 
-			// Skip anchors, mailto, tel, and non-http schemes.
-			if ( preg_match( '/^(#|mailto:|tel:|javascript:|ftp:|data:|gopher:|dict:)/i', $url ) ) {
-				continue;
-			}
-
-			// Make relative URLs absolute.
-			if ( ! preg_match( '/^https?:\/\//', $url ) ) {
-				$url = home_url( $url );
-			}
-
-			// Prevent SSRF: resolve hostname and reject private/reserved IPs.
-			$host = wp_parse_url( $url, PHP_URL_HOST );
-			if ( $host ) {
-				$ip = gethostbyname( $host );
-				if ( $ip !== $host && false === filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) ) {
-					continue; // Skip internal/private/reserved IPs.
+				// Skip anchors, mailto, tel, and non-http schemes.
+				if ( preg_match( '/^(#|mailto:|tel:|javascript:|ftp:|data:|gopher:|dict:)/i', $url ) ) {
+					continue;
 				}
-			}
 
-			$response = wp_remote_head(
-				$url,
-				array(
-					'timeout'     => 5,
-					'redirection' => 3,
-					'sslverify'   => true,
-				)
-			);
+				// Make relative URLs absolute.
+				if ( ! preg_match( '/^https?:\/\//', $url ) ) {
+					$url = home_url( $url );
+				}
+
+				// Prevent SSRF: resolve hostname and reject private/reserved IPs.
+				$host = wp_parse_url( $url, PHP_URL_HOST );
+				if ( $host ) {
+					$ip = gethostbyname( $host );
+					if ( $ip !== $host && false === filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) ) {
+						continue; // Skip internal/private/reserved IPs.
+					}
+				}
+
+				$response = wp_remote_head(
+					$url,
+					array(
+						'timeout'     => 5,
+						'redirection' => 3,
+						'sslverify'   => true,
+					)
+				);
 
 				++$links_checked;
 
@@ -453,7 +455,7 @@ class Governance {
 		}
 
 		$summary_parts = array();
-		if ( isset( $findings['core_update'] ) ) {
+		if ( isset( $findings['core_update_available'] ) ) {
 			$summary_parts[] = 'WordPress core update available';
 		}
 		if ( ! empty( $findings['plugin_updates'] ) ) {

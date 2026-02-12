@@ -305,7 +305,7 @@ class Rest_Controller {
 
 		// Circuit breaker — fail fast if the gateway is known to be down.
 		if ( Feature_Flags::is_enabled( 'circuit_breaker' ) && ! Circuit_Breaker::is_available() ) {
-			$retry = Circuit_Breaker::get_retry_after();
+			$retry    = Circuit_Breaker::get_retry_after();
 			$response = new \WP_REST_Response(
 				array(
 					'code'    => 'gateway_unavailable',
@@ -380,7 +380,7 @@ class Rest_Controller {
 		Circuit_Breaker::record_success();
 
 		// Only return expected string responses; never forward raw gateway body.
-		$reply = $data['response'] ?? $data['message'] ?? null;
+		$reply  = $data['response'] ?? $data['message'] ?? null;
 		$result = array(
 			'reply'       => is_string( $reply ) ? wp_kses_post( $reply ) : __( 'Received an unexpected response from the gateway.', 'wp-pinch' ),
 			'session_key' => $session_key,
@@ -483,14 +483,14 @@ class Rest_Controller {
 		$retry_after   = Circuit_Breaker::get_retry_after();
 
 		$result = array(
-			'status'    => 'ok',
-			'version'   => WP_PINCH_VERSION,
+			'status'     => 'ok',
+			'version'    => WP_PINCH_VERSION,
 			'configured' => $configured,
-			'circuit'   => array(
+			'circuit'    => array(
 				'state'       => $circuit_state,
 				'retry_after' => $retry_after,
 			),
-			'timestamp' => gmdate( 'c' ),
+			'timestamp'  => gmdate( 'c' ),
 		);
 
 		$response = new \WP_REST_Response( $result, 200 );
@@ -526,7 +526,7 @@ class Rest_Controller {
 
 		// Circuit breaker check.
 		if ( Feature_Flags::is_enabled( 'circuit_breaker' ) && ! Circuit_Breaker::is_available() ) {
-			$retry = Circuit_Breaker::get_retry_after();
+			$retry    = Circuit_Breaker::get_retry_after();
 			$response = new \WP_REST_Response(
 				array(
 					'code'    => 'gateway_unavailable',
@@ -584,7 +584,7 @@ class Rest_Controller {
 					'Authorization' => 'Bearer ' . $api_token,
 					'Accept'        => 'text/event-stream',
 				),
-				'body' => wp_json_encode( $payload ),
+				'body'    => wp_json_encode( $payload ),
 			)
 		);
 

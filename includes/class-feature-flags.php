@@ -29,13 +29,13 @@ class Feature_Flags {
 	 * @var array<string, bool>
 	 */
 	const DEFAULTS = array(
-		'streaming_chat'    => false,
+		'streaming_chat'     => false,
 		'webhook_signatures' => true,
-		'circuit_breaker'   => true,
-		'ability_toggle'    => true,
-		'webhook_dashboard' => true,
-		'audit_search'      => true,
-		'health_endpoint'   => true,
+		'circuit_breaker'    => true,
+		'ability_toggle'     => true,
+		'webhook_dashboard'  => true,
+		'audit_search'       => true,
+		'health_endpoint'    => true,
 	);
 
 	/**

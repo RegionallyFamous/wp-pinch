@@ -4,6 +4,8 @@
  * @package
  */
 
+/* global sessionStorage */
+
 describe( 'Pinch Chat store', () => {
 	beforeEach( () => {
 		// Clear sessionStorage between tests.

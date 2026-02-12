@@ -2231,13 +2231,23 @@ class Abilities {
 		);
 
 		// Batch-load author display names to avoid N+1 queries.
-		$author_ids = array_unique( array_map( function ( $p ) {
-			return (int) $p->post_author;
-		}, $recent_posts ) );
+		$author_ids = array_unique(
+			array_map(
+				function ( $p ) {
+					return (int) $p->post_author;
+				},
+				$recent_posts
+			)
+		);
 
 		$author_map = array();
 		if ( ! empty( $author_ids ) ) {
-			$authors = get_users( array( 'include' => $author_ids, 'fields' => array( 'ID', 'display_name' ) ) );
+			$authors = get_users(
+				array(
+					'include' => $author_ids,
+					'fields'  => array( 'ID', 'display_name' ),
+				)
+			);
 			foreach ( $authors as $a ) {
 				$author_map[ (int) $a->ID ] = $a->display_name;
 			}
@@ -2781,17 +2791,27 @@ class Abilities {
 			return array( 'error' => __( 'Revisions are not enabled for this post type.', 'wp-pinch' ) );
 		}
 
-		$revisions    = wp_get_post_revisions( $post_id, array( 'order' => 'DESC' ) );
-		$rev_list     = array_values( $revisions );
+		$revisions = wp_get_post_revisions( $post_id, array( 'order' => 'DESC' ) );
+		$rev_list  = array_values( $revisions );
 
 		// Batch-load revision author names to avoid N+1 queries.
-		$rev_author_ids = array_unique( array_map( function ( $r ) {
-			return (int) $r->post_author;
-		}, $rev_list ) );
+		$rev_author_ids = array_unique(
+			array_map(
+				function ( $r ) {
+					return (int) $r->post_author;
+				},
+				$rev_list
+			)
+		);
 
 		$rev_author_map = array();
 		if ( ! empty( $rev_author_ids ) ) {
-			$rev_authors = get_users( array( 'include' => $rev_author_ids, 'fields' => array( 'ID', 'display_name' ) ) );
+			$rev_authors = get_users(
+				array(
+					'include' => $rev_author_ids,
+					'fields'  => array( 'ID', 'display_name' ),
+				)
+			);
 			foreach ( $rev_authors as $a ) {
 				$rev_author_map[ (int) $a->ID ] = $a->display_name;
 			}

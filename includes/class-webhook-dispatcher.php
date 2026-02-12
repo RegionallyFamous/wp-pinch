@@ -267,8 +267,8 @@ class Webhook_Dispatcher {
 
 		// Append HMAC-SHA256 signature when webhook_signatures feature is enabled.
 		if ( Feature_Flags::is_enabled( 'webhook_signatures' ) ) {
-			$timestamp = time();
-			$signature = self::generate_signature( $body_json, $timestamp, $api_token );
+			$timestamp                       = time();
+			$signature                       = self::generate_signature( $body_json, $timestamp, $api_token );
 			$headers['X-WP-Pinch-Signature'] = $signature;
 			$headers['X-WP-Pinch-Timestamp'] = (string) $timestamp;
 		}

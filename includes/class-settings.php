@@ -557,13 +557,13 @@ class Settings {
 	private static function render_tab_features(): void {
 		$flags  = Feature_Flags::get_all();
 		$labels = array(
-			'streaming_chat'    => __( 'Streaming Chat (SSE)', 'wp-pinch' ),
+			'streaming_chat'     => __( 'Streaming Chat (SSE)', 'wp-pinch' ),
 			'webhook_signatures' => __( 'HMAC-SHA256 Webhook Signatures', 'wp-pinch' ),
-			'circuit_breaker'   => __( 'Circuit Breaker (fail-fast on gateway outage)', 'wp-pinch' ),
-			'ability_toggle'    => __( 'Ability Toggle (disable individual abilities)', 'wp-pinch' ),
-			'webhook_dashboard' => __( 'Webhook Dashboard in Audit Log', 'wp-pinch' ),
-			'audit_search'      => __( 'Audit Log Search & Filters', 'wp-pinch' ),
-			'health_endpoint'   => __( 'Public Health Check Endpoint', 'wp-pinch' ),
+			'circuit_breaker'    => __( 'Circuit Breaker (fail-fast on gateway outage)', 'wp-pinch' ),
+			'ability_toggle'     => __( 'Ability Toggle (disable individual abilities)', 'wp-pinch' ),
+			'webhook_dashboard'  => __( 'Webhook Dashboard in Audit Log', 'wp-pinch' ),
+			'audit_search'       => __( 'Audit Log Search & Filters', 'wp-pinch' ),
+			'health_endpoint'    => __( 'Public Health Check Endpoint', 'wp-pinch' ),
 		);
 		?>
 		<form method="post" action="options.php">
@@ -621,7 +621,7 @@ class Settings {
 					printf(
 						/* translators: %d: seconds until retry */
 						esc_html__( 'Retry in %d seconds.', 'wp-pinch' ),
-						$retry_after
+						absint( $retry_after )
 					);
 					?>
 				</p>
@@ -642,9 +642,9 @@ class Settings {
 		$page      = absint( $_GET['audit_page'] ?? 1 );
 		$filter    = sanitize_key( $_GET['event_type'] ?? '' );
 		$source    = sanitize_key( $_GET['source'] ?? '' );
-		$search    = sanitize_text_field( $_GET['audit_search'] ?? '' );
-		$date_from = sanitize_text_field( $_GET['date_from'] ?? '' );
-		$date_to   = sanitize_text_field( $_GET['date_to'] ?? '' );
+		$search    = sanitize_text_field( wp_unslash( $_GET['audit_search'] ?? '' ) );
+		$date_from = sanitize_text_field( wp_unslash( $_GET['date_from'] ?? '' ) );
+		$date_to   = sanitize_text_field( wp_unslash( $_GET['date_to'] ?? '' ) );
 		// phpcs:enable
 
 		$query_args = array(
@@ -753,8 +753,9 @@ class Settings {
 				<div class="tablenav wp-pinch-audit-nav">
 					<div class="tablenav-pages">
 						<?php
-						$base_url = remove_query_arg( 'audit_page' );
-						for ( $i = 1; $i <= min( $max_pages, 50 ); $i++ ) :
+						$base_url      = remove_query_arg( 'audit_page' );
+						$max_page_link = min( $max_pages, 50 );
+						for ( $i = 1; $i <= $max_page_link; $i++ ) :
 							if ( $i === $page ) :
 								?>
 								<strong><?php echo esc_html( (string) $i ); ?></strong>
@@ -798,9 +799,9 @@ class Settings {
 		$args = array(
 			'event_type' => sanitize_key( $_GET['event_type'] ?? '' ),
 			'source'     => sanitize_key( $_GET['source'] ?? '' ),
-			'search'     => sanitize_text_field( $_GET['audit_search'] ?? '' ),
-			'date_from'  => sanitize_text_field( $_GET['date_from'] ?? '' ),
-			'date_to'    => sanitize_text_field( $_GET['date_to'] ?? '' ),
+			'search'     => sanitize_text_field( wp_unslash( $_GET['audit_search'] ?? '' ) ),
+			'date_from'  => sanitize_text_field( wp_unslash( $_GET['date_from'] ?? '' ) ),
+			'date_to'    => sanitize_text_field( wp_unslash( $_GET['date_to'] ?? '' ) ),
 		);
 		// phpcs:enable
 
