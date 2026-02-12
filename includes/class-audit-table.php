@@ -54,6 +54,7 @@ class Audit_Table {
 			created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY  (id),
 			KEY event_type (event_type),
+			KEY source (source),
 			KEY created_at (created_at)
 		) {$charset};";
 
@@ -176,8 +177,8 @@ class Audit_Table {
 		$per_page = absint( $args['per_page'] );
 		$offset   = ( absint( $args['page'] ) - 1 ) * $per_page;
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$total = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE {$where_sql}" );
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table and $where_sql are built from sanitized values above.
+		$total = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}` WHERE {$where_sql}" );
 
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$items = $wpdb->get_results(

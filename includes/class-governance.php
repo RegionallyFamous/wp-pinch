@@ -122,36 +122,37 @@ class Governance {
 		$threshold_days = apply_filters( 'wp_pinch_freshness_threshold', 180 );
 		$cutoff         = gmdate( 'Y-m-d H:i:s', time() - ( $threshold_days * DAY_IN_SECONDS ) );
 
-		$stale = get_posts(
-			array(
-				'post_type'      => 'post',
-				'post_status'    => 'publish',
-				'posts_per_page' => 100,
-				'date_query'     => array(
-					array(
-						'column' => 'post_modified_gmt',
-						'before' => $cutoff,
+		// Paginate to catch all stale posts, not just the first 100.
+		$page     = 1;
+		$findings = array();
+		do {
+			$stale = get_posts(
+				array(
+					'post_type'      => 'post',
+					'post_status'    => 'publish',
+					'posts_per_page' => 100,
+					'paged'          => $page,
+					'date_query'     => array(
+						array(
+							'column' => 'post_modified_gmt',
+							'before' => $cutoff,
+						),
 					),
-				),
-			)
-		);
+				)
+			);
 
-		if ( empty( $stale ) ) {
-			return;
-		}
-
-		$findings = array_map(
-			function ( $post ) {
-				return array(
+			foreach ( $stale as $post ) {
+				$findings[] = array(
 					'post_id'       => $post->ID,
 					'title'         => $post->post_title,
 					'last_modified' => $post->post_modified,
 					'days_stale'    => floor( ( time() - strtotime( $post->post_modified_gmt ) ) / DAY_IN_SECONDS ),
 					'url'           => get_permalink( $post->ID ),
 				);
-			},
-			$stale
-		);
+			}
+
+			++$page;
+		} while ( count( $stale ) === 100 && $page <= 10 ); // Cap at 1000 posts max.
 
 		self::deliver_findings(
 			'content_freshness',
@@ -170,15 +171,18 @@ class Governance {
 	 * Flags posts missing meta descriptions, short titles, missing alt text on images.
 	 */
 	public static function task_seo_health(): void {
-		$posts = get_posts(
-			array(
-				'post_type'      => array( 'post', 'page' ),
-				'post_status'    => 'publish',
-				'posts_per_page' => 100,
-			)
-		);
-
 		$findings = array();
+		$page     = 1;
+
+		do {
+			$posts = get_posts(
+				array(
+					'post_type'      => array( 'post', 'page' ),
+					'post_status'    => 'publish',
+					'posts_per_page' => 100,
+					'paged'          => $page,
+				)
+			);
 
 		foreach ( $posts as $post ) {
 			$issues = array();
@@ -223,6 +227,9 @@ class Governance {
 				);
 			}
 		}
+
+			++$page;
+		} while ( count( $posts ) === 100 && $page <= 10 ); // Cap at 1000 posts max.
 
 		if ( empty( $findings ) ) {
 			return;

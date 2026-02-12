@@ -283,14 +283,18 @@ class Webhook_Dispatcher {
 				);
 
 				// Schedule a blocking retry so we don't lose the event.
-				if ( function_exists( 'as_schedule_single_action' ) ) {
+				// Check for existing pending retry to avoid duplicates under high concurrency.
+				if ( function_exists( 'as_schedule_single_action' ) && function_exists( 'as_has_scheduled_action' ) ) {
 					try {
-						as_schedule_single_action(
-							time() + self::RETRY_INTERVALS[0],
-							'wp_pinch_retry_webhook',
-							array( $event, $message, $data, 1 ),
-							'wp-pinch'
-						);
+						$retry_args = array( $event, $message, $data, 1 );
+						if ( ! as_has_scheduled_action( 'wp_pinch_retry_webhook', $retry_args, 'wp-pinch' ) ) {
+							as_schedule_single_action(
+								time() + self::RETRY_INTERVALS[0],
+								'wp_pinch_retry_webhook',
+								$retry_args,
+								'wp-pinch'
+							);
+						}
 					} catch ( \Throwable $e ) {
 						Audit_Table::insert(
 							'scheduler_error',
@@ -352,17 +356,21 @@ class Webhook_Dispatcher {
 			)
 		);
 
-		if ( $attempt < self::MAX_RETRIES && function_exists( 'as_schedule_single_action' ) ) {
-			$intervals = self::RETRY_INTERVALS;
-			$delay     = $intervals[ $attempt ] ?? $intervals[ count( $intervals ) - 1 ];
+		if ( $attempt < self::MAX_RETRIES && function_exists( 'as_schedule_single_action' ) && function_exists( 'as_has_scheduled_action' ) ) {
+			$intervals  = self::RETRY_INTERVALS;
+			$delay      = $intervals[ $attempt ] ?? $intervals[ count( $intervals ) - 1 ];
+			$retry_args = array( $event, $message, $data, $attempt + 1 );
 
 			try {
-				as_schedule_single_action(
-					time() + $delay,
-					'wp_pinch_retry_webhook',
-					array( $event, $message, $data, $attempt + 1 ),
-					'wp-pinch'
-				);
+				// Check for existing pending retry to avoid duplicates.
+				if ( ! as_has_scheduled_action( 'wp_pinch_retry_webhook', $retry_args, 'wp-pinch' ) ) {
+					as_schedule_single_action(
+						time() + $delay,
+						'wp_pinch_retry_webhook',
+						$retry_args,
+						'wp-pinch'
+					);
+				}
 			} catch ( \Throwable $e ) {
 				Audit_Table::insert(
 					'scheduler_error',

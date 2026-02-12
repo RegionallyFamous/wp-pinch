@@ -94,6 +94,26 @@ class Abilities {
 	);
 
 	/**
+	 * Flush all read-only ability caches for the current user.
+	 *
+	 * Called after any mutation ability executes so that subsequent
+	 * reads reflect the change immediately.
+	 */
+	private static function flush_user_cache(): void {
+		global $wpdb;
+
+		$prefix = 'wp_pinch_' . md5( get_current_user_id() . ':' );
+
+		$wpdb->query(
+			$wpdb->prepare(
+				"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
+				$wpdb->esc_like( '_transient_' . $prefix ) . '%',
+				$wpdb->esc_like( '_transient_timeout_' . $prefix ) . '%'
+			)
+		);
+	}
+
+	/**
 	 * Wire hooks.
 	 */
 	public static function init(): void {
@@ -1154,6 +1174,10 @@ class Abilities {
 
 					if ( $readonly ) {
 						set_transient( $cache_key, $result, self::CACHE_TTL );
+					} else {
+						// Mutation ability — flush all read-only caches for the current user
+						// so subsequent reads reflect the change immediately.
+						self::flush_user_cache();
 					}
 
 					return $result;
@@ -2154,15 +2178,28 @@ class Abilities {
 			)
 		);
 
+		// Batch-load author display names to avoid N+1 queries.
+		$author_ids = array_unique( array_map( function ( $p ) {
+			return (int) $p->post_author;
+		}, $recent_posts ) );
+
+		$author_map = array();
+		if ( ! empty( $author_ids ) ) {
+			$authors = get_users( array( 'include' => $author_ids, 'fields' => array( 'ID', 'display_name' ) ) );
+			foreach ( $authors as $a ) {
+				$author_map[ (int) $a->ID ] = $a->display_name;
+			}
+		}
+
 		return array(
 			'recent_posts'    => array_map(
-				function ( $p ) {
+				function ( $p ) use ( $author_map ) {
 					return array(
 						'id'       => $p->ID,
 						'title'    => $p->post_title,
 						'status'   => $p->post_status,
 						'modified' => $p->post_modified,
-						'author'   => get_the_author_meta( 'display_name', (int) $p->post_author ),
+						'author'   => $author_map[ (int) $p->post_author ] ?? __( 'Unknown', 'wp-pinch' ),
 					);
 				},
 				$recent_posts
@@ -2692,21 +2729,35 @@ class Abilities {
 			return array( 'error' => __( 'Revisions are not enabled for this post type.', 'wp-pinch' ) );
 		}
 
-		$revisions = wp_get_post_revisions( $post_id, array( 'order' => 'DESC' ) );
+		$revisions    = wp_get_post_revisions( $post_id, array( 'order' => 'DESC' ) );
+		$rev_list     = array_values( $revisions );
+
+		// Batch-load revision author names to avoid N+1 queries.
+		$rev_author_ids = array_unique( array_map( function ( $r ) {
+			return (int) $r->post_author;
+		}, $rev_list ) );
+
+		$rev_author_map = array();
+		if ( ! empty( $rev_author_ids ) ) {
+			$rev_authors = get_users( array( 'include' => $rev_author_ids, 'fields' => array( 'ID', 'display_name' ) ) );
+			foreach ( $rev_authors as $a ) {
+				$rev_author_map[ (int) $a->ID ] = $a->display_name;
+			}
+		}
 
 		return array(
 			'post_id'   => $post_id,
 			'revisions' => array_map(
-				function ( $rev ) {
+				function ( $rev ) use ( $rev_author_map ) {
 					return array(
 						'id'      => $rev->ID,
-						'author'  => get_the_author_meta( 'display_name', (int) $rev->post_author ),
+						'author'  => $rev_author_map[ (int) $rev->post_author ] ?? __( 'Unknown', 'wp-pinch' ),
 						'date'    => $rev->post_date,
 						'title'   => $rev->post_title,
 						'excerpt' => wp_trim_words( $rev->post_content, 30 ),
 					);
 				},
-				array_values( $revisions )
+				$rev_list
 			),
 			'total'     => count( $revisions ),
 		);
@@ -3150,10 +3201,45 @@ class Abilities {
 		$query    = new \WP_Query( $args );
 		$products = array();
 
+		// Collect all product objects and their category IDs.
+		$product_objects = array();
+		$all_cat_ids     = array();
 		foreach ( $query->posts as $post ) {
 			$product = wc_get_product( $post->ID );
 			if ( ! $product ) {
 				continue;
+			}
+			$product_objects[] = $product;
+			$cat_ids           = $product->get_category_ids();
+			if ( ! empty( $cat_ids ) ) {
+				$all_cat_ids = array_merge( $all_cat_ids, $cat_ids );
+			}
+		}
+
+		// Batch-load all category terms in one query to avoid N+1.
+		$cat_name_map = array();
+		$all_cat_ids  = array_unique( array_filter( $all_cat_ids ) );
+		if ( ! empty( $all_cat_ids ) ) {
+			$cat_terms = get_terms(
+				array(
+					'include'    => $all_cat_ids,
+					'taxonomy'   => 'product_cat',
+					'hide_empty' => false,
+				)
+			);
+			if ( ! is_wp_error( $cat_terms ) ) {
+				foreach ( $cat_terms as $term ) {
+					$cat_name_map[ $term->term_id ] = $term->name;
+				}
+			}
+		}
+
+		foreach ( $product_objects as $product ) {
+			$cat_names = array();
+			foreach ( $product->get_category_ids() as $cid ) {
+				if ( isset( $cat_name_map[ $cid ] ) ) {
+					$cat_names[] = $cat_name_map[ $cid ];
+				}
 			}
 
 			$products[] = array(
@@ -3168,15 +3254,7 @@ class Abilities {
 				'sale_price'    => $product->get_sale_price(),
 				'stock_status'  => $product->get_stock_status(),
 				'stock_qty'     => $product->get_stock_quantity(),
-				'categories'    => wp_list_pluck(
-					$product->get_category_ids() ? get_terms(
-						array(
-							'include'  => $product->get_category_ids(),
-							'taxonomy' => 'product_cat',
-						)
-					) : array(),
-					'name'
-				),
+				'categories'    => $cat_names,
 				'url'           => $product->get_permalink(),
 			);
 		}

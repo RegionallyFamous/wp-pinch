@@ -137,8 +137,8 @@ class Site_Health {
 			return __( 'Table does not exist', 'wp-pinch' );
 		}
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$count = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table}" );
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table is from Audit_Table::table_name(), not user input.
+		$count = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}`" );
 
 		return sprintf(
 			/* translators: %d: number of entries */

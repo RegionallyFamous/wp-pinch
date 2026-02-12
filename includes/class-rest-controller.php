@@ -272,7 +272,7 @@ class Rest_Controller {
 		$response = wp_remote_post(
 			trailingslashit( $gateway_url ) . 'hooks/agent',
 			array(
-				'timeout' => 30,
+				'timeout' => 15,
 				'headers' => array(
 					'Content-Type'  => 'application/json',
 					'Authorization' => 'Bearer ' . $api_token,

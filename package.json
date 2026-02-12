@@ -8,6 +8,8 @@
         "start": "wp-scripts start",
         "lint:js": "wp-scripts lint-js",
         "lint:css": "wp-scripts lint-style",
+        "test": "wp-scripts test-unit-js",
+        "test:e2e": "wp-scripts test-playwright",
         "wp-env": "wp-env"
     },
     "devDependencies": {
