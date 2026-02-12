@@ -42,6 +42,19 @@ class CLI {
 	 * ## EXAMPLES
 	 *
 	 *     wp pinch status
+	 *     wp pinch status --format=json
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--format=<format>]
+	 * : Output format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - json
+	 *   - yaml
+	 * ---
 	 *
 	 * @param array $args       Positional arguments.
 	 * @param array $assoc_args Named arguments.
@@ -49,39 +62,67 @@ class CLI {
 	public static function status( array $args, array $assoc_args ): void {
 		$gateway_url = get_option( 'wp_pinch_gateway_url', '' );
 		$api_token   = get_option( 'wp_pinch_api_token', '' );
+		$format      = $assoc_args['format'] ?? 'table';
 
-		if ( empty( $gateway_url ) ) {
-			\WP_CLI::error( 'Gateway URL is not configured. Set it in the WP Pinch settings.' );
+		$connected = false;
+		$http_code = 0;
+		$error_msg = '';
+
+		if ( ! empty( $gateway_url ) && ! empty( $api_token ) ) {
+			$response = wp_remote_get(
+				trailingslashit( $gateway_url ) . 'api/v1/status',
+				array(
+					'timeout' => 10,
+					'headers' => array(
+						'Authorization' => 'Bearer ' . $api_token,
+					),
+				)
+			);
+
+			if ( is_wp_error( $response ) ) {
+				$error_msg = $response->get_error_message();
+			} else {
+				$http_code = wp_remote_retrieve_response_code( $response );
+				$connected = ( $http_code >= 200 && $http_code < 300 );
+			}
 		}
 
-		\WP_CLI::log( 'Plugin version: ' . WP_PINCH_VERSION );
-		\WP_CLI::log( 'Gateway URL:    ' . $gateway_url );
-		\WP_CLI::log( 'API Token:      ' . ( ! empty( $api_token ) ? '***configured***' : 'NOT SET' ) );
-		\WP_CLI::log( 'MCP Endpoint:   ' . rest_url( 'wp-pinch/mcp' ) );
-		\WP_CLI::log( '' );
+		$circuit_state = Circuit_Breaker::get_state();
 
-		\WP_CLI::log( 'Testing connection...' );
-
-		$response = wp_remote_get(
-			trailingslashit( $gateway_url ) . 'api/v1/status',
-			array(
-				'timeout' => 10,
-				'headers' => array(
-					'Authorization' => 'Bearer ' . $api_token,
-				),
-			)
+		$data = array(
+			array( 'Field' => 'Plugin Version', 'Value' => WP_PINCH_VERSION ),
+			array( 'Field' => 'Gateway URL', 'Value' => $gateway_url ?: '(not set)' ),
+			array( 'Field' => 'API Token', 'Value' => ! empty( $api_token ) ? '***configured***' : 'NOT SET' ),
+			array( 'Field' => 'MCP Endpoint', 'Value' => rest_url( 'wp-pinch/mcp' ) ),
+			array( 'Field' => 'Gateway Connected', 'Value' => $connected ? 'Yes' : 'No' ),
+			array( 'Field' => 'Gateway HTTP Code', 'Value' => $http_code ?: '-' ),
+			array( 'Field' => 'Circuit Breaker', 'Value' => $circuit_state ),
 		);
 
-		if ( is_wp_error( $response ) ) {
-			\WP_CLI::error( 'Connection failed: ' . $response->get_error_message() );
+		if ( $error_msg ) {
+			$data[] = array( 'Field' => 'Connection Error', 'Value' => $error_msg );
 		}
 
-		$code = wp_remote_retrieve_response_code( $response );
-
-		if ( $code >= 200 && $code < 300 ) {
-			\WP_CLI::success( "Connected to OpenClaw gateway (HTTP {$code})." );
+		if ( 'json' === $format ) {
+			// For JSON, output as key-value object.
+			$json = array();
+			foreach ( $data as $row ) {
+				$key          = sanitize_title( $row['Field'] );
+				$json[ $key ] = $row['Value'];
+			}
+			\WP_CLI::line( wp_json_encode( $json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ) );
 		} else {
-			\WP_CLI::error( "Connection failed (HTTP {$code})." );
+			\WP_CLI\Utils\format_items( $format, $data, array( 'Field', 'Value' ) );
+		}
+
+		if ( 'table' === $format ) {
+			if ( $connected ) {
+				\WP_CLI::success( "Connected to OpenClaw gateway (HTTP {$http_code})." );
+			} elseif ( empty( $gateway_url ) ) {
+				\WP_CLI::warning( 'Gateway URL is not configured.' );
+			} else {
+				\WP_CLI::warning( 'Connection failed.' );
+			}
 		}
 	}
 
@@ -146,6 +187,17 @@ class CLI {
 	 * [--all]
 	 * : Run all governance tasks.
 	 *
+	 * [--format=<format>]
+	 * : Output format for "list".
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - json
+	 *   - csv
+	 *   - yaml
+	 * ---
+	 *
 	 * @param array $args       Positional arguments.
 	 * @param array $assoc_args Named arguments.
 	 */
@@ -155,6 +207,7 @@ class CLI {
 		if ( 'list' === $subcommand ) {
 			$tasks   = Governance::get_available_tasks();
 			$enabled = Governance::get_enabled_tasks();
+			$format  = $assoc_args['format'] ?? 'table';
 
 			$rows = array();
 			foreach ( $tasks as $key => $label ) {
@@ -165,7 +218,7 @@ class CLI {
 				);
 			}
 
-			\WP_CLI\Utils\format_items( 'table', $rows, array( 'Task', 'Label', 'Enabled' ) );
+			\WP_CLI\Utils\format_items( $format, $rows, array( 'Task', 'Label', 'Enabled' ) );
 			return;
 		}
 
@@ -298,6 +351,24 @@ class CLI {
 	 * ## EXAMPLES
 	 *
 	 *     wp pinch abilities list
+	 *     wp pinch abilities list --format=json
+	 *     wp pinch abilities list --format=csv
+	 *
+	 * ## OPTIONS
+	 *
+	 * <subcommand>
+	 * : "list".
+	 *
+	 * [--format=<format>]
+	 * : Output format.
+	 * ---
+	 * default: table
+	 * options:
+	 *   - table
+	 *   - json
+	 *   - csv
+	 *   - yaml
+	 * ---
 	 *
 	 * @param array $args       Positional arguments.
 	 * @param array $assoc_args Named arguments.
@@ -309,7 +380,13 @@ class CLI {
 			\WP_CLI::error( 'Unknown subcommand. Use "list".' );
 		}
 
-		$names = Abilities::get_ability_names();
+		$format   = $assoc_args['format'] ?? 'table';
+		$names    = Abilities::get_ability_names();
+		$disabled = get_option( 'wp_pinch_disabled_abilities', array() );
+
+		if ( ! is_array( $disabled ) ) {
+			$disabled = array();
+		}
 
 		$rows = array();
 		foreach ( $names as $name ) {
@@ -318,12 +395,17 @@ class CLI {
 				'Name'     => $name,
 				'Category' => $parts[0] ?? '',
 				'Action'   => $parts[1] ?? '',
+				'Status'   => in_array( $name, $disabled, true ) ? 'disabled' : 'enabled',
 			);
 		}
 
-		\WP_CLI\Utils\format_items( 'table', $rows, array( 'Name', 'Category', 'Action' ) );
+		\WP_CLI\Utils\format_items( $format, $rows, array( 'Name', 'Category', 'Action', 'Status' ) );
 
-		\WP_CLI::log( sprintf( '%d abilities registered.', count( $names ) ) );
+		if ( 'table' === $format ) {
+			$enabled_count  = count( array_filter( $rows, function ( $r ) { return 'enabled' === $r['Status']; } ) );
+			$disabled_count = count( $rows ) - $enabled_count;
+			\WP_CLI::log( sprintf( '%d abilities (%d enabled, %d disabled).', count( $rows ), $enabled_count, $disabled_count ) );
+		}
 	}
 }
 

@@ -162,6 +162,9 @@ class Rest_Controller {
 	/**
 	 * Add security headers to WP Pinch REST responses.
 	 *
+	 * Includes standard security headers plus rate-limit information
+	 * so clients can self-throttle before hitting a 429.
+	 *
 	 * @param \WP_REST_Response $response Result to send to the client.
 	 * @param \WP_REST_Server   $server   Server instance.
 	 * @param \WP_REST_Request  $request  Request used to generate the response.
@@ -179,6 +182,31 @@ class Rest_Controller {
 		$response->header( 'X-Frame-Options', 'DENY' );
 		$response->header( 'X-Robots-Tag', 'noindex, nofollow' );
 		$response->header( 'Cache-Control', 'no-store, no-cache, must-revalidate, private' );
+
+		// Rate limit headers — let clients self-throttle.
+		if ( is_user_logged_in() ) {
+			$user_id   = get_current_user_id();
+			$limit     = max( 1, (int) get_option( 'wp_pinch_rate_limit', self::DEFAULT_RATE_LIMIT ) );
+			$key       = 'wp_pinch_rest_rate_' . $user_id;
+			$used      = 0;
+			$reset     = time() + 60; // Default: window resets in 60s.
+
+			if ( wp_using_ext_object_cache() ) {
+				$used = (int) wp_cache_get( $key, 'wp-pinch' );
+			} else {
+				$used = (int) get_transient( $key );
+				// Estimate reset time from transient timeout.
+				$timeout = (int) get_option( '_transient_timeout_' . $key );
+				if ( $timeout > 0 ) {
+					$reset = $timeout;
+				}
+			}
+
+			$remaining = max( 0, $limit - $used );
+			$response->header( 'X-RateLimit-Limit', (string) $limit );
+			$response->header( 'X-RateLimit-Remaining', (string) $remaining );
+			$response->header( 'X-RateLimit-Reset', (string) $reset );
+		}
 
 		return $response;
 	}

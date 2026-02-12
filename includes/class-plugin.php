@@ -132,6 +132,7 @@ final class Plugin {
 		if ( is_admin() ) {
 			Settings::init();
 			add_action( 'admin_notices', array( $this, 'configuration_notices' ) );
+			add_action( 'admin_notices', array( $this, 'circuit_breaker_notice' ) );
 		}
 
 		// Load translations.
@@ -309,5 +310,61 @@ final class Plugin {
 			);
 			echo '</p></div>';
 		}
+	}
+
+	/**
+	 * Show an admin notice when the circuit breaker is open.
+	 *
+	 * Displayed to administrators on all admin pages so they're aware
+	 * that the AI gateway is unreachable and chat is temporarily disabled.
+	 */
+	public function circuit_breaker_notice(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		if ( ! Feature_Flags::is_enabled( 'circuit_breaker' ) ) {
+			return;
+		}
+
+		$state = Circuit_Breaker::get_state();
+
+		if ( Circuit_Breaker::STATE_OPEN !== $state && Circuit_Breaker::STATE_HALF_OPEN !== $state ) {
+			return;
+		}
+
+		$retry_after  = Circuit_Breaker::get_retry_after();
+		$features_url = admin_url( 'admin.php?page=wp-pinch&tab=features' );
+
+		echo '<div class="notice notice-error"><p>';
+		printf(
+			'<strong>%s</strong> ',
+			esc_html__( 'WP Pinch:', 'wp-pinch' )
+		);
+
+		if ( Circuit_Breaker::STATE_OPEN === $state ) {
+			printf(
+				/* translators: 1: seconds until retry, 2: URL to features tab */
+				esc_html__( 'The AI gateway is unreachable. Chat requests are failing fast to protect performance. The circuit will probe again in %1$d seconds. %2$s', 'wp-pinch' ),
+				$retry_after,
+				sprintf(
+					'<a href="%s">%s</a>',
+					esc_url( $features_url ),
+					esc_html__( 'View status &rarr;', 'wp-pinch' )
+				)
+			);
+		} else {
+			printf(
+				/* translators: %s: URL to features tab */
+				esc_html__( 'The AI gateway is being probed after an outage. The next request will determine if the connection has recovered. %s', 'wp-pinch' ),
+				sprintf(
+					'<a href="%s">%s</a>',
+					esc_url( $features_url ),
+					esc_html__( 'View status &rarr;', 'wp-pinch' )
+				)
+			);
+		}
+
+		echo '</p></div>';
 	}
 }

@@ -84,5 +84,41 @@ function wp_pinch_get_ability_names(): array {
 	return WP_Pinch\Abilities::get_ability_names();
 }
 
+/**
+ * Show an in-plugin-list upgrade notice for major versions.
+ *
+ * Fires on the Plugins page between the plugin row and the update row.
+ * Use this to warn about breaking changes before the user updates.
+ *
+ * @param array  $plugin_data Plugin metadata.
+ * @param object $response    Update response object from the API.
+ */
+function wp_pinch_upgrade_notice( $plugin_data, $response ) {
+	if ( ! isset( $response->new_version ) ) {
+		return;
+	}
+
+	$current_major = (int) explode( '.', WP_PINCH_VERSION )[0];
+	$new_major     = (int) explode( '.', $response->new_version )[0];
+
+	// Only show notice for major version bumps.
+	if ( $new_major <= $current_major ) {
+		return;
+	}
+
+	printf(
+		'<div class="update-message notice inline notice-warning notice-alt"><p><strong>%s</strong> %s</p></div>',
+		esc_html__( 'Important:', 'wp-pinch' ),
+		esc_html(
+			sprintf(
+				/* translators: %s: new version number */
+				__( 'WP Pinch %s is a major release with breaking changes. Please review the changelog and back up your site before updating.', 'wp-pinch' ),
+				$response->new_version
+			)
+		)
+	);
+}
+add_action( 'in_plugin_update_message-' . plugin_basename( __FILE__ ), 'wp_pinch_upgrade_notice', 10, 2 );
+
 // Boot the plugin.
 WP_Pinch\Plugin::instance();

@@ -10,6 +10,28 @@ import { store, getElement } from '@wordpress/interactivity';
 
 let msgCounter = 0;
 
+/**
+ * Global error handler — catches unhandled errors in the chat block
+ * and renders a friendly fallback instead of a blank widget.
+ */
+function handleChatError( error, context ) {
+	// eslint-disable-next-line no-console
+	console.error( '[WP Pinch Chat]', context, error );
+
+	// Show a fallback message in all chat containers.
+	const containers = document.querySelectorAll( '.wp-pinch-chat__messages' );
+	containers.forEach( ( container ) => {
+		if ( ! container.querySelector( '.wp-pinch-chat__error-boundary' ) ) {
+			const fallback = document.createElement( 'div' );
+			fallback.className =
+				'wp-pinch-chat__message wp-pinch-chat__message--system wp-pinch-chat__error-boundary';
+			fallback.textContent =
+				'Something went wrong with the chat. Please reload the page to try again.';
+			container.appendChild( fallback );
+		}
+	} );
+}
+
 const { state, actions } = store( 'wp-pinch/chat', {
 	state: {
 		get messageCount() {
@@ -43,84 +65,97 @@ const { state, actions } = store( 'wp-pinch/chat', {
 		 * Send a chat message to the WP Pinch REST API.
 		 */
 		async sendMessage() {
-			const text = state.inputValue.trim();
-			if ( ! text || state.isLoading ) {
-				return;
-			}
-
-			// Add user message.
-			const userMsg = {
-				id: 'msg-' + Date.now() + '-' + ++msgCounter,
-				text,
-				isUser: true,
-				timestamp: new Date().toISOString(),
-			};
-			state.messages = [ ...state.messages, userMsg ];
-			state.inputValue = '';
-			state.isLoading = true;
-
-			// Persist to session storage.
-			actions.saveSession();
-
 			try {
-				const response = await fetch( state.restUrl, {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-						'X-WP-Nonce': state.nonce,
-					},
-					body: JSON.stringify( {
-						message: text,
-						session_key: state.sessionKey,
-					} ),
-				} );
-
-				let data;
-				try {
-					data = await response.json();
-				} catch ( parseErr ) {
-					throw new Error( 'Server returned an invalid response.' );
+				const text = state.inputValue.trim();
+				if ( ! text || state.isLoading ) {
+					return;
 				}
 
-				if ( response.ok ) {
-					const agentMsg = {
-						id: 'msg-' + Date.now() + '-' + ++msgCounter,
-						text:
-							data.reply ||
-							data.message ||
-							'No response received.',
-						isUser: false,
-						timestamp: new Date().toISOString(),
-					};
-					state.messages = [ ...state.messages, agentMsg ];
+				// Add user message.
+				const userMsg = {
+					id: 'msg-' + Date.now() + '-' + ++msgCounter,
+					text,
+					isUser: true,
+					timestamp: new Date().toISOString(),
+				};
+				state.messages = [ ...state.messages, userMsg ];
+				state.inputValue = '';
+				state.isLoading = true;
 
-					// Announce for screen readers.
-					if ( window.wp?.a11y?.speak ) {
-						window.wp.a11y.speak( agentMsg.text, 'polite' );
+				// Persist to session storage.
+				actions.saveSession();
+
+				try {
+					const response = await fetch( state.restUrl, {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+							'X-WP-Nonce': state.nonce,
+						},
+						body: JSON.stringify( {
+							message: text,
+							session_key: state.sessionKey,
+						} ),
+					} );
+
+					// Track rate limit info from response headers.
+					const remaining =
+						response.headers.get( 'X-RateLimit-Remaining' );
+					if ( remaining !== null ) {
+						state.rateLimitRemaining = parseInt( remaining, 10 );
 					}
-				} else {
+
+					let data;
+					try {
+						data = await response.json();
+					} catch ( parseErr ) {
+						throw new Error(
+							'Server returned an invalid response.'
+						);
+					}
+
+					if ( response.ok ) {
+						const agentMsg = {
+							id: 'msg-' + Date.now() + '-' + ++msgCounter,
+							text:
+								data.reply ||
+								data.message ||
+								'No response received.',
+							isUser: false,
+							timestamp: new Date().toISOString(),
+						};
+						state.messages = [ ...state.messages, agentMsg ];
+
+						// Announce for screen readers.
+						if ( window.wp?.a11y?.speak ) {
+							window.wp.a11y.speak( agentMsg.text, 'polite' );
+						}
+					} else {
+						const errorMsg = {
+							id: 'msg-' + Date.now() + '-' + ++msgCounter,
+							text: data.message || 'Something went wrong.',
+							isUser: false,
+							timestamp: new Date().toISOString(),
+						};
+						state.messages = [ ...state.messages, errorMsg ];
+					}
+				} catch ( err ) {
 					const errorMsg = {
 						id: 'msg-' + Date.now() + '-' + ++msgCounter,
-						text: data.message || 'Something went wrong.',
+						text: 'Network error. Please check your connection.',
 						isUser: false,
 						timestamp: new Date().toISOString(),
 					};
 					state.messages = [ ...state.messages, errorMsg ];
+					state.isConnected = false;
+				} finally {
+					state.isLoading = false;
+					actions.saveSession();
+					actions.scrollToBottom();
+					actions.focusInput();
 				}
-			} catch ( err ) {
-				const errorMsg = {
-					id: 'msg-' + Date.now() + '-' + ++msgCounter,
-					text: 'Network error. Please check your connection.',
-					isUser: false,
-					timestamp: new Date().toISOString(),
-				};
-				state.messages = [ ...state.messages, errorMsg ];
-				state.isConnected = false;
-			} finally {
-				state.isLoading = false;
-				actions.saveSession();
-				actions.scrollToBottom();
-				actions.focusInput();
+			} catch ( fatalErr ) {
+				handleChatError( fatalErr, 'sendMessage' );
 			}
 		},
 
@@ -209,7 +244,11 @@ const { state, actions } = store( 'wp-pinch/chat', {
 		 * Initialize — restore session on mount.
 		 */
 		init() {
-			actions.restoreSession();
+			try {
+				actions.restoreSession();
+			} catch ( err ) {
+				handleChatError( err, 'init' );
+			}
 		},
 	},
 } );
