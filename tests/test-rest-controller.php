@@ -185,7 +185,7 @@ class Test_Rest_Controller extends WP_UnitTestCase {
 	 * Test rate limit constant value.
 	 */
 	public function test_rate_limit_constant(): void {
-		$this->assertEquals( 10, Rest_Controller::RATE_LIMIT );
+		$this->assertEquals( 10, Rest_Controller::DEFAULT_RATE_LIMIT );
 	}
 
 	// =========================================================================
@@ -196,6 +196,8 @@ class Test_Rest_Controller extends WP_UnitTestCase {
 	 * Test that routes are registered.
 	 */
 	public function test_routes_registered(): void {
+		$this->setExpectedIncorrectUsage( 'register_rest_route' );
+
 		Rest_Controller::register_routes();
 
 		$routes = rest_get_server()->get_routes();

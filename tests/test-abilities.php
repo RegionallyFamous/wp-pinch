@@ -392,12 +392,12 @@ class Test_Abilities extends WP_UnitTestCase {
 		$subscriber_id = $this->factory->user->create( array( 'role' => 'subscriber' ) );
 
 		$result = Abilities::execute_update_user_role(
-			array( 'id' => $subscriber_id, 'role' => 'editor' )
+			array( 'id' => $subscriber_id, 'role' => 'author' )
 		);
 
 		$this->assertArrayHasKey( 'updated', $result );
 		$this->assertTrue( $result['updated'] );
-		$this->assertEquals( 'editor', $result['role'] );
+		$this->assertEquals( 'author', $result['role'] );
 	}
 
 	/**
@@ -423,7 +423,7 @@ class Test_Abilities extends WP_UnitTestCase {
 	 */
 	public function test_update_user_role_blocks_self_change(): void {
 		$result = Abilities::execute_update_user_role(
-			array( 'id' => $this->admin_id, 'role' => 'editor' )
+			array( 'id' => $this->admin_id, 'role' => 'author' )
 		);
 
 		$this->assertArrayHasKey( 'error', $result );

@@ -103,10 +103,16 @@ class Test_Settings extends WP_UnitTestCase {
 		Settings::register_settings();
 		$registered = get_registered_settings();
 
-		$this->assertEquals(
-			'sanitize_text_field',
-			$registered['wp_pinch_api_token']['sanitize_callback']
-		);
+		$sanitize = $registered['wp_pinch_api_token']['sanitize_callback'];
+		$this->assertIsCallable( $sanitize );
+
+		// Normal token value should be sanitized and returned.
+		$result = call_user_func( $sanitize, 'my-secret-token' );
+		$this->assertEquals( 'my-secret-token', $result );
+
+		// HTML should be stripped.
+		$result = call_user_func( $sanitize, '<script>bad</script>token' );
+		$this->assertStringNotContainsString( '<script>', $result );
 	}
 
 	/**

@@ -131,7 +131,7 @@ class Abilities {
 	 * Wire hooks.
 	 */
 	public static function init(): void {
-		add_action( 'init', array( __CLASS__, 'register_abilities' ), 20 );
+		add_action( 'wp_abilities_api_init', array( __CLASS__, 'register_abilities' ), 20 );
 
 		/**
 		 * Fires when WP Pinch abilities are ready to be extended.
@@ -145,7 +145,7 @@ class Abilities {
 		 * @since 1.0.0
 		 */
 		add_action(
-			'init',
+			'wp_abilities_api_init',
 			function () {
 				do_action( 'wp_pinch_register_abilities' );
 			},
@@ -1795,6 +1795,11 @@ class Abilities {
 			);
 		}
 
+		// Prevent modifying the current user's own role.
+		if ( get_current_user_id() === $user->ID ) {
+			return array( 'error' => __( 'Cannot modify your own role.', 'wp-pinch' ) );
+		}
+
 		// Block roles with dangerous capabilities (e.g. shop_manager with manage_options).
 		$role_obj = get_role( $role );
 		if ( $role_obj ) {
@@ -1809,11 +1814,6 @@ class Abilities {
 					);
 				}
 			}
-		}
-
-		// Prevent modifying the current user's own role.
-		if ( get_current_user_id() === $user->ID ) {
-			return array( 'error' => __( 'Cannot modify your own role.', 'wp-pinch' ) );
 		}
 
 		// Prevent downgrading existing administrators.
