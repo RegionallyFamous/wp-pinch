@@ -2643,6 +2643,11 @@ class Abilities {
 			return array( 'error' => __( 'Post not found.', 'wp-pinch' ) );
 		}
 
+		// Verify the current user can edit this specific post (not just edit_posts in general).
+		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+			return array( 'error' => __( 'You do not have permission to read meta for this post.', 'wp-pinch' ) );
+		}
+
 		$key = sanitize_text_field( $input['key'] ?? '' );
 
 		// Return a specific meta key.
@@ -2701,6 +2706,11 @@ class Abilities {
 
 		if ( ! get_post( $post_id ) ) {
 			return array( 'error' => __( 'Post not found.', 'wp-pinch' ) );
+		}
+
+		// Verify the current user can edit this specific post (not just edit_posts in general).
+		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+			return array( 'error' => __( 'You do not have permission to modify meta for this post.', 'wp-pinch' ) );
 		}
 
 		$key = sanitize_text_field( $input['key'] );

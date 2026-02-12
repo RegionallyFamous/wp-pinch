@@ -146,8 +146,9 @@
 	background: transparent;
 	color: #757575;
 	font-style: italic;
-	font-size: 13px;
+	font-size: 0.85em;
 	text-align: center;
+	opacity: 0.8;
 }
 
 /* Message text — inline markdown rendering */
@@ -416,6 +417,170 @@
 
 	.wp-pinch-chat__login-notice {
 		border-top-color: #333;
+	}
+}
+
+/* =========================================================================
+   Streaming
+   ========================================================================= */
+
+.wp-pinch-chat__message--streaming .wp-pinch-chat__message-text::after {
+	content: "\25AE";
+	animation: wp-pinch-blink 0.8s step-end infinite;
+	margin-left: 2px;
+	opacity: 0.7;
+}
+
+@keyframes wp-pinch-blink {
+
+	50% {
+		opacity: 0;
+	}
+}
+
+/* =========================================================================
+   Token Usage
+   ========================================================================= */
+
+.wp-pinch-chat__token-usage {
+	font-size: 11px;
+	color: #999;
+	margin-left: auto;
+	padding: 0 8px;
+}
+
+/* =========================================================================
+   Feedback Buttons
+   ========================================================================= */
+
+.wp-pinch-chat__feedback {
+	display: flex;
+	gap: 4px;
+	margin-top: 4px;
+	opacity: 0;
+	transition: opacity 0.15s;
+}
+
+.wp-pinch-chat__message:hover .wp-pinch-chat__feedback {
+	opacity: 1;
+}
+
+.wp-pinch-chat__feedback-btn {
+	background: none;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	padding: 2px 6px;
+	font-size: 12px;
+	cursor: pointer;
+	color: #757575;
+	line-height: 1;
+}
+
+.wp-pinch-chat__feedback-btn:hover {
+	background: rgba(0, 0, 0, 0.06);
+}
+
+.wp-pinch-chat__feedback-btn--active {
+	border-color: #2271b1;
+	color: #2271b1;
+}
+
+@media (prefers-color-scheme: dark) {
+
+	.wp-pinch-chat__message--system {
+		opacity: 0.7;
+	}
+
+	.wp-pinch-chat__token-usage {
+		color: #777;
+	}
+
+	.wp-pinch-chat__feedback-btn {
+		border-color: #555;
+		color: #aaa;
+	}
+
+	.wp-pinch-chat__feedback-btn:hover {
+		background: rgba(255, 255, 255, 0.1);
+	}
+
+	.wp-pinch-chat__feedback-btn--active {
+		border-color: #5b9dd9;
+		color: #5b9dd9;
+	}
+}
+
+/* =========================================================================
+   Reduced Motion (WCAG 2.1 AA)
+   ========================================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+	.wp-pinch-chat__status-dot--loading,
+	.wp-pinch-chat__typing-dot,
+	.wp-pinch-chat__message--streaming .wp-pinch-chat__message-text::after {
+		animation: none;
+	}
+
+	.wp-pinch-chat__messages {
+		scroll-behavior: auto;
+	}
+
+	.wp-pinch-chat__copy-btn,
+	.wp-pinch-chat__feedback,
+	.wp-pinch-chat__input,
+	.wp-pinch-chat__send,
+	.wp-pinch-chat__clear-btn,
+	.wp-pinch-chat__char-counter {
+		transition: none;
+	}
+}
+
+/* =========================================================================
+   Windows High Contrast Mode (forced-colors)
+   ========================================================================= */
+
+@media (forced-colors: active) {
+
+	.wp-pinch-chat {
+		border: 1px solid ButtonText;
+	}
+
+	.wp-pinch-chat__header {
+		border-bottom: 1px solid ButtonText;
+	}
+
+	.wp-pinch-chat__input {
+		border: 1px solid ButtonText;
+		background: Canvas;
+		color: CanvasText;
+	}
+
+	.wp-pinch-chat__send {
+		border: 1px solid ButtonText;
+		background: ButtonFace;
+		color: ButtonText;
+	}
+
+	.wp-pinch-chat__message--user {
+		border: 1px solid Highlight;
+	}
+
+	.wp-pinch-chat__message--agent {
+		border: 1px solid ButtonText;
+	}
+
+	.wp-pinch-chat__status-dot {
+		background: ButtonText;
+		forced-color-adjust: none;
+	}
+
+	.wp-pinch-chat__status-dot--connected {
+		background: Highlight;
+	}
+
+	.wp-pinch-chat__input-area {
+		border-top: 1px solid ButtonText;
 	}
 }
 

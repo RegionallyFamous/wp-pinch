@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-02-12
+
+### Added
+- **Public chat mode** — unauthenticated visitors can chat with your AI agent. New `/chat/public` REST endpoint with strict rate limiting, gated behind the `public_chat` feature flag. Because even lobsters believe in open doors (as long as there's a bouncer).
+- **Per-block agent override** — new `agentId` block attribute lets you point individual chat blocks at different OpenClaw agents. One block for sales, one for support, one for existential crustacean philosophy.
+- **Slash commands** — `/new`, `/reset`, `/status`, and `/compact` in the chat input (gated behind `slash_commands` feature flag). For the power users who type faster than a lobster snaps.
+- **Message feedback** — thumbs up/down buttons on assistant messages for collecting response quality signals.
+- **Token usage display** — tracks and displays token consumption from `X-Token-Usage` response headers (gated behind `token_display` feature flag). Know exactly how many tokens your lobster is eating.
+- **Session reset endpoint** (`/session/reset`) — generates a fresh session key for starting new conversations.
+- **Incoming webhook receiver** (`/hook`) — lets OpenClaw push ability execution requests back to WordPress with HMAC-SHA256 verification. The lobster trap now works in both directions.
+- **SSE streaming in chat block** — real-time character-by-character message streaming with animated cursor indicator. Watching AI type is oddly satisfying.
+- **3 new feature flags** — `public_chat`, `slash_commands`, `token_display` join the existing 7 for 10 total toggleable features.
+- **14 new settings** — agent ID, webhook channel/recipient/delivery toggle/model/thinking/timeout, chat model/thinking/timeout, session idle minutes, and more. All with `sanitize_callback` and `show_in_rest => false`.
+- **Model and thinking overrides** — per-request `model` and `thinking` parameters on chat endpoints, plus global defaults in the admin.
+- **Chat: Fetch retry with backoff** — `fetchWithRetry()` wrapper for resilient gateway communication.
+- **Chat: Session persistence** — conversations survive page reloads via sessionStorage keyed by block ID.
+
+### Security
+- **Per-post capability checks on meta operations** — `execute_get_post_meta` and `execute_update_post_meta` now verify `current_user_can( 'edit_post', $post_id )` before reading or writing meta. Previously only checked `edit_posts` globally, which could allow cross-post meta access. (Flagged by `wordpress://security/capabilities` MCP resource.)
+- **Uninstall data cleanup** — added 16 missing options to `uninstall.php` deletion list, ensuring complete data removal on plugin deletion. All 24 registered options are now cleaned up, along with transients, the audit table, user meta, and Action Scheduler jobs. (Flagged by `wordpress://plugins/structure` and `wordpress://tools/plugin-check` MCP resources.)
+- **Public chat endpoint isolation** — separate endpoint with its own rate limiting, session key prefix (`wp-pinch-public-`), and regex validation to prevent session key injection.
+
+### Improved
+- **WCAG 2.1 AA: `prefers-reduced-motion` support** — all animations (pulse, typing bounce, streaming blink) and transitions are disabled when the user prefers reduced motion. Even lobsters respect vestibular preferences.
+- **WCAG 2.1 AA: `forced-colors` (Windows High Contrast Mode)** — proper system color keywords (`ButtonText`, `Canvas`, `CanvasText`, `Highlight`, `ButtonFace`) for full visibility in high contrast mode. The CSS header already claimed this — now it actually delivers.
+- **Dark mode coverage** — streaming cursor, feedback buttons, token usage display, and all new UI elements fully styled for dark mode.
+- **Block editor controls** — new sidebar controls for public mode toggle and agent ID override.
+
+### Fixed
+- Chat block now correctly initializes session keys for both authenticated and public users.
+- Streaming endpoint properly scoped to authenticated users only (not available in public chat mode).
+
 ## [2.1.0] - 2026-02-12
 
 ### Added
@@ -163,7 +195,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Admin settings page with connection testing, webhook configuration, and governance controls.
 - GitHub Actions CI pipeline with PHPUnit, build verification, and plugin check.
 
-[Unreleased]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.1.0...HEAD
+[Unreleased]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.2.0...HEAD
+[2.2.0]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/RegionallyFamous/wp-pinch/compare/v1.0.2...v2.0.0
 [1.0.2]: https://github.com/RegionallyFamous/wp-pinch/compare/v1.0.1...v1.0.2

@@ -4,7 +4,7 @@ Tags: ai, agent, openclaw, mcp, automation
 Requires at least: 6.9
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 2.1.0
+Stable tag: 2.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -58,7 +58,7 @@ Five recurring background tasks via Action Scheduler keep your site healthy with
 
 = Pinch Chat Block =
 
-A Gutenberg block built with the Interactivity API. Drop a reactive, accessible chat interface on any page. Your visitors talk to your AI agent right on your site. Real-time messages, session persistence, screen reader support, dark mode, high-contrast mode accessible. It's like giving your website a little chat window with claws.
+A Gutenberg block built with the Interactivity API. Drop a reactive, accessible chat interface on any page. Your visitors talk to your AI agent right on your site. Real-time SSE streaming, session persistence, slash commands (/new, /reset, /status, /compact), message feedback, token usage tracking, Markdown rendering, screen reader support, dark mode, high-contrast mode, and reduced-motion accessible. Now with public chat mode and per-block agent overrides — every chat block can have its own personality. It's like giving your website a little chat window with claws.
 
 = WP-CLI Commands =
 
@@ -80,7 +80,7 @@ Every ability execution, webhook dispatch, governance finding, and chat message 
 
 = Production-Ready Security =
 
-Capability checks, input sanitization, output escaping, nonce verification, prepared SQL statements, option allowlists, role escalation prevention, self-deactivation guards, CSS injection prevention, fixed-duration rate limiting, and `show_in_rest => false` on all settings. It's as battle-tested as a lobster that survived the tank at Red Lobster.
+Capability checks (including per-post verification on meta operations), input sanitization, output escaping, nonce verification, prepared SQL statements, option allowlists, role escalation prevention, self-deactivation guards, CSS injection prevention, fixed-duration rate limiting, HMAC-SHA256 webhook signatures with replay protection, circuit breaker for gateway failures, and `show_in_rest => false` on all 24 settings. It's as battle-tested as a lobster that survived the tank at Red Lobster.
 
 == Installation ==
 
@@ -154,6 +154,30 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 5. Audit log showing recent ability executions, webhooks, and chat messages.
 
 == Changelog ==
+
+= 2.2.0 =
+* New: Public chat mode — unauthenticated visitors can chat with your AI agent. Separate /chat/public endpoint with strict rate limiting, gated behind the public_chat feature flag. Because even lobsters believe in open doors.
+* New: Per-block agent override — new agentId attribute lets individual chat blocks target different OpenClaw agents.
+* New: Slash commands — /new, /reset, /status, and /compact in the chat input (behind slash_commands feature flag). For power users who type faster than a lobster snaps.
+* New: Message feedback — thumbs up/down buttons on assistant messages.
+* New: Token usage display — tracks and shows token consumption from X-Token-Usage headers (behind token_display feature flag). Know exactly how many tokens your lobster is eating.
+* New: Session reset endpoint (/session/reset) for starting fresh conversations.
+* New: Incoming webhook receiver (/hook) — lets OpenClaw push ability execution requests back to WordPress with HMAC-SHA256 verification. The trap now works both ways.
+* New: SSE streaming in chat block — real-time character-by-character responses with animated cursor indicator.
+* New: 3 new feature flags (public_chat, slash_commands, token_display) for 10 total.
+* New: 14 new admin settings (agent ID, webhook channel/recipient/delivery/model/thinking/timeout, chat model/thinking/timeout, session idle minutes, and more).
+* New: Model and thinking overrides on chat endpoints.
+* New: Fetch retry with exponential backoff in the chat block.
+* New: Session persistence via sessionStorage keyed by block ID.
+* Security: Per-post capability checks on get-post-meta and update-post-meta abilities — now verifies current_user_can( 'edit_post', $post_id ).
+* Security: Uninstall cleanup expanded — all 24 registered options now deleted on uninstall.
+* Security: Public chat endpoint isolation with separate rate limiting and session key validation.
+* Improved: WCAG 2.1 AA prefers-reduced-motion support — disables all animations when requested.
+* Improved: WCAG 2.1 AA forced-colors (Windows High Contrast Mode) support with system color keywords.
+* Improved: Full dark mode coverage for all new UI elements.
+* Improved: Block editor sidebar controls for public mode toggle and agent ID override.
+* Fixed: Chat block session key initialization for authenticated and public users.
+* Fixed: Streaming endpoint properly scoped to authenticated users only.
 
 = 2.1.0 =
 * New: Circuit breaker for gateway calls — fails fast when gateway is down, auto-recovers with half-open probe.
@@ -245,6 +269,9 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 * 12+ developer filters and 6+ action hooks for extensibility.
 
 == Upgrade Notice ==
+
+= 2.2.0 =
+Feature release: Public chat mode, per-block agent override, slash commands, message feedback, token usage display, incoming webhook receiver, SSE streaming, 3 new feature flags, 14 new settings, WCAG 2.1 AA motion & high-contrast support, plus security hardening for post meta abilities and uninstall cleanup. The lobster is now fully ambidextrous. No breaking changes from 2.1.0.
 
 = 2.1.0 =
 Feature release: Circuit breaker, feature flags, webhook signatures, SSE streaming, health endpoint, admin ability toggle, audit log search/export, chat UX overhaul (character counter, clear chat, copy button, Markdown, typing indicator, nonce refresh, keyboard shortcuts), WP-CLI format support, rate limit headers, and much more. No breaking changes from 2.0.0.

@@ -67,7 +67,11 @@ Fires real-time events to OpenClaw the moment things happen on your site:
 - User registration
 - WooCommerce order status changes
 
-Includes **exponential backoff retry** (up to 4 attempts: 5min, 30min, 2hr, 12hr) and built-in **fixed-duration rate limiting** so your site doesn't get overwhelmed. Because even lobsters pace themselves.
+Includes **exponential backoff retry** (up to 4 attempts: 5min, 30min, 2hr, 12hr), built-in **fixed-duration rate limiting**, **HMAC-SHA256 signatures** with replay protection, and a **circuit breaker** that fails fast when the gateway is down. Because even lobsters pace themselves.
+
+### Incoming Webhook Receiver
+
+The new `/hook` endpoint lets OpenClaw push ability execution requests *back* to WordPress. HMAC-SHA256 verified, rate-limited, and fully logged. The lobster trap now works in both directions.
 
 ### Autonomous Governance Engine
 
@@ -87,15 +91,23 @@ Findings are delivered via webhook to OpenClaw or processed server-side with the
 
 A Gutenberg block built with the **Interactivity API** that drops a reactive, accessible chat interface into any page or post. Your visitors can talk to your AI agent right on your site.
 
-- Real-time message streaming
-- Session persistence across page loads
-- Per-block scoped storage (multiple chat blocks on one page? No problem.)
-- Screen reader announcements via `wp.a11y.speak`
-- Dark mode support
-- High-contrast mode accessible
-- Mobile responsive
+- **SSE streaming** -- real-time character-by-character message delivery with animated cursor
+- **Public chat mode** -- let unauthenticated visitors chat (behind `public_chat` feature flag)
+- **Per-block agent override** -- point individual chat blocks at different OpenClaw agents
+- **Slash commands** -- `/new`, `/reset`, `/status`, `/compact` (behind `slash_commands` flag)
+- **Message feedback** -- thumbs up/down on assistant messages
+- **Token usage tracking** -- see how many tokens your lobster is eating (behind `token_display` flag)
+- **Markdown rendering** -- bold, italic, code, links in assistant replies
+- **Session persistence** across page loads via sessionStorage
+- **Per-block scoped storage** (multiple chat blocks on one page? No problem.)
+- **Fetch retry with backoff** -- resilient gateway communication
+- **Screen reader announcements** via `wp.a11y.speak`
+- **`prefers-reduced-motion`** -- all animations disabled when the user prefers
+- **`forced-colors` (Windows High Contrast Mode)** -- proper system color keywords
+- **Dark mode** -- full coverage of every UI element
+- **Mobile responsive**
 
-It's like giving your website a little chat window with claws.
+It's like giving your website a little chat window with claws. Now with more claws.
 
 ### WP-CLI Commands
 
@@ -173,7 +185,7 @@ If you can hook it, you can pinch it.
 
 WP Pinch takes security seriously. More seriously than a lobster takes its territory.
 
-- **Capability checks** on every ability execution
+- **Capability checks** on every ability execution, including **per-post verification** on meta operations
 - **Input sanitization** with `sanitize_text_field()`, `sanitize_key()`, `absint()`, `esc_url_raw()`
 - **Output escaping** with `esc_html()`, `esc_attr()`, `esc_url()`
 - **Nonce verification** on all REST and AJAX endpoints
@@ -185,10 +197,14 @@ WP Pinch takes security seriously. More seriously than a lobster takes its terri
 - **Existence checks** before modifying posts, comments, terms, and media
 - **CSS injection prevention** on block attributes via regex validation
 - **Fixed-duration rate limiting** that doesn't slide (no gaming the window)
+- **HMAC-SHA256 webhook signatures** with timestamp replay protection
+- **Circuit breaker** for gateway failures (auto-recovery with half-open probe)
+- **Public chat endpoint isolation** with separate rate limiting and session key validation
 - **Gateway URL hidden from non-admins** in the status endpoint
 - **Comment author emails stripped** from ability responses
-- **`show_in_rest => false`** on all settings to prevent REST API leakage
+- **`show_in_rest => false`** on all 24 settings to prevent REST API leakage
 - **`Update URI: false`** to prevent third-party update hijacking
+- **Complete uninstall cleanup** -- all options, transients, audit table, user meta, and cron jobs removed
 
 If you find a vulnerability, please report it responsibly. See [SECURITY.md](SECURITY.md) for details.
 

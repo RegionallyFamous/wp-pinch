@@ -29,18 +29,51 @@ if ( ! is_admin() ) {
 
 // Set up Interactivity API initial state.
 // Only expose credentials (nonce, REST URL, session key) to users who can actually use the chat.
-$can_chat = is_user_logged_in() && current_user_can( 'edit_posts' );
+$is_public_mode = ! empty( $attributes['publicMode'] ) && \WP_Pinch\Feature_Flags::is_enabled( 'public_chat' );
+$can_chat       = ( is_user_logged_in() && current_user_can( 'edit_posts' ) ) || $is_public_mode;
+$chat_endpoint  = $is_public_mode && ! is_user_logged_in() ? 'wp-pinch/v1/chat/public' : 'wp-pinch/v1/chat';
+
+$stream_url = '';
+// Streaming requires edit_posts — only available to authenticated users, not public chat.
+if ( class_exists( '\WP_Pinch\Feature_Flags' )
+	&& \WP_Pinch\Feature_Flags::is_enabled( 'streaming_chat' )
+	&& is_user_logged_in()
+	&& current_user_can( 'edit_posts' )
+) {
+	$stream_url = rest_url( 'wp-pinch/v1/chat/stream' );
+}
+
+$block_agent_id    = $attributes['agentId'] ?? '';
+$effective_agent   = '' !== $block_agent_id ? $block_agent_id : get_option( 'wp_pinch_agent_id', '' );
+$chat_model        = get_option( 'wp_pinch_chat_model', '' );
+$chat_thinking     = get_option( 'wp_pinch_chat_thinking', '' );
+$slash_commands_on = \WP_Pinch\Feature_Flags::is_enabled( 'slash_commands' );
+$token_display_on  = \WP_Pinch\Feature_Flags::is_enabled( 'token_display' );
+
 wp_interactivity_state(
 	'wp-pinch/chat',
 	array(
-		'messages'    => array(),
-		'inputValue'  => '',
-		'isLoading'   => false,
-		'isConnected' => $can_chat,
-		'restUrl'     => $can_chat ? rest_url( 'wp-pinch/v1/chat' ) : '',
-		'nonce'       => $can_chat ? wp_create_nonce( 'wp_rest' ) : '',
-		'sessionKey'  => $can_chat ? 'wp-pinch-chat-' . get_current_user_id() : '',
-		'blockId'     => $unique_id,
+		'messages'        => array(),
+		'inputValue'      => '',
+		'isLoading'       => false,
+		'isConnected'     => $can_chat,
+		'restUrl'         => $can_chat ? rest_url( $chat_endpoint ) : '',
+		'nonce'           => ( $can_chat && is_user_logged_in() ) ? wp_create_nonce( 'wp_rest' ) : '',
+		'sessionKey'      => $can_chat
+			? ( is_user_logged_in()
+				? 'wp-pinch-chat-' . get_current_user_id()
+				: '' )
+			: '',
+		'blockId'         => $unique_id,
+		'streamUrl'       => $stream_url,
+		'agentId'         => $effective_agent,
+		'model'           => $chat_model,
+		'thinking'        => $chat_thinking,
+		'canResetSession' => $can_chat,
+		'sessionResetUrl' => $can_chat ? rest_url( 'wp-pinch/v1/session/reset' ) : '',
+		'tokenUsage'      => null,
+		'slashCommandsOn' => $slash_commands_on,
+		'tokenDisplayOn'  => $token_display_on,
 	)
 );
 ?>
@@ -69,6 +102,14 @@ wp_interactivity_state(
 				<?php esc_html_e( 'Thinking...', 'wp-pinch' ); ?>
 			</span>
 		</div>
+		<?php if ( $can_chat ) : ?>
+			<button
+				class="wp-pinch-chat__new-session"
+				data-wp-on--click="actions.newSession"
+				aria-label="<?php esc_attr_e( 'New conversation', 'wp-pinch' ); ?>"
+				title="<?php esc_attr_e( 'Start new conversation', 'wp-pinch' ); ?>"
+			>+</button>
+		<?php endif; ?>
 	<?php endif; ?>
 
 	<div
@@ -112,7 +153,7 @@ wp_interactivity_state(
 		<span class="wp-pinch-chat__typing-dot"></span>
 	</div>
 
-	<?php if ( is_user_logged_in() && current_user_can( 'edit_posts' ) ) : ?>
+	<?php if ( $can_chat ) : ?>
 		<div class="wp-pinch-chat__input-area">
 			<label for="<?php echo esc_attr( $unique_id ); ?>-input" class="screen-reader-text">
 				<?php esc_html_e( 'Type a message', 'wp-pinch' ); ?>
@@ -160,7 +201,13 @@ wp_interactivity_state(
 		</div>
 	<?php else : ?>
 		<div class="wp-pinch-chat__login-notice">
-			<?php esc_html_e( 'Please log in to use the chat.', 'wp-pinch' ); ?>
+			<?php
+			if ( ! empty( $attributes['publicMode'] ) && ! \WP_Pinch\Feature_Flags::is_enabled( 'public_chat' ) ) {
+				esc_html_e( 'Public chat is not enabled. Enable the "public_chat" feature flag in WP Pinch settings.', 'wp-pinch' );
+			} else {
+				esc_html_e( 'Please log in to use the chat.', 'wp-pinch' );
+			}
+			?>
 		</div>
 	<?php endif; ?>
 </div>

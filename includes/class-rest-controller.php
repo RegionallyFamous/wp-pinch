@@ -78,6 +78,16 @@ class Rest_Controller {
 							'default'           => '',
 							'sanitize_callback' => 'sanitize_key',
 						),
+						'model'       => array(
+							'type'              => 'string',
+							'default'           => '',
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+						'agent_id'    => array(
+							'type'              => 'string',
+							'default'           => '',
+							'sanitize_callback' => 'sanitize_text_field',
+						),
 					),
 				),
 				'schema' => array( __CLASS__, 'get_chat_schema' ),
@@ -109,6 +119,76 @@ class Rest_Controller {
 				),
 			)
 		);
+
+		// Session reset — generates a fresh session key for chat.
+		register_rest_route(
+			'wp-pinch/v1',
+			'/session/reset',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( __CLASS__, 'handle_session_reset' ),
+				'permission_callback' => function () {
+					if ( is_user_logged_in() ) {
+						return current_user_can( 'edit_posts' );
+					}
+					return Feature_Flags::is_enabled( 'public_chat' );
+				},
+			)
+		);
+
+		// Public chat endpoint (no auth required, strict rate limiting).
+		if ( Feature_Flags::is_enabled( 'public_chat' ) ) {
+			register_rest_route(
+				'wp-pinch/v1',
+				'/chat/public',
+				array(
+					array(
+						'methods'             => \WP_REST_Server::CREATABLE,
+						'callback'            => array( __CLASS__, 'handle_public_chat' ),
+						'permission_callback' => '__return_true',
+						'args'                => array(
+							'message'     => array(
+								'required'          => true,
+								'type'              => 'string',
+								'sanitize_callback' => 'sanitize_text_field',
+								'validate_callback' => function ( $value ) {
+									if ( ! is_string( $value ) || '' === trim( $value ) ) {
+										return new \WP_Error(
+											'rest_invalid_param',
+											__( 'Message cannot be empty.', 'wp-pinch' ),
+											array( 'status' => 400 )
+										);
+									}
+									if ( mb_strlen( $value ) > self::MAX_MESSAGE_LENGTH ) {
+										return new \WP_Error(
+											'rest_invalid_param',
+											__( 'Message is too long.', 'wp-pinch' ),
+											array( 'status' => 400 )
+										);
+									}
+									return true;
+								},
+							),
+							'session_key' => array(
+								'type'              => 'string',
+								'default'           => '',
+								'sanitize_callback' => 'sanitize_key',
+							),
+							'model'       => array(
+								'type'              => 'string',
+								'default'           => '',
+								'sanitize_callback' => 'sanitize_text_field',
+							),
+							'agent_id'    => array(
+								'type'              => 'string',
+								'default'           => '',
+								'sanitize_callback' => 'sanitize_text_field',
+							),
+						),
+					),
+				)
+			);
+		}
 
 		// SSE streaming chat endpoint.
 		if ( Feature_Flags::is_enabled( 'streaming_chat' ) ) {
@@ -148,11 +228,63 @@ class Rest_Controller {
 								'default'           => '',
 								'sanitize_callback' => 'sanitize_key',
 							),
+							'model'       => array(
+								'type'              => 'string',
+								'default'           => '',
+								'sanitize_callback' => 'sanitize_text_field',
+							),
+							'agent_id'    => array(
+								'type'              => 'string',
+								'default'           => '',
+								'sanitize_callback' => 'sanitize_text_field',
+							),
 						),
 					),
 				)
 			);
 		}
+
+		// Incoming webhook receiver — lets OpenClaw trigger abilities.
+		register_rest_route(
+			'wp-pinch/v1',
+			'/hooks/receive',
+			array(
+				array(
+					'methods'             => \WP_REST_Server::CREATABLE,
+					'callback'            => array( __CLASS__, 'handle_incoming_hook' ),
+					'permission_callback' => array( __CLASS__, 'check_hook_token' ),
+					'args'                => array(
+						'action'  => array(
+							'required'          => true,
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_key',
+							'enum'              => array( 'execute_ability', 'run_governance', 'ping' ),
+						),
+						'ability' => array(
+							'type'              => 'string',
+							'default'           => '',
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+						'params'  => array(
+							'type'              => 'object',
+							'default'           => array(),
+							'sanitize_callback' => function ( $value ) {
+								// Recursively sanitize all string values in the params object.
+								if ( ! is_array( $value ) ) {
+									return array();
+								}
+								return self::sanitize_params_recursive( $value );
+							},
+						),
+						'task'    => array(
+							'type'              => 'string',
+							'default'           => '',
+							'sanitize_callback' => 'sanitize_key',
+						),
+					),
+				),
+			)
+		);
 	}
 
 	// =========================================================================
@@ -181,6 +313,8 @@ class Rest_Controller {
 		$response->header( 'X-Content-Type-Options', 'nosniff' );
 		$response->header( 'X-Frame-Options', 'DENY' );
 		$response->header( 'X-Robots-Tag', 'noindex, nofollow' );
+		$response->header( 'Referrer-Policy', 'strict-origin-when-cross-origin' );
+		$response->header( 'Permissions-Policy', 'camera=(), microphone=(), geolocation=()' );
 		$response->header( 'Cache-Control', 'no-store, no-cache, must-revalidate, private' );
 
 		// Rate limit headers — let clients self-throttle.
@@ -302,6 +436,264 @@ class Rest_Controller {
 	}
 
 	/**
+	 * Permission callback for the incoming webhook endpoint.
+	 *
+	 * Validates the request via Bearer token matching the stored API token,
+	 * or via HMAC-SHA256 signature when webhook signatures are enabled.
+	 *
+	 * @param \WP_REST_Request $request REST request.
+	 * @return true|\WP_Error
+	 */
+	public static function check_hook_token( \WP_REST_Request $request ) {
+		$api_token = get_option( 'wp_pinch_api_token', '' );
+
+		if ( empty( $api_token ) ) {
+			return new \WP_Error(
+				'not_configured',
+				__( 'WP Pinch API token is not configured.', 'wp-pinch' ),
+				array( 'status' => 503 )
+			);
+		}
+
+		// Check Bearer token.
+		$auth_header = $request->get_header( 'authorization' );
+		if ( $auth_header && preg_match( '/^Bearer\s+(.+)$/i', $auth_header, $matches ) ) {
+			if ( hash_equals( $api_token, $matches[1] ) ) {
+				return true;
+			}
+		}
+
+		// Check X-OpenClaw-Token header (alternative).
+		$openclaw_token = $request->get_header( 'x_openclaw_token' );
+		if ( $openclaw_token && hash_equals( $api_token, $openclaw_token ) ) {
+			return true;
+		}
+
+		// Check HMAC-SHA256 signature.
+		if ( Feature_Flags::is_enabled( 'webhook_signatures' ) ) {
+			$signature = $request->get_header( 'x_wp_pinch_signature' );
+			$timestamp = $request->get_header( 'x_wp_pinch_timestamp' );
+			if ( $signature && $timestamp ) {
+				// Reject non-numeric timestamps to prevent type-juggling attacks.
+				if ( ! ctype_digit( $timestamp ) ) {
+					return new \WP_Error(
+						'invalid_timestamp',
+						__( 'Invalid signature timestamp.', 'wp-pinch' ),
+						array( 'status' => 400 )
+					);
+				}
+
+				$body     = $request->get_body();
+				$expected = 'v1=' . hash_hmac( 'sha256', $timestamp . '.' . $body, $api_token );
+				if ( hash_equals( $expected, $signature ) ) {
+					// Reject if timestamp is more than 5 minutes old.
+					if ( abs( time() - (int) $timestamp ) <= 300 ) {
+						return true;
+					}
+				}
+			}
+		}
+
+		return new \WP_Error(
+			'rest_forbidden',
+			__( 'Invalid or missing authentication token.', 'wp-pinch' ),
+			array( 'status' => 401 )
+		);
+	}
+
+	/**
+	 * Handle an incoming webhook from OpenClaw.
+	 *
+	 * Supports three actions:
+	 * - execute_ability: Run a registered WordPress ability.
+	 * - run_governance: Trigger a governance task.
+	 * - ping: Health check.
+	 *
+	 * @param \WP_REST_Request $request REST request.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public static function handle_incoming_hook( \WP_REST_Request $request ) {
+		$action = $request->get_param( 'action' );
+
+		Audit_Table::insert(
+			'incoming_hook',
+			'webhook',
+			sprintf( 'Incoming hook received: %s', $action ),
+			array(
+				'action'  => $action,
+				'ability' => $request->get_param( 'ability' ),
+				'task'    => $request->get_param( 'task' ),
+			)
+		);
+
+		switch ( $action ) {
+			case 'ping':
+				return new \WP_REST_Response(
+					array(
+						'status'  => 'ok',
+						'version' => WP_PINCH_VERSION,
+						'time'    => gmdate( 'c' ),
+					),
+					200
+				);
+
+			case 'execute_ability':
+				$ability_name = $request->get_param( 'ability' );
+				$params       = $request->get_param( 'params' );
+
+				if ( empty( $ability_name ) ) {
+					return new \WP_Error(
+						'missing_ability',
+						__( 'The "ability" parameter is required for execute_ability action.', 'wp-pinch' ),
+						array( 'status' => 400 )
+					);
+				}
+
+				// Check if the ability is registered and not disabled.
+				$ability_names = Abilities::get_ability_names();
+				if ( ! in_array( $ability_name, $ability_names, true ) ) {
+					return new \WP_Error(
+						'unknown_ability',
+						/* translators: %s: ability name */
+						sprintf( __( 'Unknown ability: %s', 'wp-pinch' ), $ability_name ),
+						array( 'status' => 404 )
+					);
+				}
+
+				$disabled = get_option( 'wp_pinch_disabled_abilities', array() );
+				if ( in_array( $ability_name, $disabled, true ) ) {
+					return new \WP_Error(
+						'ability_disabled',
+						/* translators: %s: ability name */
+						sprintf( __( 'Ability "%s" is currently disabled.', 'wp-pinch' ), $ability_name ),
+						array( 'status' => 403 )
+					);
+				}
+
+				// Execute the ability via the WordPress Abilities API.
+				if ( ! function_exists( 'wp_execute_ability' ) ) {
+					return new \WP_Error(
+						'abilities_unavailable',
+						__( 'WordPress Abilities API is not available.', 'wp-pinch' ),
+						array( 'status' => 500 )
+					);
+				}
+
+				// Incoming hooks are authenticated via Bearer token / HMAC,
+				// but wp_execute_ability checks WordPress capabilities which
+				// require a user context. Temporarily elevate to the first admin
+				// so abilities can pass their capability checks.
+				$previous_user = get_current_user_id();
+				$admins        = get_users(
+					array(
+						'role'   => 'administrator',
+						'number' => 1,
+						'fields' => 'ID',
+					)
+				);
+
+				if ( empty( $admins ) ) {
+					return new \WP_Error(
+						'no_admin',
+						__( 'No administrator account found to execute the ability.', 'wp-pinch' ),
+						array( 'status' => 500 )
+					);
+				}
+
+				wp_set_current_user( (int) $admins[0] );
+
+				$result = wp_execute_ability( $ability_name, is_array( $params ) ? $params : array() );
+
+				// Restore previous user context.
+				wp_set_current_user( $previous_user );
+
+				if ( is_wp_error( $result ) ) {
+					return new \WP_Error(
+						'ability_error',
+						$result->get_error_message(),
+						array( 'status' => 422 )
+					);
+				}
+
+				Audit_Table::insert(
+					'ability_executed',
+					'incoming_hook',
+					sprintf( 'Ability "%s" executed via incoming hook.', $ability_name ),
+					array( 'ability' => $ability_name )
+				);
+
+				return new \WP_REST_Response(
+					array(
+						'status' => 'ok',
+						'result' => $result,
+					),
+					200
+				);
+
+			case 'run_governance':
+				$task = $request->get_param( 'task' );
+
+				if ( empty( $task ) ) {
+					return new \WP_Error(
+						'missing_task',
+						__( 'The "task" parameter is required for run_governance action.', 'wp-pinch' ),
+						array( 'status' => 400 )
+					);
+				}
+
+				$available_tasks = Governance::get_available_tasks();
+				if ( ! array_key_exists( $task, $available_tasks ) ) {
+					return new \WP_Error(
+						'unknown_task',
+						/* translators: %s: governance task name */
+						sprintf( __( 'Unknown governance task: %s', 'wp-pinch' ), $task ),
+						array( 'status' => 404 )
+					);
+				}
+
+				$method = 'task_' . $task;
+				if ( ! method_exists( Governance::class, $method ) ) {
+					return new \WP_Error(
+						'task_unavailable',
+						__( 'Governance task method is not available.', 'wp-pinch' ),
+						array( 'status' => 500 )
+					);
+				}
+
+				// Run the governance task synchronously.
+				Governance::$method();
+
+				Audit_Table::insert(
+					'governance_triggered',
+					'incoming_hook',
+					sprintf( 'Governance task "%s" triggered via incoming hook.', $task ),
+					array( 'task' => $task )
+				);
+
+				return new \WP_REST_Response(
+					array(
+						'status'  => 'ok',
+						'task'    => $task,
+						'message' => sprintf(
+							/* translators: %s: governance task name */
+							__( 'Governance task "%s" executed.', 'wp-pinch' ),
+							$task
+						),
+					),
+					200
+				);
+
+			default:
+				return new \WP_Error(
+					'unknown_action',
+					/* translators: %s: action name */
+					sprintf( __( 'Unknown action: %s', 'wp-pinch' ), $action ),
+					array( 'status' => 400 )
+				);
+		}
+	}
+
+	/**
 	 * Handle chat message — forward to OpenClaw.
 	 *
 	 * @param \WP_REST_Request $request Request object.
@@ -348,15 +740,54 @@ class Rest_Controller {
 		$message = $request->get_param( 'message' );
 		$user    = wp_get_current_user();
 
-		// Always derive session key from the authenticated user to prevent cross-user session hijacking.
-		$session_key = 'wp-pinch-chat-' . $user->ID;
+		// Allow user-scoped session keys for multi-session support.
+		// The key must start with the user's prefix to prevent cross-user hijacking.
+		$user_prefix   = 'wp-pinch-chat-' . $user->ID;
+		$requested_key = sanitize_key( $request->get_param( 'session_key' ) );
+		$session_key   = ( '' !== $requested_key && str_starts_with( $requested_key, $user_prefix ) )
+			? $requested_key
+			: $user_prefix;
 
 		$payload = array(
 			'message'    => $message,
+			'name'       => 'WordPress',
 			'sessionKey' => $session_key,
-			'wakeMode'   => 'always',
-			'channel'    => 'wp-pinch',
+			'wakeMode'   => 'now',
 		);
+
+		// Add optional agent routing when configured.
+		$agent_id = get_option( 'wp_pinch_agent_id', '' );
+		if ( '' !== $agent_id ) {
+			$payload['agentId'] = sanitize_text_field( $agent_id );
+		}
+
+		// Chat-specific model config (separate from webhook settings).
+		$chat_model    = get_option( 'wp_pinch_chat_model', '' );
+		$chat_thinking = get_option( 'wp_pinch_chat_thinking', '' );
+		$chat_timeout  = (int) get_option( 'wp_pinch_chat_timeout', 0 );
+
+		// Per-request overrides from the block (admin-configured).
+		$req_model = $request->get_param( 'model' );
+		$req_agent = $request->get_param( 'agent_id' );
+
+		if ( $req_model ) {
+			$payload['model'] = sanitize_text_field( $req_model );
+		} elseif ( '' !== $chat_model ) {
+			$payload['model'] = $chat_model;
+		}
+
+		if ( '' !== $chat_thinking ) {
+			$payload['thinking'] = $chat_thinking;
+		}
+
+		if ( $chat_timeout > 0 ) {
+			$payload['timeoutSeconds'] = $chat_timeout;
+		}
+
+		// Per-block agent ID overrides the global setting.
+		if ( $req_agent ) {
+			$payload['agentId'] = sanitize_text_field( $req_agent );
+		}
 
 		/**
 		 * Filter the chat payload before sending to OpenClaw.
@@ -368,10 +799,10 @@ class Rest_Controller {
 		 */
 		$payload = apply_filters( 'wp_pinch_chat_payload', $payload, $request );
 
-		$response = wp_remote_post(
+		$response = wp_safe_remote_post(
 			trailingslashit( $gateway_url ) . 'hooks/agent',
 			array(
-				'timeout' => 15,
+				'timeout' => max( 15, $chat_timeout ),
 				'headers' => array(
 					'Content-Type'  => 'application/json',
 					'Authorization' => 'Bearer ' . $api_token,
@@ -431,7 +862,266 @@ class Rest_Controller {
 			array( 'user_id' => $user->ID )
 		);
 
-		return new \WP_REST_Response( $result, 200 );
+		$response_obj = new \WP_REST_Response( $result, 200 );
+
+		// Forward token usage from gateway when available.
+		if ( isset( $data['usage'] ) && is_array( $data['usage'] ) ) {
+			$response_obj->header( 'X-Token-Usage', wp_json_encode( $data['usage'] ) );
+		}
+
+		return $response_obj;
+	}
+
+	/**
+	 * Handle a public (unauthenticated) chat message.
+	 *
+	 * Applies stricter rate limiting and uses anonymous session keys.
+	 * The payload includes a publicChat flag so OpenClaw can restrict tool access.
+	 *
+	 * @param \WP_REST_Request $request REST request.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public static function handle_public_chat( \WP_REST_Request $request ) {
+		$gateway_url = get_option( 'wp_pinch_gateway_url', '' );
+		$api_token   = get_option( 'wp_pinch_api_token', '' );
+
+		if ( empty( $gateway_url ) || empty( $api_token ) ) {
+			return new \WP_Error(
+				'not_configured',
+				__( 'Chat is not available at this time.', 'wp-pinch' ),
+				array( 'status' => 503 )
+			);
+		}
+
+		if ( Feature_Flags::is_enabled( 'circuit_breaker' ) && ! Circuit_Breaker::is_available() ) {
+			$retry    = Circuit_Breaker::get_retry_after();
+			$response = new \WP_REST_Response(
+				array(
+					'code'    => 'gateway_unavailable',
+					'message' => __( 'Chat is temporarily unavailable. Please try again shortly.', 'wp-pinch' ),
+				),
+				503
+			);
+			$response->header( 'Retry-After', (string) max( 1, $retry ) );
+			return $response;
+		}
+
+		// Strict rate limiting for public endpoint: 3 requests per minute per IP.
+		// Placed after config/circuit-breaker checks so unavailable states don't consume rate limit.
+		// Uses HMAC-SHA256 with wp_salt() to avoid MD5 weaknesses and prevent key prediction.
+		$ip_hash = 'wp_pinch_pub_rate_' . substr( hash_hmac( 'sha256', self::get_client_ip(), wp_salt() ), 0, 16 );
+		$count   = (int) get_transient( $ip_hash );
+
+		if ( $count >= 3 ) {
+			$response = new \WP_REST_Response(
+				array(
+					'code'    => 'rate_limited',
+					'message' => __( 'Too many requests. Please wait a moment.', 'wp-pinch' ),
+				),
+				429
+			);
+			$response->header( 'Retry-After', '60' );
+			return $response;
+		}
+
+		// Increment the rate counter. Always use set_transient() to remain
+		// compatible with sites using an external object cache (Redis, Memcached).
+		// This resets the 60-second TTL window on each request, which is acceptable
+		// for a low-volume public endpoint.
+		set_transient( $ip_hash, $count + 1, 60 );
+
+		$message     = $request->get_param( 'message' );
+		$session_key = $request->get_param( 'session_key' );
+
+		// Validate session key: must start with public prefix, max 64 chars, alphanumeric + hyphens.
+		if ( ! is_string( $session_key ) || ! preg_match( '/^wp-pinch-public-[a-zA-Z0-9-]{1,48}$/', $session_key ) ) {
+			$session_key = 'wp-pinch-public-' . wp_generate_password( 16, false, false );
+		}
+
+		$payload = array(
+			'message'    => $message,
+			'name'       => 'WordPress',
+			'sessionKey' => $session_key,
+			'wakeMode'   => 'now',
+			'metadata'   => array(
+				'publicChat' => true,
+				'site_url'   => home_url(),
+			),
+		);
+
+		$agent_id = get_option( 'wp_pinch_agent_id', '' );
+		if ( '' !== $agent_id ) {
+			$payload['agentId'] = sanitize_text_field( $agent_id );
+		}
+
+		// Chat-specific model config (separate from webhook settings).
+		$chat_model    = get_option( 'wp_pinch_chat_model', '' );
+		$chat_thinking = get_option( 'wp_pinch_chat_thinking', '' );
+		$chat_timeout  = (int) get_option( 'wp_pinch_chat_timeout', 0 );
+
+		// Per-request overrides from the block (admin-configured).
+		$req_model = $request->get_param( 'model' );
+		$req_agent = $request->get_param( 'agent_id' );
+
+		if ( $req_model ) {
+			$payload['model'] = sanitize_text_field( $req_model );
+		} elseif ( '' !== $chat_model ) {
+			$payload['model'] = $chat_model;
+		}
+
+		if ( '' !== $chat_thinking ) {
+			$payload['thinking'] = $chat_thinking;
+		}
+
+		if ( $chat_timeout > 0 ) {
+			$payload['timeoutSeconds'] = $chat_timeout;
+		}
+
+		// Per-block agent ID overrides the global setting.
+		if ( $req_agent ) {
+			$payload['agentId'] = sanitize_text_field( $req_agent );
+		}
+
+		/** This filter is documented in class-rest-controller.php */
+		$payload = apply_filters( 'wp_pinch_chat_payload', $payload, $request );
+
+		$response = wp_safe_remote_post(
+			trailingslashit( $gateway_url ) . 'hooks/agent',
+			array(
+				'timeout' => max( 15, $chat_timeout ),
+				'headers' => array(
+					'Content-Type'  => 'application/json',
+					'Authorization' => 'Bearer ' . $api_token,
+				),
+				'body'    => wp_json_encode( $payload ),
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			Circuit_Breaker::record_failure();
+			return new \WP_Error(
+				'gateway_error',
+				__( 'Unable to process your request. Please try again later.', 'wp-pinch' ),
+				array( 'status' => 502 )
+			);
+		}
+
+		$status = wp_remote_retrieve_response_code( $response );
+		$body   = wp_remote_retrieve_body( $response );
+		$data   = json_decode( $body, true );
+
+		if ( $status < 200 || $status >= 300 ) {
+			Circuit_Breaker::record_failure();
+			return new \WP_Error(
+				'gateway_error',
+				__( 'Chat is temporarily unavailable.', 'wp-pinch' ),
+				array( 'status' => 502 )
+			);
+		}
+
+		Circuit_Breaker::record_success();
+
+		$reply  = $data['response'] ?? $data['message'] ?? null;
+		$result = array(
+			'reply'       => is_string( $reply ) ? wp_kses_post( $reply ) : __( 'No response received.', 'wp-pinch' ),
+			'session_key' => $session_key,
+		);
+
+		/** This filter is documented in class-rest-controller.php */
+		$result = apply_filters( 'wp_pinch_chat_response', $result, $data );
+
+		Audit_Table::insert(
+			'public_chat_message',
+			'chat',
+			'Public chat message.',
+			array( 'session_prefix' => substr( $session_key, 0, 24 ) )
+		);
+
+		$response_obj = new \WP_REST_Response( $result, 200 );
+
+		// Forward token usage from gateway when available.
+		if ( isset( $data['usage'] ) && is_array( $data['usage'] ) ) {
+			$response_obj->header( 'X-Token-Usage', wp_json_encode( $data['usage'] ) );
+		}
+
+		return $response_obj;
+	}
+
+	/**
+	 * Handle a session reset request.
+	 *
+	 * Generates a fresh session key for the current user or anonymous visitor.
+	 * Logged-in users receive a user-scoped key; anonymous users receive a
+	 * random public session key.
+	 *
+	 * @param \WP_REST_Request $request REST request.
+	 * @return \WP_REST_Response
+	 */
+	public static function handle_session_reset( \WP_REST_Request $request ) {
+		if ( is_user_logged_in() ) {
+			$session_key = 'wp-pinch-chat-' . get_current_user_id() . '-' . time();
+		} else {
+			$session_key = 'wp-pinch-public-' . wp_generate_password( 16, false, false );
+		}
+
+		// Security headers are applied automatically via the rest_post_dispatch filter.
+		return new \WP_REST_Response(
+			array( 'session_key' => $session_key ),
+			200
+		);
+	}
+
+	/**
+	 * Recursively sanitize ability params from incoming hooks.
+	 *
+	 * Strings are sanitized via sanitize_text_field(). Booleans, integers,
+	 * and floats are cast to their native types. Nested arrays are processed
+	 * recursively. Depth is capped to prevent stack overflow on malicious input.
+	 *
+	 * @param array $params Params to sanitize.
+	 * @param int   $depth  Current recursion depth (max 5).
+	 * @return array Sanitized params.
+	 */
+	private static function sanitize_params_recursive( array $params, int $depth = 0 ): array {
+		if ( $depth > 5 ) {
+			return array();
+		}
+
+		$sanitized = array();
+		foreach ( $params as $key => $value ) {
+			$key = sanitize_key( $key );
+			if ( is_string( $value ) ) {
+				$sanitized[ $key ] = sanitize_text_field( $value );
+			} elseif ( is_int( $value ) || is_float( $value ) || is_bool( $value ) ) {
+				$sanitized[ $key ] = $value;
+			} elseif ( is_array( $value ) ) {
+				$sanitized[ $key ] = self::sanitize_params_recursive( $value, $depth + 1 );
+			}
+			// Silently drop objects and other non-scalar types.
+		}
+		return $sanitized;
+	}
+
+	/**
+	 * Get the client IP address, respecting common proxy headers.
+	 *
+	 * @return string Client IP address.
+	 */
+	private static function get_client_ip(): string {
+		$headers = array( 'HTTP_CF_CONNECTING_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_X_REAL_IP', 'REMOTE_ADDR' );
+		foreach ( $headers as $header ) {
+			if ( ! empty( $_SERVER[ $header ] ) ) {
+				$ip = sanitize_text_field( wp_unslash( $_SERVER[ $header ] ) );
+				// X-Forwarded-For may contain multiple IPs — take the first.
+				if ( str_contains( $ip, ',' ) ) {
+					$ip = trim( explode( ',', $ip )[0] );
+				}
+				if ( filter_var( $ip, FILTER_VALIDATE_IP ) ) {
+					return $ip;
+				}
+			}
+		}
+		return '0.0.0.0';
 	}
 
 	/**
@@ -471,7 +1161,7 @@ class Rest_Controller {
 		}
 
 		if ( $result['configured'] ) {
-			$response = wp_remote_get(
+			$response = wp_safe_remote_get(
 				trailingslashit( $gateway_url ) . 'api/v1/status',
 				array(
 					'timeout' => 5,
@@ -577,17 +1267,56 @@ class Rest_Controller {
 			);
 		}
 
-		$message     = $request->get_param( 'message' );
-		$user        = wp_get_current_user();
-		$session_key = 'wp-pinch-chat-' . $user->ID;
+		$message = $request->get_param( 'message' );
+		$user    = wp_get_current_user();
+
+		$user_prefix   = 'wp-pinch-chat-' . $user->ID;
+		$requested_key = sanitize_key( $request->get_param( 'session_key' ) );
+		$session_key   = ( '' !== $requested_key && str_starts_with( $requested_key, $user_prefix ) )
+			? $requested_key
+			: $user_prefix;
 
 		$payload = array(
 			'message'    => $message,
+			'name'       => 'WordPress',
 			'sessionKey' => $session_key,
-			'wakeMode'   => 'always',
-			'channel'    => 'wp-pinch',
+			'wakeMode'   => 'now',
 			'stream'     => true,
 		);
+
+		// Add optional agent routing when configured.
+		$agent_id = get_option( 'wp_pinch_agent_id', '' );
+		if ( '' !== $agent_id ) {
+			$payload['agentId'] = sanitize_text_field( $agent_id );
+		}
+
+		// Chat-specific model config (separate from webhook settings).
+		$chat_model    = get_option( 'wp_pinch_chat_model', '' );
+		$chat_thinking = get_option( 'wp_pinch_chat_thinking', '' );
+		$chat_timeout  = (int) get_option( 'wp_pinch_chat_timeout', 0 );
+
+		// Per-request overrides from the block (admin-configured).
+		$req_model = $request->get_param( 'model' );
+		$req_agent = $request->get_param( 'agent_id' );
+
+		if ( $req_model ) {
+			$payload['model'] = sanitize_text_field( $req_model );
+		} elseif ( '' !== $chat_model ) {
+			$payload['model'] = $chat_model;
+		}
+
+		if ( '' !== $chat_thinking ) {
+			$payload['thinking'] = $chat_thinking;
+		}
+
+		if ( $chat_timeout > 0 ) {
+			$payload['timeoutSeconds'] = $chat_timeout;
+		}
+
+		// Per-block agent ID overrides the global setting.
+		if ( $req_agent ) {
+			$payload['agentId'] = sanitize_text_field( $req_agent );
+		}
 
 		/** This filter is documented in class-rest-controller.php */
 		$payload = apply_filters( 'wp_pinch_chat_payload', $payload, $request );
@@ -602,39 +1331,76 @@ class Rest_Controller {
 			ob_end_flush();
 		}
 
-		// Make a blocking request to the gateway.
-		$response = wp_remote_post(
-			trailingslashit( $gateway_url ) . 'hooks/agent',
+		// Open a streaming connection to the gateway.
+		$request_headers = "Content-Type: application/json\r\n"
+			. "Authorization: Bearer {$api_token}\r\n"
+			. "Accept: text/event-stream\r\n";
+
+		$context = stream_context_create(
 			array(
-				'timeout' => 30,
-				'headers' => array(
-					'Content-Type'  => 'application/json',
-					'Authorization' => 'Bearer ' . $api_token,
-					'Accept'        => 'text/event-stream',
+				'http' => array(
+					'method'  => 'POST',
+					'header'  => $request_headers,
+					'content' => wp_json_encode( $payload ),
+					'timeout' => max( 30, $chat_timeout ),
 				),
-				'body'    => wp_json_encode( $payload ),
+				'ssl'  => array(
+					'verify_peer'      => true,
+					'verify_peer_name' => true,
+				),
 			)
 		);
 
-		if ( is_wp_error( $response ) ) {
-			Circuit_Breaker::record_failure();
+		$stream_url = trailingslashit( $gateway_url ) . 'hooks/agent';
+
+		// Validate the URL before opening the stream to prevent SSRF.
+		// fopen() bypasses wp_safe_remote_* so we must check manually.
+		if ( ! wp_http_validate_url( $stream_url ) ) {
 			echo "event: error\n";
-			echo 'data: ' . wp_json_encode( array( 'message' => __( 'Unable to reach the AI gateway.', 'wp-pinch' ) ) ) . "\n\n";
+			echo 'data: ' . wp_json_encode( array( 'message' => __( 'Gateway URL failed security validation.', 'wp-pinch' ) ) ) . "\n\n";
 			echo "event: done\ndata: {}\n\n";
+			flush();
 			if ( function_exists( 'fastcgi_finish_request' ) ) {
 				fastcgi_finish_request();
 			}
 			exit;
 		}
 
-		$status = wp_remote_retrieve_response_code( $response );
-		$body   = wp_remote_retrieve_body( $response );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen, WordPress.PHP.NoSilencedErrors.Discouraged -- fopen is used for streaming and error is handled below.
+		$stream = @fopen( $stream_url, 'r', false, $context );
 
-		if ( $status < 200 || $status >= 300 ) {
+		if ( ! $stream ) {
 			Circuit_Breaker::record_failure();
 			echo "event: error\n";
-			echo 'data: ' . wp_json_encode( array( 'message' => __( 'Gateway returned an error.', 'wp-pinch' ) ) ) . "\n\n";
+			echo 'data: ' . wp_json_encode( array( 'message' => __( 'Unable to reach the AI gateway.', 'wp-pinch' ) ) ) . "\n\n";
 			echo "event: done\ndata: {}\n\n";
+			flush();
+			if ( function_exists( 'fastcgi_finish_request' ) ) {
+				fastcgi_finish_request();
+			}
+			exit;
+		}
+
+		// Check the HTTP response status from the stream metadata.
+		// fopen() succeeding only means TCP connected — the gateway may still return an error.
+		$meta          = stream_get_meta_data( $stream );
+		$stream_status = 0;
+		if ( ! empty( $meta['wrapper_data'] ) && is_array( $meta['wrapper_data'] ) ) {
+			foreach ( $meta['wrapper_data'] as $header_line ) {
+				if ( preg_match( '/^HTTP\/\S+\s+(\d{3})/', $header_line, $matches ) ) {
+					$stream_status = (int) $matches[1];
+				}
+			}
+		}
+
+		if ( $stream_status >= 400 ) {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+			fclose( $stream );
+			Circuit_Breaker::record_failure();
+			echo "event: error\n";
+			echo 'data: ' . wp_json_encode( array( 'message' => __( 'The AI gateway returned an error.', 'wp-pinch' ) ) ) . "\n\n";
+			echo "event: done\ndata: {}\n\n";
+			flush();
 			if ( function_exists( 'fastcgi_finish_request' ) ) {
 				fastcgi_finish_request();
 			}
@@ -643,21 +1409,56 @@ class Rest_Controller {
 
 		Circuit_Breaker::record_success();
 
-		// Send the response as a single SSE message (gateway may not stream back).
-		$data  = json_decode( $body, true );
-		$reply = $data['response'] ?? $data['message'] ?? '';
-		$reply = is_string( $reply ) ? wp_kses_post( $reply ) : '';
+		// Read the response in chunks and forward to the client.
+		$full_response    = '';
+		$forwarded_events = false;
 
-		echo "event: message\n";
-		echo 'data: ' . wp_json_encode(
-			array(
-				'reply'       => $reply,
-				'session_key' => $session_key,
-			)
-		) . "\n\n";
+		while ( ! feof( $stream ) ) {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fread
+			$chunk = fread( $stream, 4096 );
+			if ( false === $chunk || '' === $chunk ) {
+				break;
+			}
+			$full_response .= $chunk;
+
+			// If the gateway is sending SSE events, forward them after stripping
+			// any characters that could break the SSE framing or inject headers.
+			// SSE protocol data is text-only — strip NUL bytes and limit to valid SSE lines.
+			if ( str_contains( $chunk, 'event:' ) || str_contains( $chunk, 'data:' ) ) {
+				// Remove NUL bytes and non-printable control chars (except \n, \r, \t).
+				$safe_chunk = preg_replace( '/[\x00-\x08\x0B\x0C\x0E-\x1F]/', '', $chunk );
+				echo $safe_chunk; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- SSE text protocol passthrough; control chars stripped above.
+				$forwarded_events = true;
+				if ( ob_get_level() ) {
+					ob_flush();
+				}
+				flush();
+			}
+		}
+
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+		fclose( $stream );
+
+		// If the gateway didn't stream SSE events, wrap the raw response as a single event.
+		if ( ! $forwarded_events ) {
+			$data  = json_decode( $full_response, true );
+			$reply = $data['response'] ?? $data['message'] ?? '';
+			$reply = is_string( $reply ) ? wp_kses_post( $reply ) : '';
+
+			echo "event: message\n";
+			echo 'data: ' . wp_json_encode(
+				array(
+					'reply'       => $reply,
+					'session_key' => $session_key,
+				)
+			) . "\n\n";
+		}
 
 		echo "event: done\ndata: {}\n\n";
 
+		if ( ob_get_level() ) {
+			ob_flush();
+		}
 		flush();
 
 		Audit_Table::insert(

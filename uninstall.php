@@ -20,14 +20,39 @@ function wp_pinch_cleanup_site() {
 
 	// Remove all options.
 	$wp_pinch_options = array(
+		// Core connection.
 		'wp_pinch_gateway_url',
 		'wp_pinch_api_token',
-		'wp_pinch_webhook_events',
-		'wp_pinch_governance_tasks',
-		'wp_pinch_governance_mode',
+		'wp_pinch_agent_id',
 		'wp_pinch_rate_limit',
 		'wp_pinch_version',
+		'wp_pinch_wizard_completed',
+
+		// Webhook settings.
+		'wp_pinch_webhook_events',
+		'wp_pinch_webhook_channel',
+		'wp_pinch_webhook_to',
+		'wp_pinch_webhook_deliver',
+		'wp_pinch_webhook_model',
+		'wp_pinch_webhook_thinking',
+		'wp_pinch_webhook_timeout',
+		'wp_pinch_webhook_wake_modes',
+		'wp_pinch_webhook_endpoint_types',
+
+		// Chat settings.
+		'wp_pinch_chat_model',
+		'wp_pinch_chat_thinking',
+		'wp_pinch_chat_timeout',
+		'wp_pinch_session_idle_minutes',
+
+		// Governance settings.
+		'wp_pinch_governance_tasks',
+		'wp_pinch_governance_mode',
 		'wp_pinch_governance_schedule_hash',
+
+		// Feature flags & abilities.
+		'wp_pinch_feature_flags',
+		'wp_pinch_disabled_abilities',
 	);
 
 	foreach ( $wp_pinch_options as $wp_pinch_option ) {

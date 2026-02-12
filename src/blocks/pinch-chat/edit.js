@@ -23,7 +23,8 @@ import './editor.css';
  * @return {Element} Block editor element.
  */
 export default function Edit( { attributes, setAttributes } ) {
-	const { placeholder, showHeader, maxHeight, blockId } = attributes;
+	const { placeholder, showHeader, maxHeight, blockId, publicMode, agentId } =
+		attributes;
 
 	// Generate a stable unique ID on first insert. This persists in the saved
 	// block markup so sessionStorage keys remain stable across page loads.
@@ -63,6 +64,28 @@ export default function Edit( { attributes, setAttributes } ) {
 						value={ maxHeight }
 						onChange={ ( val ) =>
 							setAttributes( { maxHeight: val } )
+						}
+					/>
+					<ToggleControl
+						label={ __( 'Public mode', 'wp-pinch' ) }
+						help={ __(
+							'Allow visitors who are not logged in to use the chat.',
+							'wp-pinch'
+						) }
+						checked={ publicMode }
+						onChange={ ( val ) =>
+							setAttributes( { publicMode: val } )
+						}
+					/>
+					<TextControl
+						label={ __( 'Agent ID', 'wp-pinch' ) }
+						help={ __(
+							'Override the global agent for this block. Leave empty to use the default.',
+							'wp-pinch'
+						) }
+						value={ agentId }
+						onChange={ ( value ) =>
+							setAttributes( { agentId: value } )
 						}
 					/>
 				</PanelBody>

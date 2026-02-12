@@ -36,6 +36,9 @@ class Feature_Flags {
 		'webhook_dashboard'  => true,
 		'audit_search'       => true,
 		'health_endpoint'    => true,
+		'public_chat'        => false,
+		'slash_commands'     => false,
+		'token_display'      => false,
 	);
 
 	/**
