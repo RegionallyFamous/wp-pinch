@@ -13,6 +13,9 @@ let msgCounter = 0;
 /**
  * Global error handler — catches unhandled errors in the chat block
  * and renders a friendly fallback instead of a blank widget.
+ *
+ * @param {Error}  error   The error that occurred.
+ * @param {string} context A label describing where the error originated.
  */
 function handleChatError( error, context ) {
 	// eslint-disable-next-line no-console
@@ -99,8 +102,9 @@ const { state, actions } = store( 'wp-pinch/chat', {
 					} );
 
 					// Track rate limit info from response headers.
-					const remaining =
-						response.headers.get( 'X-RateLimit-Remaining' );
+					const remaining = response.headers.get(
+						'X-RateLimit-Remaining'
+					);
 					if ( remaining !== null ) {
 						state.rateLimitRemaining = parseInt( remaining, 10 );
 					}
