@@ -96,6 +96,63 @@ class Rest_Controller {
 				'schema' => array( __CLASS__, 'get_status_schema' ),
 			)
 		);
+
+		// Public lightweight health check (no auth required).
+		register_rest_route(
+			'wp-pinch/v1',
+			'/health',
+			array(
+				array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( __CLASS__, 'handle_health' ),
+					'permission_callback' => '__return_true',
+				),
+			)
+		);
+
+		// SSE streaming chat endpoint.
+		if ( Feature_Flags::is_enabled( 'streaming_chat' ) ) {
+			register_rest_route(
+				'wp-pinch/v1',
+				'/chat/stream',
+				array(
+					array(
+						'methods'             => \WP_REST_Server::CREATABLE,
+						'callback'            => array( __CLASS__, 'handle_chat_stream' ),
+						'permission_callback' => array( __CLASS__, 'check_permission' ),
+						'args'                => array(
+							'message'     => array(
+								'required'          => true,
+								'type'              => 'string',
+								'sanitize_callback' => 'sanitize_text_field',
+								'validate_callback' => function ( $value ) {
+									if ( ! is_string( $value ) || '' === trim( $value ) ) {
+										return new \WP_Error(
+											'rest_invalid_param',
+											__( 'Message cannot be empty.', 'wp-pinch' ),
+											array( 'status' => 400 )
+										);
+									}
+									if ( mb_strlen( $value ) > self::MAX_MESSAGE_LENGTH ) {
+										return new \WP_Error(
+											'rest_invalid_param',
+											__( 'Message is too long.', 'wp-pinch' ),
+											array( 'status' => 400 )
+										);
+									}
+									return true;
+								},
+							),
+							'session_key' => array(
+								'type'              => 'string',
+								'default'           => '',
+								'sanitize_callback' => 'sanitize_key',
+							),
+						),
+					),
+				)
+			);
+		}
 	}
 
 	// =========================================================================
@@ -246,6 +303,20 @@ class Rest_Controller {
 			);
 		}
 
+		// Circuit breaker — fail fast if the gateway is known to be down.
+		if ( Feature_Flags::is_enabled( 'circuit_breaker' ) && ! Circuit_Breaker::is_available() ) {
+			$retry = Circuit_Breaker::get_retry_after();
+			$response = new \WP_REST_Response(
+				array(
+					'code'    => 'gateway_unavailable',
+					'message' => __( 'The AI gateway is temporarily unavailable. Please try again shortly.', 'wp-pinch' ),
+				),
+				503
+			);
+			$response->header( 'Retry-After', (string) max( 1, $retry ) );
+			return $response;
+		}
+
 		$message = $request->get_param( 'message' );
 		$user    = wp_get_current_user();
 
@@ -282,6 +353,7 @@ class Rest_Controller {
 		);
 
 		if ( is_wp_error( $response ) ) {
+			Circuit_Breaker::record_failure();
 			// Log the real error server-side; return a generic message to the client.
 			Audit_Table::insert( 'gateway_error', 'chat', $response->get_error_message() );
 			return new \WP_Error(
@@ -296,6 +368,7 @@ class Rest_Controller {
 		$data   = json_decode( $body, true );
 
 		if ( $status < 200 || $status >= 300 ) {
+			Circuit_Breaker::record_failure();
 			return new \WP_Error(
 				'gateway_error',
 				/* translators: %d: HTTP status code returned by the OpenClaw gateway. */
@@ -303,6 +376,8 @@ class Rest_Controller {
 				array( 'status' => 502 )
 			);
 		}
+
+		Circuit_Breaker::record_success();
 
 		// Only return expected string responses; never forward raw gateway body.
 		$reply = $data['response'] ?? $data['message'] ?? null;
@@ -387,6 +462,192 @@ class Rest_Controller {
 
 		return new \WP_REST_Response( $result, 200 );
 	}
+
+	// =========================================================================
+	// Health Endpoint
+	// =========================================================================
+
+	/**
+	 * Lightweight public health check — no authentication required.
+	 *
+	 * Returns plugin status, circuit breaker state, and basic config info.
+	 * Does NOT expose credentials or sensitive data.
+	 *
+	 * @return \WP_REST_Response
+	 */
+	public static function handle_health(): \WP_REST_Response {
+		$configured = ! empty( get_option( 'wp_pinch_gateway_url', '' ) )
+			&& ! empty( get_option( 'wp_pinch_api_token', '' ) );
+
+		$circuit_state = Circuit_Breaker::get_state();
+		$retry_after   = Circuit_Breaker::get_retry_after();
+
+		$result = array(
+			'status'    => 'ok',
+			'version'   => WP_PINCH_VERSION,
+			'configured' => $configured,
+			'circuit'   => array(
+				'state'       => $circuit_state,
+				'retry_after' => $retry_after,
+			),
+			'timestamp' => gmdate( 'c' ),
+		);
+
+		$response = new \WP_REST_Response( $result, 200 );
+		$response->header( 'Cache-Control', 'no-store, no-cache, must-revalidate, private' );
+
+		return $response;
+	}
+
+	// =========================================================================
+	// SSE Streaming
+	// =========================================================================
+
+	/**
+	 * Handle chat message via Server-Sent Events streaming.
+	 *
+	 * Sends a request to the gateway and streams the response back
+	 * to the client as SSE events. Falls back to buffered response
+	 * if the gateway doesn't support streaming.
+	 *
+	 * @param \WP_REST_Request $request Request object.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public static function handle_chat_stream( \WP_REST_Request $request ) {
+		if ( ! self::check_rate_limit() ) {
+			return new \WP_REST_Response(
+				array(
+					'code'    => 'rate_limited',
+					'message' => __( 'Too many requests. Please wait a moment.', 'wp-pinch' ),
+				),
+				429
+			);
+		}
+
+		// Circuit breaker check.
+		if ( Feature_Flags::is_enabled( 'circuit_breaker' ) && ! Circuit_Breaker::is_available() ) {
+			$retry = Circuit_Breaker::get_retry_after();
+			$response = new \WP_REST_Response(
+				array(
+					'code'    => 'gateway_unavailable',
+					'message' => __( 'The AI gateway is temporarily unavailable.', 'wp-pinch' ),
+				),
+				503
+			);
+			$response->header( 'Retry-After', (string) max( 1, $retry ) );
+			return $response;
+		}
+
+		$gateway_url = get_option( 'wp_pinch_gateway_url', '' );
+		$api_token   = get_option( 'wp_pinch_api_token', '' );
+
+		if ( empty( $gateway_url ) || empty( $api_token ) ) {
+			return new \WP_Error(
+				'not_configured',
+				__( 'WP Pinch is not configured.', 'wp-pinch' ),
+				array( 'status' => 503 )
+			);
+		}
+
+		$message     = $request->get_param( 'message' );
+		$user        = wp_get_current_user();
+		$session_key = 'wp-pinch-chat-' . $user->ID;
+
+		$payload = array(
+			'message'    => $message,
+			'sessionKey' => $session_key,
+			'wakeMode'   => 'always',
+			'channel'    => 'wp-pinch',
+			'stream'     => true,
+		);
+
+		/** This filter is documented in class-rest-controller.php */
+		$payload = apply_filters( 'wp_pinch_chat_payload', $payload, $request );
+
+		// Set SSE headers and flush.
+		header( 'Content-Type: text/event-stream' );
+		header( 'Cache-Control: no-cache' );
+		header( 'Connection: keep-alive' );
+		header( 'X-Accel-Buffering: no' ); // Disable nginx buffering.
+
+		if ( ob_get_level() ) {
+			ob_end_flush();
+		}
+
+		// Make a blocking request to the gateway.
+		$response = wp_remote_post(
+			trailingslashit( $gateway_url ) . 'hooks/agent',
+			array(
+				'timeout' => 30,
+				'headers' => array(
+					'Content-Type'  => 'application/json',
+					'Authorization' => 'Bearer ' . $api_token,
+					'Accept'        => 'text/event-stream',
+				),
+				'body' => wp_json_encode( $payload ),
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			Circuit_Breaker::record_failure();
+			echo "event: error\n";
+			echo 'data: ' . wp_json_encode( array( 'message' => __( 'Unable to reach the AI gateway.', 'wp-pinch' ) ) ) . "\n\n";
+			echo "event: done\ndata: {}\n\n";
+			if ( function_exists( 'fastcgi_finish_request' ) ) {
+				fastcgi_finish_request();
+			}
+			exit;
+		}
+
+		$status = wp_remote_retrieve_response_code( $response );
+		$body   = wp_remote_retrieve_body( $response );
+
+		if ( $status < 200 || $status >= 300 ) {
+			Circuit_Breaker::record_failure();
+			echo "event: error\n";
+			echo 'data: ' . wp_json_encode( array( 'message' => __( 'Gateway returned an error.', 'wp-pinch' ) ) ) . "\n\n";
+			echo "event: done\ndata: {}\n\n";
+			if ( function_exists( 'fastcgi_finish_request' ) ) {
+				fastcgi_finish_request();
+			}
+			exit;
+		}
+
+		Circuit_Breaker::record_success();
+
+		// Send the response as a single SSE message (gateway may not stream back).
+		$data  = json_decode( $body, true );
+		$reply = $data['response'] ?? $data['message'] ?? '';
+		$reply = is_string( $reply ) ? wp_kses_post( $reply ) : '';
+
+		echo "event: message\n";
+		echo 'data: ' . wp_json_encode(
+			array(
+				'reply'       => $reply,
+				'session_key' => $session_key,
+			)
+		) . "\n\n";
+
+		echo "event: done\ndata: {}\n\n";
+
+		flush();
+
+		Audit_Table::insert(
+			'chat_message',
+			'chat',
+			sprintf( 'Streamed chat message from user #%d.', $user->ID ),
+			array( 'user_id' => $user->ID )
+		);
+
+		if ( function_exists( 'fastcgi_finish_request' ) ) {
+			fastcgi_finish_request();
+		}
+		exit;
+	}
+
+	// =========================================================================
+	// Rate Limiting
+	// =========================================================================
 
 	/**
 	 * Per-user rate limiting for REST endpoints.

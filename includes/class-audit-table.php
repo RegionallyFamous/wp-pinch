@@ -137,6 +137,9 @@ class Audit_Table {
 	 * @param array $args {
 	 *     @type string $event_type Filter by event type.
 	 *     @type string $source     Filter by source.
+	 *     @type string $search     Full-text search in message column.
+	 *     @type string $date_from  Filter entries from this date (Y-m-d).
+	 *     @type string $date_to    Filter entries up to this date (Y-m-d).
 	 *     @type int    $per_page   Results per page. Default 50.
 	 *     @type int    $page       Page number. Default 1.
 	 *     @type string $orderby    Column to sort by. Default 'created_at'.
@@ -150,6 +153,9 @@ class Audit_Table {
 		$defaults = array(
 			'event_type' => '',
 			'source'     => '',
+			'search'     => '',
+			'date_from'  => '',
+			'date_to'    => '',
 			'per_page'   => 50,
 			'page'       => 1,
 			'orderby'    => 'created_at',
@@ -166,6 +172,18 @@ class Audit_Table {
 
 		if ( ! empty( $args['source'] ) ) {
 			$where[] = $wpdb->prepare( 'source = %s', $args['source'] );
+		}
+
+		if ( ! empty( $args['search'] ) ) {
+			$where[] = $wpdb->prepare( 'message LIKE %s', '%' . $wpdb->esc_like( $args['search'] ) . '%' );
+		}
+
+		if ( ! empty( $args['date_from'] ) ) {
+			$where[] = $wpdb->prepare( 'created_at >= %s', $args['date_from'] . ' 00:00:00' );
+		}
+
+		if ( ! empty( $args['date_to'] ) ) {
+			$where[] = $wpdb->prepare( 'created_at <= %s', $args['date_to'] . ' 23:59:59' );
 		}
 
 		$where_sql = implode( ' AND ', $where );
@@ -199,6 +217,46 @@ class Audit_Table {
 			'items' => ! empty( $items ) ? $items : array(),
 			'total' => $total,
 		);
+	}
+
+	/**
+	 * Export audit log entries as CSV.
+	 *
+	 * @param array $args Same arguments as query().
+	 * @return string CSV content.
+	 */
+	public static function export_csv( array $args = array() ): string {
+		// Override per_page to get all matching entries (capped at 10,000).
+		$args['per_page'] = 10000;
+		$args['page']     = 1;
+
+		$result = self::query( $args );
+		$items  = $result['items'];
+
+		$output = fopen( 'php://temp', 'r+' );
+
+		// CSV header.
+		fputcsv( $output, array( 'ID', 'Date', 'Event Type', 'Source', 'Message', 'Context' ) );
+
+		foreach ( $items as $item ) {
+			fputcsv(
+				$output,
+				array(
+					$item['id'],
+					$item['created_at'],
+					$item['event_type'],
+					$item['source'],
+					$item['message'],
+					wp_json_encode( $item['context'] ),
+				)
+			);
+		}
+
+		rewind( $output );
+		$csv = stream_get_contents( $output );
+		fclose( $output );
+
+		return $csv;
 	}
 
 	/**

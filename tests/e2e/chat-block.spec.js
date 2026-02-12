@@ -3,36 +3,26 @@
  *
  * Requires wp-env to be running.
  *
- * @package WP_Pinch
+ * @package
  */
 
 const { test, expect } = require( '@wordpress/e2e-test-utils-playwright' );
 
 test.describe( 'Pinch Chat Block', () => {
-	test( 'should be insertable in the editor', async ( {
-		admin,
-		editor,
-	} ) => {
+	test( 'should be insertable in the editor', async ( { admin, editor } ) => {
 		await admin.createNewPost();
 		await editor.insertBlock( { name: 'wp-pinch/chat' } );
 
 		// Verify the block was inserted.
-		const block = editor.canvas.locator(
-			'[data-type="wp-pinch/chat"]'
-		);
+		const block = editor.canvas.locator( '[data-type="wp-pinch/chat"]' );
 		await expect( block ).toBeVisible();
 	} );
 
-	test( 'should show chat preview in editor', async ( {
-		admin,
-		editor,
-	} ) => {
+	test( 'should show chat preview in editor', async ( { admin, editor } ) => {
 		await admin.createNewPost();
 		await editor.insertBlock( { name: 'wp-pinch/chat' } );
 
-		const block = editor.canvas.locator(
-			'[data-type="wp-pinch/chat"]'
-		);
+		const block = editor.canvas.locator( '[data-type="wp-pinch/chat"]' );
 
 		// Check for header.
 		await expect(
@@ -40,14 +30,10 @@ test.describe( 'Pinch Chat Block', () => {
 		).toContainText( 'Pinch Chat' );
 
 		// Check for input area (disabled in editor).
-		await expect(
-			block.locator( '.wp-pinch-chat__input' )
-		).toBeDisabled();
+		await expect( block.locator( '.wp-pinch-chat__input' ) ).toBeDisabled();
 
 		// Check for send button (disabled in editor).
-		await expect(
-			block.locator( '.wp-pinch-chat__send' )
-		).toBeDisabled();
+		await expect( block.locator( '.wp-pinch-chat__send' ) ).toBeDisabled();
 	} );
 
 	test( 'should have block settings in sidebar', async ( {
@@ -62,9 +48,7 @@ test.describe( 'Pinch Chat Block', () => {
 		await editor.openDocumentSettingsSidebar();
 
 		// Check for Chat Settings panel.
-		await expect(
-			page.locator( 'text=Chat Settings' )
-		).toBeVisible();
+		await expect( page.locator( 'text=Chat Settings' ) ).toBeVisible();
 	} );
 
 	test( 'should save and render on frontend', async ( {

@@ -1,7 +1,7 @@
 /**
  * Tests for the Pinch Chat view.js store.
  *
- * @package WP_Pinch
+ * @package
  */
 
 describe( 'Pinch Chat store', () => {
@@ -76,7 +76,10 @@ describe( 'Pinch Chat store', () => {
 
 		it( 'should reject non-array parsed data', () => {
 			const key = 'wp-pinch-chat-object';
-			sessionStorage.setItem( key, JSON.stringify( { not: 'an array' } ) );
+			sessionStorage.setItem(
+				key,
+				JSON.stringify( { not: 'an array' } )
+			);
 
 			let restored = [];
 			try {

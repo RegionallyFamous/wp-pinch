@@ -13,6 +13,7 @@
         "wp-env": "wp-env"
     },
     "devDependencies": {
+        "@playwright/test": "^1.58.2",
         "@wordpress/env": "^10.37.0",
         "@wordpress/scripts": "^31.3.0"
     },

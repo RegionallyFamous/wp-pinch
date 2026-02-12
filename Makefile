@@ -76,6 +76,24 @@ check: lint phpstan ## Run ALL checks (lint + static analysis). Same as CI.
 	@echo ""
 	@echo "✓ All checks passed. Safe to commit."
 
+# ---------------------------------------------------------------------------
+# i18n — POT file generation
+# ---------------------------------------------------------------------------
+
+.PHONY: i18n
+i18n: ## Generate POT file for translations
+	@mkdir -p languages
+	@if command -v wp >/dev/null 2>&1; then \
+		wp i18n make-pot . languages/wp-pinch.pot \
+			--slug=wp-pinch \
+			--domain=wp-pinch \
+			--exclude=node_modules,vendor,tests,dist,.git,.github; \
+		echo "Generated languages/wp-pinch.pot"; \
+	else \
+		echo "WP-CLI not found. Install it: https://wp-cli.org/#installing"; \
+		exit 1; \
+	fi
+
 .PHONY: setup-hooks
 setup-hooks: ## Install git pre-commit hook
 	@cp bin/pre-commit .git/hooks/pre-commit
@@ -87,7 +105,7 @@ setup-hooks: ## Install git pre-commit hook
 # ---------------------------------------------------------------------------
 
 .PHONY: zip
-zip: build vendor ## Create distributable plugin ZIP
+zip: build vendor i18n ## Create distributable plugin ZIP
 	@echo "Packaging $(ZIP_NAME)..."
 	@rm -rf $(DIST_DIR)
 	@mkdir -p $(DIST_DIR)/$(PLUGIN_SLUG)

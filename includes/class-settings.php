@@ -25,6 +25,7 @@ class Settings {
 		add_action( 'admin_init', array( __CLASS__, 'register_settings' ) );
 		add_action( 'wp_ajax_wp_pinch_test_connection', array( __CLASS__, 'ajax_test_connection' ) );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_assets' ) );
+		add_action( 'admin_init', array( __CLASS__, 'handle_audit_export' ) );
 
 		add_filter(
 			'plugin_action_links_' . plugin_basename( WP_PINCH_FILE ),
@@ -150,6 +151,41 @@ class Settings {
 				'show_in_rest'      => false,
 			)
 		);
+
+		// Abilities tab settings.
+		register_setting(
+			'wp_pinch_abilities',
+			'wp_pinch_disabled_abilities',
+			array(
+				'type'              => 'array',
+				'sanitize_callback' => function ( $value ) {
+					return is_array( $value ) ? array_map( 'sanitize_text_field', $value ) : array();
+				},
+				'default'           => array(),
+				'show_in_rest'      => false,
+			)
+		);
+
+		// Feature flags settings.
+		register_setting(
+			'wp_pinch_features',
+			'wp_pinch_feature_flags',
+			array(
+				'type'              => 'object',
+				'sanitize_callback' => function ( $value ) {
+					if ( ! is_array( $value ) ) {
+						return array();
+					}
+					$sanitized = array();
+					foreach ( Feature_Flags::DEFAULTS as $flag => $default ) {
+						$sanitized[ $flag ] = isset( $value[ $flag ] ) && '1' === $value[ $flag ];
+					}
+					return $sanitized;
+				},
+				'default'           => Feature_Flags::DEFAULTS,
+				'show_in_rest'      => false,
+			)
+		);
 	}
 
 	/**
@@ -264,6 +300,8 @@ class Settings {
 			'connection' => __( 'Connection', 'wp-pinch' ),
 			'webhooks'   => __( 'Webhooks', 'wp-pinch' ),
 			'governance' => __( 'Governance', 'wp-pinch' ),
+			'abilities'  => __( 'Abilities', 'wp-pinch' ),
+			'features'   => __( 'Features', 'wp-pinch' ),
 			'audit'      => __( 'Audit Log', 'wp-pinch' ),
 		);
 		?>
@@ -289,6 +327,12 @@ class Settings {
 						break;
 					case 'governance':
 						self::render_tab_governance();
+						break;
+					case 'abilities':
+						self::render_tab_abilities();
+						break;
+					case 'features':
+						self::render_tab_features();
 						break;
 					case 'audit':
 						self::render_tab_audit();
@@ -455,33 +499,232 @@ class Settings {
 		<?php
 	}
 
+	// =========================================================================
+	// Abilities Tab
+	// =========================================================================
+
 	/**
-	 * Audit log tab.
+	 * Abilities toggle tab — lets admins disable individual abilities.
+	 */
+	private static function render_tab_abilities(): void {
+		$all_abilities = Abilities::get_ability_names();
+		$disabled      = get_option( 'wp_pinch_disabled_abilities', array() );
+
+		if ( ! is_array( $disabled ) ) {
+			$disabled = array();
+		}
+		?>
+		<form method="post" action="options.php">
+			<?php settings_fields( 'wp_pinch_abilities' ); ?>
+
+			<p><?php esc_html_e( 'Uncheck abilities you want to disable. Disabled abilities will not be registered or available via MCP.', 'wp-pinch' ); ?></p>
+
+			<table class="form-table wp-pinch-abilities-table">
+				<thead>
+					<tr>
+						<th style="width: 40px;"><?php esc_html_e( 'On', 'wp-pinch' ); ?></th>
+						<th><?php esc_html_e( 'Ability', 'wp-pinch' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php foreach ( $all_abilities as $name ) : ?>
+						<tr>
+							<td>
+								<input type="checkbox" name="wp_pinch_disabled_abilities[]"
+									value="<?php echo esc_attr( $name ); ?>"
+									<?php checked( in_array( $name, $disabled, true ) ); ?> />
+							</td>
+							<td><code><?php echo esc_html( $name ); ?></code></td>
+						</tr>
+					<?php endforeach; ?>
+				</tbody>
+			</table>
+
+			<p class="description"><?php esc_html_e( 'Check the box to DISABLE the ability. Leave unchecked to keep it enabled.', 'wp-pinch' ); ?></p>
+
+			<?php submit_button(); ?>
+		</form>
+		<?php
+	}
+
+	// =========================================================================
+	// Features Tab
+	// =========================================================================
+
+	/**
+	 * Feature flags tab.
+	 */
+	private static function render_tab_features(): void {
+		$flags  = Feature_Flags::get_all();
+		$labels = array(
+			'streaming_chat'    => __( 'Streaming Chat (SSE)', 'wp-pinch' ),
+			'webhook_signatures' => __( 'HMAC-SHA256 Webhook Signatures', 'wp-pinch' ),
+			'circuit_breaker'   => __( 'Circuit Breaker (fail-fast on gateway outage)', 'wp-pinch' ),
+			'ability_toggle'    => __( 'Ability Toggle (disable individual abilities)', 'wp-pinch' ),
+			'webhook_dashboard' => __( 'Webhook Dashboard in Audit Log', 'wp-pinch' ),
+			'audit_search'      => __( 'Audit Log Search & Filters', 'wp-pinch' ),
+			'health_endpoint'   => __( 'Public Health Check Endpoint', 'wp-pinch' ),
+		);
+		?>
+		<form method="post" action="options.php">
+			<?php settings_fields( 'wp_pinch_features' ); ?>
+
+			<h3><?php esc_html_e( 'Feature Flags', 'wp-pinch' ); ?></h3>
+			<p><?php esc_html_e( 'Enable or disable features. Changes take effect immediately.', 'wp-pinch' ); ?></p>
+
+			<table class="form-table">
+				<?php foreach ( $labels as $flag => $label ) : ?>
+					<tr>
+						<th scope="row"><?php echo esc_html( $label ); ?></th>
+						<td>
+							<label>
+								<input type="checkbox" name="wp_pinch_feature_flags[<?php echo esc_attr( $flag ); ?>]"
+									value="1"
+									<?php checked( $flags[ $flag ] ?? false ); ?> />
+								<?php esc_html_e( 'Enabled', 'wp-pinch' ); ?>
+							</label>
+						</td>
+					</tr>
+				<?php endforeach; ?>
+			</table>
+
+			<p class="description">
+				<?php esc_html_e( 'Feature flags can also be overridden via the wp_pinch_feature_flag filter in code.', 'wp-pinch' ); ?>
+			</p>
+
+			<?php submit_button(); ?>
+		</form>
+
+		<div class="wp-pinch-circuit-status" style="margin-top: 2em;">
+			<h3><?php esc_html_e( 'Circuit Breaker Status', 'wp-pinch' ); ?></h3>
+			<?php
+			$state       = Circuit_Breaker::get_state();
+			$retry_after = Circuit_Breaker::get_retry_after();
+			$state_label = array(
+				'closed'    => __( 'Closed (normal)', 'wp-pinch' ),
+				'open'      => __( 'Open (failing fast)', 'wp-pinch' ),
+				'half_open' => __( 'Half-Open (probing)', 'wp-pinch' ),
+			);
+			?>
+			<p>
+				<?php
+				printf(
+					/* translators: %s: circuit state label */
+					esc_html__( 'State: %s', 'wp-pinch' ),
+					'<strong>' . esc_html( $state_label[ $state ] ?? $state ) . '</strong>'
+				);
+				?>
+			</p>
+			<?php if ( $retry_after > 0 ) : ?>
+				<p>
+					<?php
+					printf(
+						/* translators: %d: seconds until retry */
+						esc_html__( 'Retry in %d seconds.', 'wp-pinch' ),
+						$retry_after
+					);
+					?>
+				</p>
+			<?php endif; ?>
+		</div>
+		<?php
+	}
+
+	// =========================================================================
+	// Audit Log Tab (Enhanced)
+	// =========================================================================
+
+	/**
+	 * Audit log tab with search, date filters, and CSV export.
 	 */
 	private static function render_tab_audit(): void {
-		$page      = absint( $_GET['audit_page'] ?? 1 ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$filter    = sanitize_key( $_GET['event_type'] ?? '' ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$result    = Audit_Table::query(
-			array(
-				'event_type' => $filter,
-				'per_page'   => 30,
-				'page'       => $page,
-			)
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		$page      = absint( $_GET['audit_page'] ?? 1 );
+		$filter    = sanitize_key( $_GET['event_type'] ?? '' );
+		$source    = sanitize_key( $_GET['source'] ?? '' );
+		$search    = sanitize_text_field( $_GET['audit_search'] ?? '' );
+		$date_from = sanitize_text_field( $_GET['date_from'] ?? '' );
+		$date_to   = sanitize_text_field( $_GET['date_to'] ?? '' );
+		// phpcs:enable
+
+		$query_args = array(
+			'event_type' => $filter,
+			'source'     => $source,
+			'search'     => $search,
+			'date_from'  => $date_from,
+			'date_to'    => $date_to,
+			'per_page'   => 30,
+			'page'       => $page,
 		);
+
+		$result    = Audit_Table::query( $query_args );
 		$items     = $result['items'];
 		$total     = $result['total'];
-		$max_pages = ceil( $total / 30 );
+		$max_pages = (int) ceil( $total / 30 );
 		?>
 		<h3><?php esc_html_e( 'Audit Log', 'wp-pinch' ); ?></h3>
+
+		<!-- Search & Filter Bar -->
+		<div class="wp-pinch-audit-filters" style="background: #f9f9f9; padding: 12px; margin-bottom: 16px; border: 1px solid #ddd; border-radius: 4px;">
+			<form method="get" action="">
+				<input type="hidden" name="page" value="wp-pinch" />
+				<input type="hidden" name="tab" value="audit" />
+
+				<label for="audit_search"><?php esc_html_e( 'Search:', 'wp-pinch' ); ?></label>
+				<input type="text" id="audit_search" name="audit_search"
+					value="<?php echo esc_attr( $search ); ?>"
+					placeholder="<?php esc_attr_e( 'Search messages...', 'wp-pinch' ); ?>"
+					class="regular-text" style="vertical-align: middle;" />
+
+				<label for="event_type"><?php esc_html_e( 'Event:', 'wp-pinch' ); ?></label>
+				<input type="text" id="event_type" name="event_type"
+					value="<?php echo esc_attr( $filter ); ?>"
+					placeholder="<?php esc_attr_e( 'e.g. webhook_sent', 'wp-pinch' ); ?>"
+					class="regular-text" style="width: 150px; vertical-align: middle;" />
+
+				<label for="source"><?php esc_html_e( 'Source:', 'wp-pinch' ); ?></label>
+				<input type="text" id="source" name="source"
+					value="<?php echo esc_attr( $source ); ?>"
+					placeholder="<?php esc_attr_e( 'e.g. webhook', 'wp-pinch' ); ?>"
+					class="regular-text" style="width: 120px; vertical-align: middle;" />
+
+				<br style="margin-bottom: 8px;" />
+
+				<label for="date_from"><?php esc_html_e( 'From:', 'wp-pinch' ); ?></label>
+				<input type="date" id="date_from" name="date_from"
+					value="<?php echo esc_attr( $date_from ); ?>"
+					style="vertical-align: middle;" />
+
+				<label for="date_to"><?php esc_html_e( 'To:', 'wp-pinch' ); ?></label>
+				<input type="date" id="date_to" name="date_to"
+					value="<?php echo esc_attr( $date_to ); ?>"
+					style="vertical-align: middle;" />
+
+				<button type="submit" class="button"><?php esc_html_e( 'Filter', 'wp-pinch' ); ?></button>
+
+				<?php if ( $search || $filter || $source || $date_from || $date_to ) : ?>
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=wp-pinch&tab=audit' ) ); ?>" class="button">
+						<?php esc_html_e( 'Reset', 'wp-pinch' ); ?>
+					</a>
+				<?php endif; ?>
+			</form>
+		</div>
 
 		<p>
 			<?php
 			printf(
 				/* translators: %d: total number of log entries */
-				esc_html__( 'Showing %d total entries. Entries older than 90 days are automatically removed.', 'wp-pinch' ),
+				esc_html__( '%d entries found. Entries older than 90 days are automatically removed.', 'wp-pinch' ),
 				(int) $total
 			);
 			?>
+
+			<?php if ( $total > 0 ) : ?>
+				&mdash;
+				<a href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'wp_pinch_export_audit', '1' ), 'wp_pinch_export_audit' ) ); ?>">
+					<?php esc_html_e( 'Export CSV', 'wp-pinch' ); ?>
+				</a>
+			<?php endif; ?>
 		</p>
 
 		<?php if ( ! empty( $items ) ) : ?>
@@ -497,7 +740,7 @@ class Settings {
 				<tbody>
 					<?php foreach ( $items as $item ) : ?>
 						<tr>
-							<td><?php echo esc_html( $item['created_at'] ); ?></td>
+							<td style="white-space: nowrap;"><?php echo esc_html( $item['created_at'] ); ?></td>
 							<td><code><?php echo esc_html( $item['event_type'] ); ?></code></td>
 							<td><?php echo esc_html( $item['source'] ); ?></td>
 							<td><?php echo esc_html( $item['message'] ); ?></td>
@@ -509,19 +752,67 @@ class Settings {
 			<?php if ( $max_pages > 1 ) : ?>
 				<div class="tablenav wp-pinch-audit-nav">
 					<div class="tablenav-pages">
-						<?php for ( $i = 1; $i <= $max_pages; $i++ ) : ?>
-							<?php if ( $i === $page ) : ?>
-							<strong><?php echo esc_html( (string) $i ); ?></strong>
-						<?php else : ?>
-							<a href="<?php echo esc_url( add_query_arg( 'audit_page', $i ) ); ?>"><?php echo esc_html( (string) $i ); ?></a>
+						<?php
+						$base_url = remove_query_arg( 'audit_page' );
+						for ( $i = 1; $i <= min( $max_pages, 50 ); $i++ ) :
+							if ( $i === $page ) :
+								?>
+								<strong><?php echo esc_html( (string) $i ); ?></strong>
+							<?php else : ?>
+								<a href="<?php echo esc_url( add_query_arg( 'audit_page', $i, $base_url ) ); ?>"><?php echo esc_html( (string) $i ); ?></a>
 							<?php endif; ?>
 						<?php endfor; ?>
+						<?php if ( $max_pages > 50 ) : ?>
+							<span>&hellip; (<?php echo esc_html( (string) $max_pages ); ?> pages)</span>
+						<?php endif; ?>
 					</div>
 				</div>
 			<?php endif; ?>
 		<?php else : ?>
-			<p><?php esc_html_e( 'No audit log entries yet.', 'wp-pinch' ); ?></p>
+			<p><?php esc_html_e( 'No audit log entries match your filters.', 'wp-pinch' ); ?></p>
 		<?php endif; ?>
 		<?php
+	}
+
+	// =========================================================================
+	// CSV Export
+	// =========================================================================
+
+	/**
+	 * Handle audit log CSV export.
+	 */
+	public static function handle_audit_export(): void {
+		if ( ! isset( $_GET['wp_pinch_export_audit'] ) || '1' !== $_GET['wp_pinch_export_audit'] ) {
+			return;
+		}
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		if ( ! wp_verify_nonce( sanitize_key( $_GET['_wpnonce'] ?? '' ), 'wp_pinch_export_audit' ) ) {
+			wp_die( esc_html__( 'Nonce verification failed.', 'wp-pinch' ) );
+		}
+
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		$args = array(
+			'event_type' => sanitize_key( $_GET['event_type'] ?? '' ),
+			'source'     => sanitize_key( $_GET['source'] ?? '' ),
+			'search'     => sanitize_text_field( $_GET['audit_search'] ?? '' ),
+			'date_from'  => sanitize_text_field( $_GET['date_from'] ?? '' ),
+			'date_to'    => sanitize_text_field( $_GET['date_to'] ?? '' ),
+		);
+		// phpcs:enable
+
+		$csv      = Audit_Table::export_csv( $args );
+		$filename = 'wp-pinch-audit-' . gmdate( 'Y-m-d' ) . '.csv';
+
+		header( 'Content-Type: text/csv; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename=' . $filename );
+		header( 'Pragma: no-cache' );
+		header( 'Expires: 0' );
+
+		echo $csv; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSV export to file download.
+		exit;
 	}
 }

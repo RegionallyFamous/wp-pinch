@@ -20,6 +20,7 @@
         "automattic/jetpack-autoloader": "^5.0"
     },
     "require-dev": {
+        "phpunit/phpunit": "^9.6",
         "yoast/phpunit-polyfills": "^4.0",
         "wp-coding-standards/wpcs": "^3.0",
         "dealerdirect/phpcodesniffer-composer-installer": "^1.0",

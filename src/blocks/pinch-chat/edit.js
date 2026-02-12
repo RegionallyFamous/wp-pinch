@@ -1,12 +1,15 @@
 /**
  * Pinch Chat — Editor component.
- *
- * @package WP_Pinch
  */
 
 import { __ } from '@wordpress/i18n';
 import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
-import { PanelBody, TextControl, ToggleControl, UnitControl } from '@wordpress/components';
+import {
+	PanelBody,
+	TextControl,
+	ToggleControl,
+	UnitControl,
+} from '@wordpress/components';
 import { useEffect } from '@wordpress/element';
 
 import './editor.css';
@@ -26,7 +29,11 @@ export default function Edit( { attributes, setAttributes } ) {
 	// block markup so sessionStorage keys remain stable across page loads.
 	useEffect( () => {
 		if ( ! blockId ) {
-			setAttributes( { blockId: 'wp-pinch-chat-' + Math.random().toString( 36 ).slice( 2, 10 ) } );
+			setAttributes( {
+				blockId:
+					'wp-pinch-chat-' +
+					Math.random().toString( 36 ).slice( 2, 10 ),
+			} );
 		}
 	}, [ blockId, setAttributes ] );
 	const blockProps = useBlockProps( {
@@ -40,17 +47,23 @@ export default function Edit( { attributes, setAttributes } ) {
 					<TextControl
 						label={ __( 'Placeholder text', 'wp-pinch' ) }
 						value={ placeholder }
-						onChange={ ( val ) => setAttributes( { placeholder: val } ) }
+						onChange={ ( val ) =>
+							setAttributes( { placeholder: val } )
+						}
 					/>
 					<ToggleControl
 						label={ __( 'Show header', 'wp-pinch' ) }
 						checked={ showHeader }
-						onChange={ ( val ) => setAttributes( { showHeader: val } ) }
+						onChange={ ( val ) =>
+							setAttributes( { showHeader: val } )
+						}
 					/>
 					<UnitControl
 						label={ __( 'Max height', 'wp-pinch' ) }
 						value={ maxHeight }
-						onChange={ ( val ) => setAttributes( { maxHeight: val } ) }
+						onChange={ ( val ) =>
+							setAttributes( { maxHeight: val } )
+						}
 					/>
 				</PanelBody>
 			</InspectorControls>
@@ -70,7 +83,10 @@ export default function Edit( { attributes, setAttributes } ) {
 					style={ { maxHeight } }
 				>
 					<div className="wp-pinch-chat__message wp-pinch-chat__message--system">
-						{ __( 'Chat preview — messages will appear here on the frontend.', 'wp-pinch' ) }
+						{ __(
+							'Chat preview — messages will appear here on the frontend.',
+							'wp-pinch'
+						) }
 					</div>
 				</div>
 

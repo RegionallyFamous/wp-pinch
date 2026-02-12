@@ -1,7 +1,7 @@
 /**
  * Pinch Chat — Frontend Interactivity API store.
  *
- * @package WP_Pinch
+ * @package
  */
 
 import { store, getElement } from '@wordpress/interactivity';
@@ -83,7 +83,10 @@ const { state, actions } = store( 'wp-pinch/chat', {
 				if ( response.ok ) {
 					const agentMsg = {
 						id: 'msg-' + Date.now() + '-' + ++msgCounter,
-						text: data.reply || data.message || 'No response received.',
+						text:
+							data.reply ||
+							data.message ||
+							'No response received.',
 						isUser: false,
 						timestamp: new Date().toISOString(),
 					};
@@ -157,13 +160,17 @@ const { state, actions } = store( 'wp-pinch/chat', {
 				const el = getElement();
 				const root = el?.ref?.closest( '.wp-pinch-chat' );
 				if ( root ) {
-					const container = root.querySelector( '.wp-pinch-chat__messages' );
+					const container = root.querySelector(
+						'.wp-pinch-chat__messages'
+					);
 					if ( container ) {
 						container.scrollTop = container.scrollHeight;
 					}
 				} else {
 					// Fallback: scroll all containers (e.g. called outside directive context).
-					const containers = document.querySelectorAll( '.wp-pinch-chat__messages' );
+					const containers = document.querySelectorAll(
+						'.wp-pinch-chat__messages'
+					);
 					containers.forEach( ( c ) => {
 						c.scrollTop = c.scrollHeight;
 					} );
@@ -184,7 +191,9 @@ const { state, actions } = store( 'wp-pinch/chat', {
 						input.focus();
 					}
 				} else {
-					const input = document.querySelector( '.wp-pinch-chat__input' );
+					const input = document.querySelector(
+						'.wp-pinch-chat__input'
+					);
 					if ( input && ! input.disabled ) {
 						input.focus();
 					}

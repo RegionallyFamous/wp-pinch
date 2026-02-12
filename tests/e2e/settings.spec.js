@@ -3,7 +3,7 @@
  *
  * Requires wp-env to be running.
  *
- * @package WP_Pinch
+ * @package
  */
 
 const { test, expect } = require( '@wordpress/e2e-test-utils-playwright' );
@@ -22,7 +22,9 @@ test.describe( 'WP Pinch Settings Page', () => {
 		await expect( input ).toBeVisible();
 	} );
 
-	test( 'should have API token input of type password', async ( { page } ) => {
+	test( 'should have API token input of type password', async ( {
+		page,
+	} ) => {
 		const input = page.locator( '#wp_pinch_api_token' );
 		await expect( input ).toBeVisible();
 		await expect( input ).toHaveAttribute( 'type', 'password' );

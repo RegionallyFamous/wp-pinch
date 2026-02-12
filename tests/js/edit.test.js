@@ -1,7 +1,7 @@
 /**
  * Tests for the Pinch Chat edit.js block editor component.
  *
- * @package WP_Pinch
+ * @package
  */
 
 describe( 'Pinch Chat block editor', () => {
@@ -34,8 +34,7 @@ describe( 'Pinch Chat block editor', () => {
 
 	describe( 'block attributes defaults', () => {
 		const defaults = {
-			placeholder:
-				'Ask your AI assistant anything about this site...',
+			placeholder: 'Ask your AI assistant anything about this site...',
 			showHeader: true,
 			maxHeight: '400px',
 			blockId: '',
@@ -63,16 +62,12 @@ describe( 'Pinch Chat block editor', () => {
 	describe( 'maxHeight validation', () => {
 		const validPattern = /^\d+(\.\d+)?(px|em|rem|vh|%)$/;
 
-		it.each( [
-			'400px',
-			'100vh',
-			'50%',
-			'20em',
-			'15rem',
-			'1.5em',
-		] )( 'should accept valid CSS dimension: %s', ( val ) => {
-			expect( val ).toMatch( validPattern );
-		} );
+		it.each( [ '400px', '100vh', '50%', '20em', '15rem', '1.5em' ] )(
+			'should accept valid CSS dimension: %s',
+			( val ) => {
+				expect( val ).toMatch( validPattern );
+			}
+		);
 
 		it.each( [
 			'400',

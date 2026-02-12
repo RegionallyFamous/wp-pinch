@@ -65,6 +65,8 @@ require_once WP_PINCH_DIR . 'includes/class-settings.php';
 require_once WP_PINCH_DIR . 'includes/class-rest-controller.php';
 require_once WP_PINCH_DIR . 'includes/class-privacy.php';
 require_once WP_PINCH_DIR . 'includes/class-site-health.php';
+require_once WP_PINCH_DIR . 'includes/class-circuit-breaker.php';
+require_once WP_PINCH_DIR . 'includes/class-feature-flags.php';
 
 // WP-CLI commands.
 if ( defined( 'WP_CLI' ) && WP_CLI ) {

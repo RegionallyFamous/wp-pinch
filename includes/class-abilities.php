@@ -98,8 +98,22 @@ class Abilities {
 	 *
 	 * Called after any mutation ability executes so that subsequent
 	 * reads reflect the change immediately.
+	 *
+	 * Flushes the object cache group when a persistent backend is
+	 * available, and falls back to clearing transients.
 	 */
 	private static function flush_user_cache(): void {
+		// When using an external object cache, flush the whole abilities group.
+		if ( wp_using_ext_object_cache() ) {
+			if ( function_exists( 'wp_cache_flush_group' ) ) {
+				wp_cache_flush_group( 'wp-pinch-abilities' );
+			}
+			// Fallback: wp_cache_flush_group may not exist on older object cache backends.
+			// In that case, individual keys expire via TTL.
+			return;
+		}
+
+		// Transient fallback — delete all transients with the user-scoped prefix.
 		global $wpdb;
 
 		$prefix = 'wp_pinch_' . md5( get_current_user_id() . ':' );
@@ -1129,6 +1143,26 @@ class Abilities {
 	 * @param callable $callback    Execute callback.
 	 * @param bool     $readonly    Whether this is a read-only ability (enables caching).
 	 */
+	/**
+	 * Check whether an ability is disabled by admin toggle.
+	 *
+	 * @param string $name Ability name (e.g. 'wp-pinch/list-posts').
+	 * @return bool True if disabled.
+	 */
+	public static function is_disabled( string $name ): bool {
+		if ( ! Feature_Flags::is_enabled( 'ability_toggle' ) ) {
+			return false;
+		}
+
+		$disabled = get_option( 'wp_pinch_disabled_abilities', array() );
+
+		if ( ! is_array( $disabled ) ) {
+			return false;
+		}
+
+		return in_array( $name, $disabled, true );
+	}
+
 	private static function register(
 		string $name,
 		string $title,
@@ -1139,6 +1173,11 @@ class Abilities {
 		callable $callback,
 		bool $readonly = false
 	): void {
+		// Skip registration if admin has disabled this ability.
+		if ( self::is_disabled( $name ) ) {
+			return;
+		}
+
 		wp_register_ability(
 			$name,
 			array(
@@ -1150,12 +1189,21 @@ class Abilities {
 					return current_user_can( $capability );
 				},
 				'execute_callback'    => function ( $input ) use ( $name, $callback, $readonly ) {
-					// Transient cache for read-only abilities (scoped per user).
+					// Cache for read-only abilities (scoped per user).
+					// Prefer object cache when a persistent backend is available.
 					if ( $readonly ) {
 						$cache_key = 'wp_pinch_' . md5( get_current_user_id() . ':' . $name . wp_json_encode( $input ) );
-						$cached    = get_transient( $cache_key );
-						if ( false !== $cached ) {
-							return $cached;
+
+						if ( wp_using_ext_object_cache() ) {
+							$cached = wp_cache_get( $cache_key, 'wp-pinch-abilities' );
+							if ( false !== $cached ) {
+								return $cached;
+							}
+						} else {
+							$cached = get_transient( $cache_key );
+							if ( false !== $cached ) {
+								return $cached;
+							}
 						}
 					}
 
@@ -1173,7 +1221,11 @@ class Abilities {
 					$result = apply_filters( 'wp_pinch_ability_result', $result, $name, $input );
 
 					if ( $readonly ) {
-						set_transient( $cache_key, $result, self::CACHE_TTL );
+						if ( wp_using_ext_object_cache() ) {
+							wp_cache_set( $cache_key, $result, 'wp-pinch-abilities', self::CACHE_TTL );
+						} else {
+							set_transient( $cache_key, $result, self::CACHE_TTL );
+						}
 					} else {
 						// Mutation ability — flush all read-only caches for the current user
 						// so subsequent reads reflect the change immediately.

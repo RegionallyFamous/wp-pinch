@@ -4,6 +4,8 @@
  * Handles AJAX test-connection button on the settings page.
  */
 
+/* global jQuery, wpPinchAdmin */
+
 import './admin.css';
 
 ( function ( $ ) {
@@ -15,9 +17,7 @@ import './admin.css';
 
 		$button.on( 'click', function () {
 			$button.prop( 'disabled', true );
-			$result
-				.text( 'Testing...' )
-				.css( 'color', '#666' );
+			$result.text( 'Testing...' ).css( 'color', '#666' );
 
 			$.ajax( {
 				url: wpPinchAdmin.ajaxUrl,
@@ -33,7 +33,9 @@ import './admin.css';
 							.css( 'color', '#46b450' );
 					} else {
 						$result
-							.text( '✗ ' + ( response.data || 'Connection failed.' ) )
+							.text(
+								'✗ ' + ( response.data || 'Connection failed.' )
+							)
 							.css( 'color', '#dc3232' );
 					}
 				},

@@ -40,6 +40,11 @@ class Webhook_Dispatcher {
 	const MAX_RETRIES = 4;
 
 	/**
+	 * HMAC signature algorithm.
+	 */
+	const SIGNATURE_ALGO = 'sha256';
+
+	/**
 	 * Wire hooks.
 	 */
 	public static function init(): void {
@@ -253,17 +258,28 @@ class Webhook_Dispatcher {
 		$webhook_url = trailingslashit( $gateway_url ) . 'hooks/agent';
 
 		$is_blocking = ( $attempt > 0 );
+		$body_json   = wp_json_encode( $payload );
+
+		$headers = array(
+			'Content-Type'  => 'application/json',
+			'Authorization' => 'Bearer ' . $api_token,
+		);
+
+		// Append HMAC-SHA256 signature when webhook_signatures feature is enabled.
+		if ( Feature_Flags::is_enabled( 'webhook_signatures' ) ) {
+			$timestamp = time();
+			$signature = self::generate_signature( $body_json, $timestamp, $api_token );
+			$headers['X-WP-Pinch-Signature'] = $signature;
+			$headers['X-WP-Pinch-Timestamp'] = (string) $timestamp;
+		}
 
 		$response = wp_remote_post(
 			$webhook_url,
 			array(
 				'timeout'   => 5,
 				'blocking'  => $is_blocking, // Non-blocking for initial sends, blocking for retries (Action Scheduler).
-				'headers'   => array(
-					'Content-Type'  => 'application/json',
-					'Authorization' => 'Bearer ' . $api_token,
-				),
-				'body'      => wp_json_encode( $payload ),
+				'headers'   => $headers,
+				'body'      => $body_json,
 				'sslverify' => true,
 			)
 		);
@@ -473,5 +489,52 @@ class Webhook_Dispatcher {
 			'post_delete'        => __( 'Post deleted', 'wp-pinch' ),
 			'governance_finding' => __( 'Governance finding reported', 'wp-pinch' ),
 		);
+	}
+
+	// =========================================================================
+	// HMAC-SHA256 Webhook Signatures
+	// =========================================================================
+
+	/**
+	 * Generate an HMAC-SHA256 signature for a webhook payload.
+	 *
+	 * Format: v1=<hex digest of HMAC-SHA256( timestamp.body, secret )>
+	 *
+	 * The timestamp is prepended to prevent replay attacks — the receiving
+	 * end should verify that the timestamp is recent (e.g. within 5 minutes).
+	 *
+	 * @param string $body      JSON-encoded payload body.
+	 * @param int    $timestamp Unix timestamp.
+	 * @param string $secret    Signing secret (typically the API token).
+	 * @return string Signature in "v1=<hex>" format.
+	 */
+	public static function generate_signature( string $body, int $timestamp, string $secret ): string {
+		$signed_payload = $timestamp . '.' . $body;
+		$hash           = hash_hmac( self::SIGNATURE_ALGO, $signed_payload, $secret );
+
+		return 'v1=' . $hash;
+	}
+
+	/**
+	 * Verify a webhook signature.
+	 *
+	 * @param string $body       JSON-encoded payload body.
+	 * @param string $signature  The X-WP-Pinch-Signature header value.
+	 * @param string $timestamp  The X-WP-Pinch-Timestamp header value.
+	 * @param string $secret     Signing secret.
+	 * @param int    $tolerance  Maximum age in seconds (default 300 = 5 minutes).
+	 * @return bool True if the signature is valid and fresh.
+	 */
+	public static function verify_signature( string $body, string $signature, string $timestamp, string $secret, int $tolerance = 300 ): bool {
+		$ts = (int) $timestamp;
+
+		// Reject stale signatures.
+		if ( abs( time() - $ts ) > $tolerance ) {
+			return false;
+		}
+
+		$expected = self::generate_signature( $body, $ts, $secret );
+
+		return hash_equals( $expected, $signature );
 	}
 }

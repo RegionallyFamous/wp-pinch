@@ -3,8 +3,6 @@
  *
  * Uses @wordpress/scripts Playwright test runner.
  * Start wp-env before running: npx wp-env start
- *
- * @package WP_Pinch
  */
 
 const { defineConfig } = require( '@playwright/test' );

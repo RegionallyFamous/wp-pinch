@@ -3,7 +3,7 @@
  *
  * Registers the block on the client side and imports styles.
  *
- * @package WP_Pinch
+ * @package
  */
 
 import { registerBlockType } from '@wordpress/blocks';
