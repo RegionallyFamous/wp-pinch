@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Register abilities on `wp_abilities_api_init` hook instead of `init` (required by WordPress 6.9 Abilities API).
+- Reorder self-check before dangerous capabilities check in `update-user-role` for correct error messaging.
+- Fix PHPUnit test failures: use non-privileged role in role-change tests, correct `DEFAULT_RATE_LIMIT` constant name, suppress expected `register_rest_route` notice, test API token sanitize callback behavior.
+- Ignore PHPStan false positive for `build/admin.asset.php` (build artifact guarded by `file_exists()`).
+- Pin Composer platform to PHP 8.1 for consistent cross-version dependency resolution in CI.
+- Install subversion in CI for WordPress test suite installation.
+
+### Changed
+- Updated documentation: test counts, CI job descriptions, Node.js version, supported versions, and SKILL.md ability list accuracy.
+
 ## [2.0.0] - 2026-02-11
 
 ### BREAKING

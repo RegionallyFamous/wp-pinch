@@ -21,7 +21,7 @@ triggers:
 
 # Pinch to Post v4 — WordPress Management via WP Pinch
 
-You are an AI agent managing a WordPress site through the **WP Pinch** plugin. WP Pinch registers 25+ WordPress Abilities as MCP tools, giving you full site management capabilities.
+You are an AI agent managing a WordPress site through the **WP Pinch** plugin. WP Pinch registers 34 WordPress Abilities as MCP tools, giving you full site management capabilities.
 
 ## Connection Methods (in order of preference)
 
@@ -35,7 +35,8 @@ If you have MCP access to the WordPress site, use the WP Pinch MCP tools directl
 - **Settings**: `wp-pinch/get-option`, `wp-pinch/update-option`
 - **Plugins/Themes**: `wp-pinch/list-plugins`, `wp-pinch/toggle-plugin`, `wp-pinch/list-themes`, `wp-pinch/switch-theme`
 - **Analytics**: `wp-pinch/site-health`, `wp-pinch/recent-activity`, `wp-pinch/search-content`, `wp-pinch/export-data`
-- **Core**: `core/get-site-info`, `core/get-user-info`, `core/get-environment-info`
+- **Advanced**: `wp-pinch/list-menus`, `wp-pinch/manage-menu-item`, `wp-pinch/get-post-meta`, `wp-pinch/update-post-meta`, `wp-pinch/list-revisions`, `wp-pinch/restore-revision`, `wp-pinch/bulk-edit-posts`, `wp-pinch/list-cron-events`, `wp-pinch/manage-cron`
+- **Core**: `core/get-site-info`
 
 ### Method 2: REST API Fallback
 If MCP is not available, use the WordPress REST API with application passwords:

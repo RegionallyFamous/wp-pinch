@@ -139,7 +139,7 @@ It's stored in the WordPress options table with `show_in_rest => false`. For pro
 
 = Is it production-ready? =
 
-WP Pinch passes PHPCS (WordPress-Extra + Security), PHPStan Level 6, and 120+ PHPUnit tests. Every ability has security guards, every input is sanitized, every output is escaped. Ship it with confidence.
+WP Pinch passes PHPCS (WordPress-Extra + Security), PHPStan Level 6, and 160+ PHPUnit tests. Every ability has security guards, every input is sanitized, every output is escaped. Ship it with confidence.
 
 = Why lobster puns? =
 
@@ -213,7 +213,7 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 * GDPR-ready privacy tools (data export and erasure).
 * Site Health integration (gateway connectivity + configuration checks).
 * Full security suite: capability checks, input sanitization, output escaping, nonce verification, prepared SQL, option allowlists, role escalation prevention, self-deactivation guard, CSS injection prevention.
-* 120+ PHPUnit tests, PHPStan Level 6, PHPCS WordPress-Extra + Security.
+* 160+ PHPUnit tests, PHPStan Level 6, PHPCS WordPress-Extra + Security.
 * 12+ developer filters and 6+ action hooks for extensibility.
 
 == Upgrade Notice ==

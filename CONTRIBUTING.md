@@ -118,14 +118,12 @@ Or run individual tools:
 
 ### CI Pipeline
 
-Every push and PR runs six parallel jobs. All must pass to merge:
+Every push and PR runs four parallel jobs. All must pass to merge:
 
-1. **PHPCS** — WordPress coding standards + security sniffs
-2. **PHPStan** — Static type analysis at level 6
-3. **PHPUnit** — 120+ tests across PHP 8.1/8.2/8.3/8.4 + WP latest and WP 6.9
-4. **Build** — JS/CSS compilation + plugin ZIP
-5. **Plugin Check** — Official WordPress plugin checker
-6. **Branch Protection** — PRs required, no direct push to `main`
+1. **PHPCS + PHPStan** — WordPress coding standards, security sniffs, and level 6 static analysis (PHP 8.1/8.2/8.3)
+2. **PHPUnit** — 160+ tests across PHP 8.1/8.2/8.3 + WP latest and WP 6.9
+3. **JS / CSS lint + build** — ESLint, Stylelint, asset compilation, and JS unit tests
+4. **Dependency audit** — Composer and npm security audits
 
 ### Performance Profiling
 

@@ -291,7 +291,7 @@ It's a lobster trap for AI agents. They go in, they do work, they report back.
 ### Prerequisites
 
 - [Docker](https://www.docker.com/) (for `wp-env`)
-- [Node.js](https://nodejs.org/) 18+
+- [Node.js](https://nodejs.org/) 20+
 - [Composer](https://getcomposer.org/)
 
 ### Setup
@@ -316,7 +316,7 @@ WP Pinch uses a multi-layered quality system that catches bugs before they ever 
 | **CI Pipeline** | GitHub Actions | PHPCS, PHPStan, PHPUnit, Build verification |
 | **Static Analysis** | PHPStan Level 6 | Type mismatches, null access, undefined properties |
 | **Coding Standards** | PHPCS (WordPress-Extra) | Security, escaping, sanitization, naming |
-| **Unit Tests** | PHPUnit (120+ tests) | Functional correctness, security guards, edge cases |
+| **Unit Tests** | PHPUnit (160+ tests) | Functional correctness, security guards, edge cases |
 | **Branch Protection** | GitHub | All checks must pass before merging to main |
 
 ```bash
@@ -392,7 +392,7 @@ Yes! WooCommerce order status changes trigger webhooks, and WP Pinch adds two bo
 Absolutely. Use the `wp_pinch_register_abilities` action or the `wp_pinch_abilities` filter. If you can dream it, you can register it.
 
 **Is it production-ready?**
-WP Pinch passes PHPCS (WordPress-Extra + Security), PHPStan Level 6, and 120+ PHPUnit tests. Every ability has security guards, every input is sanitized, every output is escaped. It's as battle-tested as a lobster that survived the tank at Red Lobster.
+WP Pinch passes PHPCS (WordPress-Extra + Security), PHPStan Level 6, and 160+ PHPUnit tests. Every ability has security guards, every input is sanitized, every output is escaped. It's as battle-tested as a lobster that survived the tank at Red Lobster.
 
 **Is the API token stored securely?**
 It's stored in the WordPress options table with `show_in_rest => false`. For production hardening, we recommend using environment variables or a secrets manager. The token never appears in REST API responses and is never exposed to non-admin users.

@@ -6,6 +6,7 @@ WP Pinch handles sensitive data including API tokens and webhook URLs. Security 
 
 | Version | Supported          |
 | ------- | ------------------ |
+| 2.0.x   | Yes                |
 | 1.0.x   | Yes                |
 | < 1.0   | No                 |
 
