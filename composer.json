@@ -3,7 +3,7 @@
     "description": "OpenClaw + WordPress integration via Abilities API, MCP Adapter, webhooks, governance, and chat block.",
     "type": "wordpress-plugin",
     "license": "GPL-2.0-or-later",
-    "homepage": "https://github.com/RegionallyFamous/wp-pinch",
+    "homepage": "https://wp-pinch.com",
     "support": {
         "issues": "https://github.com/RegionallyFamous/wp-pinch/issues",
         "source": "https://github.com/RegionallyFamous/wp-pinch"

@@ -1,5 +1,7 @@
 # Security Policy
 
+**Website:** [wp-pinch.com](https://wp-pinch.com) | **Repository:** [GitHub](https://github.com/RegionallyFamous/wp-pinch)
+
 WP Pinch handles sensitive data including API tokens and webhook URLs. Security is a top priority for this project, and we take all reports seriously.
 
 ## Supported Versions

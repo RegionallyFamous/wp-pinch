@@ -2,6 +2,8 @@
 
 Thank you for your interest in contributing to WP Pinch. Whether you are reporting a bug, suggesting a feature, improving documentation, or writing code, your contributions are valued and appreciated. This guide outlines the process and expectations for contributing to the project.
 
+**Website:** [wp-pinch.com](https://wp-pinch.com) | **Repository:** [GitHub](https://github.com/RegionallyFamous/wp-pinch)
+
 ## Code of Conduct
 
 This project adheres to a Code of Conduct. By participating, you are expected to uphold this standard. Please read [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) before contributing.

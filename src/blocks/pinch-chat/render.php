@@ -85,9 +85,31 @@ wp_interactivity_state(
 				class="wp-pinch-chat__message"
 				data-wp-class--wp-pinch-chat__message--user="context.item.isUser"
 				data-wp-class--wp-pinch-chat__message--agent="!context.item.isUser"
-				data-wp-text="context.item.text"
-			></div>
+			>
+				<span
+					class="wp-pinch-chat__message-text"
+					data-wp-text="context.item.text"
+				></span>
+				<button
+					class="wp-pinch-chat__copy-btn"
+					data-wp-on--click="actions.copyMessage"
+					data-wp-show="!context.item.isUser"
+					aria-label="<?php esc_attr_e( 'Copy message', 'wp-pinch' ); ?>"
+					title="<?php esc_attr_e( 'Copy to clipboard', 'wp-pinch' ); ?>"
+				>&#128203;</button>
+			</div>
 		</template>
+	</div>
+
+	<!-- Typing indicator -->
+	<div
+		class="wp-pinch-chat__typing-indicator"
+		data-wp-show="state.isLoading"
+		aria-hidden="true"
+	>
+		<span class="wp-pinch-chat__typing-dot"></span>
+		<span class="wp-pinch-chat__typing-dot"></span>
+		<span class="wp-pinch-chat__typing-dot"></span>
 	</div>
 
 	<?php if ( is_user_logged_in() && current_user_can( 'edit_posts' ) ) : ?>
@@ -100,6 +122,7 @@ wp_interactivity_state(
 				type="text"
 				class="wp-pinch-chat__input"
 				placeholder="<?php echo esc_attr( $placeholder ); ?>"
+				maxlength="4000"
 				data-wp-bind--value="state.inputValue"
 				data-wp-on--input="actions.updateInput"
 				data-wp-on--keydown="actions.handleKeyDown"
@@ -113,6 +136,26 @@ wp_interactivity_state(
 				aria-label="<?php esc_attr_e( 'Send message', 'wp-pinch' ); ?>"
 			>
 				&#9654;
+			</button>
+		</div>
+
+		<div class="wp-pinch-chat__footer">
+			<span
+				class="wp-pinch-chat__char-counter"
+				data-wp-text="state.charsRemaining"
+				data-wp-class--wp-pinch-chat__char-counter--warning="state.charsWarning"
+				data-wp-class--wp-pinch-chat__char-counter--exceeded="state.charsExceeded"
+				aria-live="polite"
+				aria-atomic="true"
+			></span>
+			<button
+				class="wp-pinch-chat__clear-btn"
+				data-wp-on--click="actions.clearChat"
+				data-wp-show="state.messageCount"
+				aria-label="<?php esc_attr_e( 'Clear chat', 'wp-pinch' ); ?>"
+				title="<?php esc_attr_e( 'Clear conversation', 'wp-pinch' ); ?>"
+			>
+				<?php esc_html_e( 'Clear', 'wp-pinch' ); ?>
 			</button>
 		</div>
 	<?php else : ?>

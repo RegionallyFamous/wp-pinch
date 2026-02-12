@@ -190,7 +190,7 @@ class Audit_Table {
 
 		$allowed_orderby = array( 'id', 'event_type', 'source', 'created_at' );
 		$orderby         = in_array( $args['orderby'], $allowed_orderby, true ) ? $args['orderby'] : 'created_at';
-		$order           = 'ASC' === strtoupper( $args['order'] ) ? 'ASC' : 'DESC';
+		$order           = 'ASC' === mb_strtoupper( $args['order'] ) ? 'ASC' : 'DESC';
 
 		$per_page = absint( $args['per_page'] );
 		$offset   = ( absint( $args['page'] ) - 1 ) * $per_page;

@@ -4,11 +4,11 @@ Tags: ai, agent, openclaw, mcp, automation
 Requires at least: 6.9
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 2.0.0
+Stable tag: 2.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-The AI agent plugin that grabs your WordPress site with both claws. OpenClaw + WordPress integration via MCP, with 34 abilities, autonomous governance, and a chat block.
+The AI agent plugin that grabs your WordPress site with both claws. OpenClaw + WordPress integration via MCP, with 34 abilities, autonomous governance, and a chat block. Visit [wp-pinch.com](https://wp-pinch.com) for full documentation.
 
 == Description ==
 
@@ -155,6 +155,34 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 
 == Changelog ==
 
+= 2.1.0 =
+* New: Circuit breaker for gateway calls — fails fast when gateway is down, auto-recovers with half-open probe.
+* New: Feature flags system — 7 toggleable features with admin UI and filter override.
+* New: SSE streaming chat endpoint for real-time responses (behind feature flag).
+* New: Public health check endpoint (/wp-pinch/v1/health) — no auth required.
+* New: HMAC-SHA256 webhook signatures with replay protection.
+* New: Admin ability toggle — disable individual abilities from the UI.
+* New: Admin feature flags tab with circuit breaker status.
+* New: Audit log search, date filtering, and CSV export.
+* New: Rate limit headers (X-RateLimit-Limit/Remaining/Reset) on all REST responses.
+* New: Chat nonce auto-refresh on 403 — prevents stale-tab failures.
+* New: Chat character counter (4,000 max) with visual warnings.
+* New: Clear chat button to reset conversation.
+* New: Copy-to-clipboard button on assistant messages.
+* New: Markdown rendering in assistant replies (bold, italic, code, links).
+* New: Typing indicator animation (bouncing dots) while waiting.
+* New: Keyboard shortcuts — Escape to clear input.
+* New: Admin notice when circuit breaker is open.
+* New: WP-CLI --format=json/csv/yaml support for all list commands.
+* New: Upgrade notice on Plugins page for major version bumps.
+* New: Object cache support for ability caching (Redis/Memcached).
+* New: i18n POT generation (make i18n).
+* New: k6 load testing script.
+* New: PHPUnit tests for Circuit_Breaker and Feature_Flags.
+* New: React error boundary in chat block.
+* Improved: Dark mode CSS with full coverage of all new UI elements.
+* Fixed: PHP 8.2+ compatibility (mb_strtoupper, no dynamic properties).
+
 = 2.0.0 =
 * **Major security hardening release** — 38 fixes across 12 files addressing access control, privilege escalation, IDOR, SSRF, information disclosure, PII redaction, input validation, XSS, and rate limiting.
 * Fixed: Chat block sessionStorage instability — messages now persist across page reloads via a stable `blockId` attribute.
@@ -218,6 +246,9 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 
 == Upgrade Notice ==
 
+= 2.1.0 =
+Feature release: Circuit breaker, feature flags, webhook signatures, SSE streaming, health endpoint, admin ability toggle, audit log search/export, chat UX overhaul (character counter, clear chat, copy button, Markdown, typing indicator, nonce refresh, keyboard shortcuts), WP-CLI format support, rate limit headers, and much more. No breaking changes from 2.0.0.
+
 = 2.0.0 =
 Major security hardening: 38 fixes for access control, privilege escalation, SSRF, PII exposure, XSS, and more. Breaking changes: user emails removed from ability responses, bulk delete now trashes, administrator role unconditionally blocked. Please review the full changelog before upgrading.
 
@@ -252,3 +283,8 @@ WP Pinch is built on many open-source projects. We are grateful to all of their 
 * [PHPUnit](https://phpunit.de/) — PHP testing framework. Licensed under BSD-3-Clause.
 * [PHPStan](https://phpstan.org/) — Static analysis tool. Licensed under MIT.
 * [WordPress Coding Standards](https://github.com/WordPress/WordPress-Coding-Standards) — PHPCS rules for WordPress. Licensed under MIT.
+
+= Links =
+
+* [Website](https://wp-pinch.com) — Official plugin site with documentation and installation guides.
+* [GitHub](https://github.com/RegionallyFamous/wp-pinch) — Source code, issues, and releases.

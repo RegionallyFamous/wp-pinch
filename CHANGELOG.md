@@ -7,6 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-02-12
+
+### Added
+- **Circuit breaker** for gateway calls — fails fast when gateway is down, auto-recovers after 60s cooldown with half-open probe. Prevents hammering a dead gateway.
+- **Feature flags system** — boolean toggle for 7 features (`streaming_chat`, `webhook_signatures`, `circuit_breaker`, `ability_toggle`, `webhook_dashboard`, `audit_search`, `health_endpoint`). Stored in a single option, overridable via `wp_pinch_feature_flag` filter.
+- **SSE streaming chat endpoint** (`/wp-pinch/v1/chat/stream`) — Server-Sent Events streaming for real-time chat responses. Gated behind `streaming_chat` feature flag.
+- **Public health endpoint** (`/wp-pinch/v1/health`) — lightweight, no-auth health check returning version, config status, and circuit breaker state.
+- **HMAC-SHA256 webhook signatures** — every outbound webhook includes `X-WP-Pinch-Signature` (v1=hex) and `X-WP-Pinch-Timestamp` headers with 5-minute replay protection.
+- **Ability toggle admin tab** — disable individual abilities from the admin UI; disabled abilities are not registered or exposed via MCP.
+- **Feature flags admin tab** — toggle features on/off from the admin UI with circuit breaker status display.
+- **Audit log search and filtering** — full-text search, event type filter, source filter, date range picker.
+- **Audit log CSV export** — download filtered audit entries as CSV (up to 10,000 rows).
+- **Rate limit response headers** — `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` on all REST responses.
+- **Chat: nonce auto-refresh** — on 403, the frontend fetches a fresh nonce and retries once, preventing stale-tab failures.
+- **Chat: character counter** — shows remaining characters (out of 4,000) with warning at 200 and red at 0.
+- **Chat: clear chat button** — resets conversation and session storage.
+- **Chat: copy-to-clipboard** — hover copy button on assistant messages.
+- **Chat: Markdown rendering** — basic safe subset (bold, italic, code, links, newlines) in assistant replies.
+- **Chat: typing indicator** — animated bouncing dots while waiting for a response.
+- **Chat: keyboard shortcuts** — Escape clears the input field.
+- **Admin notice** when circuit breaker is open/half-open — warns administrators with retry countdown.
+- **WP-CLI structured output** — `--format=json/csv/yaml` on `status`, `abilities list`, `governance list`, and `audit list`. Status now shows circuit breaker state; abilities show enabled/disabled status.
+- **Upgrade notice** on Plugins page — warns about breaking changes before major version updates.
+- **Object cache support** for ability caching — uses `wp_cache_get`/`wp_cache_set` with `wp-pinch-abilities` group when Redis/Memcached is available.
+- **i18n POT generation** — `make i18n` target generates translation template via WP-CLI.
+- **k6 load testing script** (`tests/load/k6-chat.js`) — ramp-up, sustained, spike, and ramp-down stages with p95 thresholds.
+- **PHPUnit tests** for `Circuit_Breaker` (14 tests) and `Feature_Flags` (17 tests).
+- **React error boundary** in chat block — catches unhandled JS errors and shows a friendly fallback.
+- **Languages directory** with `.gitkeep` for translation files.
+
+### Changed
+- Chat widget dark mode significantly improved — full coverage of all new UI elements (footer, copy button, typing dots, char counter, clear button, login notice).
+- Webhook `dispatch()` now builds headers as an array and injects signature headers conditionally.
+- Ability `register()` method checks `is_disabled()` before registration, skipping disabled abilities entirely.
+- Ability cache now uses object cache group `wp-pinch-abilities` with `wp_cache_flush_group()` for invalidation when a persistent backend is available.
+- `make zip` now includes `make i18n` step for translation-ready releases.
+- `strtoupper()` replaced with `mb_strtoupper()` in audit table query for PHP 8.2+ compatibility.
+
 ### Fixed
 - Register abilities on `wp_abilities_api_init` hook instead of `init` (required by WordPress 6.9 Abilities API).
 - Reorder self-check before dangerous capabilities check in `update-user-role` for correct error messaging.
@@ -14,9 +52,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Ignore PHPStan false positive for `build/admin.asset.php` (build artifact guarded by `file_exists()`).
 - Pin Composer platform to PHP 8.1 for consistent cross-version dependency resolution in CI.
 - Install subversion in CI for WordPress test suite installation.
-
-### Changed
-- Updated documentation: test counts, CI job descriptions, Node.js version, supported versions, and SKILL.md ability list accuracy.
 
 ## [2.0.0] - 2026-02-11
 
@@ -128,7 +163,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Admin settings page with connection testing, webhook configuration, and governance controls.
 - GitHub Actions CI pipeline with PHPUnit, build verification, and plugin check.
 
-[Unreleased]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/RegionallyFamous/wp-pinch/compare/v1.0.2...v2.0.0
 [1.0.2]: https://github.com/RegionallyFamous/wp-pinch/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/RegionallyFamous/wp-pinch/compare/v1.0.0...v1.0.1

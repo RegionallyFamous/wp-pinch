@@ -2,6 +2,8 @@
 
 ### The AI agent plugin that grabs your WordPress site with both claws.
 
+**[wp-pinch.com](https://wp-pinch.com)** | [Documentation](https://wp-pinch.com) | [GitHub](https://github.com/RegionallyFamous/wp-pinch)
+
 [![WordPress 6.9+](https://img.shields.io/badge/WordPress-6.9%2B-blue.svg)](https://wordpress.org/)
 [![PHP 8.1+](https://img.shields.io/badge/PHP-8.1%2B-purple.svg)](https://www.php.net/)
 [![License: GPL v2+](https://img.shields.io/badge/License-GPL%20v2%2B-green.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
@@ -213,7 +215,7 @@ wp plugin install https://github.com/RegionallyFamous/wp-pinch/releases/latest/d
 
 ### The Manual Way
 
-1. Download the latest release from the [Releases page](https://github.com/RegionallyFamous/wp-pinch/releases).
+1. Download the latest release from the [website](https://wp-pinch.com) or the [Releases page](https://github.com/RegionallyFamous/wp-pinch/releases).
 2. In your WordPress admin, go to **Plugins > Add New > Upload Plugin**.
 3. Upload the `.zip` file and click **Install Now**.
 4. Activate.
@@ -447,5 +449,7 @@ WP Pinch is built on the shoulders of many open-source projects. We are grateful
 ### Author
 
 Created and maintained by [Nick Hamze](https://github.com/RegionallyFamous).
+
+**Website:** [wp-pinch.com](https://wp-pinch.com)
 
 Built with coffee, crustacean puns, and an unreasonable number of PHPStan runs.
