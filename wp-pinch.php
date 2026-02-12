@@ -93,7 +93,7 @@ function wp_pinch_get_ability_names(): array {
  * @param array  $plugin_data Plugin metadata.
  * @param object $response    Update response object from the API.
  */
-function wp_pinch_upgrade_notice( $plugin_data, $response ) {
+function wp_pinch_upgrade_notice( $plugin_data, $response ): void {
 	if ( ! isset( $response->new_version ) ) {
 		return;
 	}

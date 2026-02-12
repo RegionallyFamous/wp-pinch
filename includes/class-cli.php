@@ -90,17 +90,41 @@ class CLI {
 		$circuit_state = Circuit_Breaker::get_state();
 
 		$data = array(
-			array( 'Field' => 'Plugin Version', 'Value' => WP_PINCH_VERSION ),
-			array( 'Field' => 'Gateway URL', 'Value' => $gateway_url ?: '(not set)' ),
-			array( 'Field' => 'API Token', 'Value' => ! empty( $api_token ) ? '***configured***' : 'NOT SET' ),
-			array( 'Field' => 'MCP Endpoint', 'Value' => rest_url( 'wp-pinch/mcp' ) ),
-			array( 'Field' => 'Gateway Connected', 'Value' => $connected ? 'Yes' : 'No' ),
-			array( 'Field' => 'Gateway HTTP Code', 'Value' => $http_code ?: '-' ),
-			array( 'Field' => 'Circuit Breaker', 'Value' => $circuit_state ),
+			array(
+				'Field' => 'Plugin Version',
+				'Value' => WP_PINCH_VERSION,
+			),
+			array(
+				'Field' => 'Gateway URL',
+				'Value' => $gateway_url ? $gateway_url : '(not set)',
+			),
+			array(
+				'Field' => 'API Token',
+				'Value' => ! empty( $api_token ) ? '***configured***' : 'NOT SET',
+			),
+			array(
+				'Field' => 'MCP Endpoint',
+				'Value' => rest_url( 'wp-pinch/mcp' ),
+			),
+			array(
+				'Field' => 'Gateway Connected',
+				'Value' => $connected ? 'Yes' : 'No',
+			),
+			array(
+				'Field' => 'Gateway HTTP Code',
+				'Value' => $http_code ? $http_code : '-',
+			),
+			array(
+				'Field' => 'Circuit Breaker',
+				'Value' => $circuit_state,
+			),
 		);
 
 		if ( $error_msg ) {
-			$data[] = array( 'Field' => 'Connection Error', 'Value' => $error_msg );
+			$data[] = array(
+				'Field' => 'Connection Error',
+				'Value' => $error_msg,
+			);
 		}
 
 		if ( 'json' === $format ) {
@@ -402,7 +426,14 @@ class CLI {
 		\WP_CLI\Utils\format_items( $format, $rows, array( 'Name', 'Category', 'Action', 'Status' ) );
 
 		if ( 'table' === $format ) {
-			$enabled_count  = count( array_filter( $rows, function ( $r ) { return 'enabled' === $r['Status']; } ) );
+			$enabled_count  = count(
+				array_filter(
+					$rows,
+					function ( $r ) {
+						return 'enabled' === $r['Status'];
+					}
+				)
+			);
 			$disabled_count = count( $rows ) - $enabled_count;
 			\WP_CLI::log( sprintf( '%d abilities (%d enabled, %d disabled).', count( $rows ), $enabled_count, $disabled_count ) );
 		}

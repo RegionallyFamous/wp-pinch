@@ -185,11 +185,11 @@ class Rest_Controller {
 
 		// Rate limit headers — let clients self-throttle.
 		if ( is_user_logged_in() ) {
-			$user_id   = get_current_user_id();
-			$limit     = max( 1, (int) get_option( 'wp_pinch_rate_limit', self::DEFAULT_RATE_LIMIT ) );
-			$key       = 'wp_pinch_rest_rate_' . $user_id;
-			$used      = 0;
-			$reset     = time() + 60; // Default: window resets in 60s.
+			$user_id = get_current_user_id();
+			$limit   = max( 1, (int) get_option( 'wp_pinch_rate_limit', self::DEFAULT_RATE_LIMIT ) );
+			$key     = 'wp_pinch_rest_rate_' . $user_id;
+			$used    = 0;
+			$reset   = time() + 60; // Default: window resets in 60s.
 
 			if ( wp_using_ext_object_cache() ) {
 				$used = (int) wp_cache_get( $key, 'wp-pinch' );

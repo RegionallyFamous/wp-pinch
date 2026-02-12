@@ -346,7 +346,7 @@ final class Plugin {
 			printf(
 				/* translators: 1: seconds until retry, 2: URL to features tab */
 				esc_html__( 'The AI gateway is unreachable. Chat requests are failing fast to protect performance. The circuit will probe again in %1$d seconds. %2$s', 'wp-pinch' ),
-				$retry_after,
+				absint( $retry_after ),
 				sprintf(
 					'<a href="%s">%s</a>',
 					esc_url( $features_url ),
