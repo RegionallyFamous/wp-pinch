@@ -18,7 +18,7 @@ WP Pinch bridges WordPress and [OpenClaw](https://github.com/nicepkg/openclaw) �
 
 = 35 AI Abilities =
 
-Your AI agent gets full access to your WordPress site — posts, pages, media, users, comments, settings, plugins, themes, menus, revisions, cron, and WooCommerce. Every ability is locked down with capability checks, input sanitization, and audit logging. 10 categories. 10 bonus WooCommerce abilities when your shop is active.
+Your AI agent gets full access to your WordPress site — posts, pages, media, users, comments, settings, plugins, themes, menus, revisions, cron, and WooCommerce. Every ability is locked down with capability checks, input sanitization, and audit logging. Core abilities cover content, media, users, and more; unique tools include PinchDrop and Ghost Writer. 10 categories. 10 bonus WooCommerce abilities when your shop is active.
 
 = Live Chat Block =
 

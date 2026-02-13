@@ -27,9 +27,9 @@ Manage your WordPress site from WhatsApp, Slack, Telegram, Discord -- or any cha
 
 ### 1. 35 AI Abilities
 
-Your AI agent gets full access to your WordPress site -- posts, pages, media, users, comments, settings, plugins, themes, menus, revisions, cron, and WooCommerce. Every ability is locked down with capability checks, input sanitization, and audit logging. The AI works *for* you, not *around* you.
+Your AI agent gets full access to your WordPress site -- posts, pages, media, users, comments, settings, plugins, themes, menus, revisions, cron, and WooCommerce. Every ability is locked down with capability checks, input sanitization, and audit logging. The AI works *for* you, not *around* you. Core abilities cover content, media, users, and more; unique tools include PinchDrop and Ghost Writer.
 
-[Full abilities reference ->](https://github.com/RegionallyFamous/wp-pinch/wiki/Abilities-Reference)
+[Abilities & tools reference ->](https://github.com/RegionallyFamous/wp-pinch/wiki/Abilities-Reference)
 
 ### 2. Live Chat Block
 

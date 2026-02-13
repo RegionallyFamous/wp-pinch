@@ -1,14 +1,16 @@
 # Abilities Reference
 
-WP Pinch registers **35 core abilities** across 10 categories, plus 10 WooCommerce abilities when WooCommerce is active. Every ability has built-in security guards: capability checks, input sanitization, existence validation, and audit logging.
+WP Pinch provides **core abilities** (standard WordPress operations the AI can perform) and **tools** (PinchDrop and Ghost Writer workflows). You get **33 core abilities** across 9 categories, plus **PinchDrop** and **Ghost Writer** (4 tool abilities), and **10 WooCommerce abilities** when WooCommerce is active. Every ability has built-in security guards: capability checks, input sanitization, existence validation, and audit logging.
 
 ---
 
-## Abilities by Category
+## Core Abilities
+
+Core abilities cover content, media, users, comments, settings, plugins/themes, analytics, menus, meta, revisions, bulk operations, and cron.
 
 | Category | What It Does | Abilities |
 |---|---|---|
-| **Content** | Full CRUD on posts & pages | `list-posts`, `create-post`, `update-post`, `delete-post` |
+| **Content** | Full CRUD on posts & pages | `list-posts`, `get-post`, `create-post`, `update-post`, `delete-post` |
 | **Media** | Library management | `list-media`, `upload-media`, `delete-media` |
 | **Taxonomies** | Terms and taxonomies | `list-taxonomies`, `manage-terms` |
 | **Users** | User management with safety guards | `list-users`, `get-user`, `update-user-role` |
@@ -16,9 +18,26 @@ WP Pinch registers **35 core abilities** across 10 categories, plus 10 WooCommer
 | **Settings** | Read and update options (allowlisted) | `get-option`, `update-option` |
 | **Plugins & Themes** | Extension management | `list-plugins`, `toggle-plugin`, `list-themes`, `switch-theme` |
 | **Analytics** | Site health and data export | `site-health`, `recent-activity`, `search-content`, `export-data` |
-| **Automation** | Capture-to-draft workflows | `pinchdrop-generate` |
 | **Advanced** | Menus, meta, revisions, bulk ops, cron | `list-menus`, `manage-menu-item`, `get-post-meta`, `update-post-meta`, `list-revisions`, `restore-revision`, `bulk-edit-posts`, `list-cron-events`, `manage-cron` |
 | **WooCommerce** | Shop abilities (when WooCommerce is active) | `woo-list-products`, `woo-manage-order`, `woo-create-product`, `woo-update-product`, `woo-manage-inventory`, `woo-list-orders`, `woo-list-customers`, `woo-list-coupons`, `woo-create-coupon`, `woo-revenue-summary` |
+
+---
+
+## Tools (PinchDrop & Ghost Writer)
+
+Tools are WP Pinch–specific workflows that combine abilities, REST endpoints, and (where applicable) slash commands or governance tasks.
+
+### PinchDrop
+
+Capture rough ideas from any OpenClaw-connected channel and auto-generate a Draft Pack in WordPress. The **`pinchdrop-generate`** ability produces structured drafts (blog post, product update, changelog, social). Signed captures hit `POST /wp-pinch/v1/pinchdrop/capture`; the endpoint runs the ability and can save draft posts with full trace metadata (`source`, `request_id`, timestamp). Gated by the `pinchdrop_engine` feature flag.
+
+**[PinchDrop (full guide) →](PinchDrop)**
+
+### Ghost Writer
+
+The AI that writes like *you*. Ghost Writer learns each author's writing voice from their published posts and can complete abandoned drafts in that voice. Three abilities: **`analyze-voice`** (build or refresh a per-author style profile), **`list-abandoned-drafts`** (rank drafts by resurrection potential), **`ghostwrite`** (return AI-completed content for a draft). The **`/wp-pinch/v1/ghostwrite`** REST endpoint powers the **`/ghostwrite`** slash command in chat (list drafts or resurrect by ID). A weekly Draft Necromancer governance task surfaces drafts worth saving. Gated by the `ghost_writer` feature flag.
+
+**[Ghost Writer (full guide) →](Ghost-Writer)**
 
 ---
 
