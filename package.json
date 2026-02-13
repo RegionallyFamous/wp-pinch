@@ -1,6 +1,6 @@
 {
     "name": "wp-pinch",
-    "version": "2.4.1",
+    "version": "2.4.2",
     "description": "OpenClaw + WordPress integration plugin",
     "private": true,
     "scripts": {

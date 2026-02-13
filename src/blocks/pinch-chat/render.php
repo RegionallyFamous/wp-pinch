@@ -76,8 +76,9 @@ wp_interactivity_state(
 		'tokenDisplayOn'  => $token_display_on,
 		'ghostWriterOn'   => \WP_Pinch\Feature_Flags::is_enabled( 'ghost_writer' ),
 		'ghostWriteUrl'   => $can_chat ? rest_url( 'wp-pinch/v1/ghostwrite' ) : '',
-		'moltOn'          => \WP_Pinch\Feature_Flags::is_enabled( 'molt' ),
-		'moltUrl'         => $can_chat ? rest_url( 'wp-pinch/v1/molt' ) : '',
+		'moltOn'               => \WP_Pinch\Feature_Flags::is_enabled( 'molt' ),
+		'moltUrl'              => $can_chat ? rest_url( 'wp-pinch/v1/molt' ) : '',
+		'showScrollToBottom'   => false,
 	)
 );
 ?>
@@ -117,14 +118,28 @@ wp_interactivity_state(
 	<?php endif; ?>
 
 	<div
-		class="wp-pinch-chat__messages"
-		role="log"
-		aria-live="polite"
-		aria-label="<?php esc_attr_e( 'Chat messages', 'wp-pinch' ); ?>"
-		style="max-height: <?php echo esc_attr( $max_height ); ?>;"
-		data-wp-each="state.messages"
-		data-wp-each-key="context.item.id"
+		class="wp-pinch-chat__messages-wrap"
+		style="max-height: <?php echo esc_attr( $max_height ); ?>; position: relative;"
 	>
+		<button
+			type="button"
+			class="wp-pinch-chat__scroll-to-bottom"
+			data-wp-show="state.showScrollToBottom"
+			data-wp-on--click="actions.scrollToBottomAndHide"
+			aria-label="<?php esc_attr_e( 'Scroll to bottom', 'wp-pinch' ); ?>"
+			title="<?php esc_attr_e( 'New message — scroll to bottom', 'wp-pinch' ); ?>"
+		>
+			<span aria-hidden="true">&#8595;</span> <?php esc_html_e( 'Scroll to bottom', 'wp-pinch' ); ?>
+		</button>
+		<div
+			class="wp-pinch-chat__messages"
+			role="log"
+			aria-live="polite"
+			aria-label="<?php esc_attr_e( 'Chat messages', 'wp-pinch' ); ?>"
+			style="max-height: <?php echo esc_attr( $max_height ); ?>; overflow-y: auto;"
+			data-wp-each="state.messages"
+			data-wp-each-key="context.item.id"
+		>
 		<template data-wp-each-child>
 			<div
 				class="wp-pinch-chat__message"
@@ -144,6 +159,7 @@ wp_interactivity_state(
 				>&#128203;</button>
 			</div>
 		</template>
+		</div>
 	</div>
 
 	<!-- Typing indicator -->

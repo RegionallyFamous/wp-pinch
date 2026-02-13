@@ -277,6 +277,30 @@ async function fetchWithRetry( url, options, maxRetries = 3 ) {
 	throw lastError;
 }
 
+const SCROLL_BOTTOM_THRESHOLD = 80;
+
+function getMessagesContainer( rootOrEvent ) {
+	if ( ! rootOrEvent ) {
+		return null;
+	}
+	const root =
+		rootOrEvent.target?.closest?.( '.wp-pinch-chat' ) ||
+		rootOrEvent?.ref?.closest?.( '.wp-pinch-chat' ) ||
+		rootOrEvent?.closest?.( '.wp-pinch-chat' );
+	return root ? root.querySelector( '.wp-pinch-chat__messages' ) : null;
+}
+
+function isAtBottom( container ) {
+	if ( ! container ) {
+		return true;
+	}
+	const threshold = SCROLL_BOTTOM_THRESHOLD;
+	return (
+		container.scrollTop + container.clientHeight >=
+		container.scrollHeight - threshold
+	);
+}
+
 const { state, actions } = store( 'wp-pinch/chat', {
 	state: {
 		get messageCount() {
@@ -489,7 +513,7 @@ const { state, actions } = store( 'wp-pinch/chat', {
 				} finally {
 					state.isLoading = false;
 					actions.saveSession();
-					actions.scrollToBottom();
+					actions.scrollToBottomIfNeeded();
 					actions.focusInput();
 				}
 			} catch ( fatalErr ) {
@@ -734,7 +758,7 @@ const { state, actions } = store( 'wp-pinch/chat', {
 			} finally {
 				state.isLoading = false;
 				actions.saveSession();
-				actions.scrollToBottom();
+				actions.scrollToBottomIfNeeded();
 				actions.focusInput();
 			}
 		},
@@ -865,7 +889,7 @@ const { state, actions } = store( 'wp-pinch/chat', {
 					state.messages = [ ...state.messages, errMsg ];
 				} finally {
 					state.isLoading = false;
-					actions.scrollToBottom();
+					actions.scrollToBottomIfNeeded();
 				}
 				return true;
 			}
@@ -884,7 +908,7 @@ const { state, actions } = store( 'wp-pinch/chat', {
 					};
 					state.messages = [ ...state.messages, errMsg ];
 					actions.saveSession();
-					actions.scrollToBottom();
+					actions.scrollToBottomIfNeeded();
 					return true;
 				}
 
@@ -941,7 +965,7 @@ const { state, actions } = store( 'wp-pinch/chat', {
 					state.messages = [ ...state.messages, errMsg ];
 				} finally {
 					state.isLoading = false;
-					actions.scrollToBottom();
+					actions.scrollToBottomIfNeeded();
 				}
 				return true;
 			}
@@ -1242,6 +1266,7 @@ const { state, actions } = store( 'wp-pinch/chat', {
 		 * Scroll the message container to the bottom.
 		 */
 		scrollToBottom() {
+			state.showScrollToBottom = false;
 			requestAnimationFrame( () => {
 				const el = getElement();
 				const root = el?.ref?.closest( '.wp-pinch-chat' );
@@ -1261,6 +1286,35 @@ const { state, actions } = store( 'wp-pinch/chat', {
 					} );
 				}
 			} );
+		},
+
+		/**
+		 * If user is at bottom, scroll to bottom; otherwise show "Scroll to bottom" button.
+		 */
+		scrollToBottomIfNeeded() {
+			const el = getElement();
+			const root = el?.ref?.closest( '.wp-pinch-chat' );
+			const container = root
+				? root.querySelector( '.wp-pinch-chat__messages' )
+				: null;
+			if ( isAtBottom( container ) ) {
+				actions.scrollToBottom();
+			} else {
+				state.showScrollToBottom = true;
+			}
+		},
+
+		/**
+		 * Scroll to bottom (from FAB click) and hide the FAB.
+		 *
+		 * @param {Event} event Click event from the scroll-to-bottom button.
+		 */
+		scrollToBottomAndHide( event ) {
+			const container = getMessagesContainer( event );
+			if ( container ) {
+				container.scrollTop = container.scrollHeight;
+			}
+			state.showScrollToBottom = false;
 		},
 
 		/**
@@ -1293,6 +1347,22 @@ const { state, actions } = store( 'wp-pinch/chat', {
 		 */
 		init() {
 			try {
+				// When user scrolls to bottom, hide the "Scroll to bottom" FAB.
+				const el = getElement();
+				if ( el?.ref ) {
+					const root = el.ref.closest( '.wp-pinch-chat' );
+					const container = root?.querySelector(
+						'.wp-pinch-chat__messages'
+					);
+					if ( container ) {
+						container.addEventListener( 'scroll', () => {
+							if ( isAtBottom( container ) ) {
+								state.showScrollToBottom = false;
+							}
+						} );
+					}
+				}
+
 				// Generate unique public session key per browser.
 				if ( ! state.sessionKey && state.isConnected ) {
 					const storageKey =

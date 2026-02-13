@@ -4,21 +4,21 @@ Tags: ai, agent, openclaw, mcp, automation
 Requires at least: 6.9
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 2.4.1
+Stable tag: 2.4.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Manage your WordPress site from WhatsApp, Slack, Telegram, Discord — or any chat platform. 38 AI abilities, seven governance tasks, a live chat block, and real-time webhooks. Self-hosted. No SaaS middlemen.
+WordPress in your pocket. Your AI assistant runs it from the chat you never leave — 38+ abilities, Pinch Chat block, webhooks, 7 governance tasks. Self-hosted.
 
 == Description ==
 
-**What if you could manage your WordPress site by texting it?**
+**Your AI assistant already lives in WhatsApp, Slack, Telegram — give it WordPress.**
 
-WP Pinch bridges WordPress and [OpenClaw](https://github.com/nicepkg/openclaw) — an open-source AI agent framework — giving your site 38 AI-accessible abilities through the Abilities API and Model Context Protocol (MCP) in WordPress 6.9. Manage posts, media, users, plugins, WooCommerce, and more from any messaging platform. All self-hosted. All under your control.
+One plugin. [OpenClaw](https://github.com/openclaw/openclaw) (or any MCP client) gets 38+ abilities: publish, Molt (one post → nine formats), PinchDrop, What do I know, daily Tide Report. Pinch Chat block, webhooks, 7 governance tasks. Self-hosted. Your data. [Install & connect →](https://github.com/RegionallyFamous/wp-pinch/wiki/Configuration)
 
 = 38 AI Abilities =
 
-Your AI agent gets full access to your WordPress site — posts, pages, media, users, comments, settings, plugins, themes, menus, revisions, cron, and WooCommerce. Every ability is locked down with capability checks, input sanitization, and audit logging. Core abilities cover content, media, users, and more; unique tools include PinchDrop, Ghost Writer, Molt, and context/discovery abilities (site-digest, related-posts, synthesize). 10 categories. 10 bonus WooCommerce abilities when your shop is active.
+Your assistant gets the keys to WordPress — posts, media, users, comments, settings, plugins, themes, WooCommerce — with capability checks, sanitization, and audit logging on every call. Plus PinchDrop, Ghost Writer, Molt, What do I know, site-digest, governance. 10 bonus WooCommerce abilities when your shop is active.
 
 = Live Chat Block =
 
@@ -42,7 +42,7 @@ One post, nine formats. Molt repackages a single post into social (Twitter, Link
 
 = Built for Developers =
 
-12+ filters and 6+ actions. Full WP-CLI support. Customize abilities, webhook payloads, governance schedules, role allowlists, and more. If you can hook it, you can pinch it.
+12+ filters and 6+ actions. Full WP-CLI support. Customize abilities, webhook payloads, governance schedules, role allowlists, and more. If you can hook it, you can pinch it. (We like wordplay. It's in the name.)
 
 = Production-Ready Security =
 
@@ -59,6 +59,8 @@ Capability checks on every operation. Input sanitization. Output escaping. Nonce
 7. Click **Test Connection** to verify.
 8. Configure webhook events and governance tasks to your liking.
 9. Sit back and let the lobster do the work.
+
+**Next:** [Configuration (wiki)](https://github.com/RegionallyFamous/wp-pinch/wiki/Configuration) for webhooks, governance, and Pinch Chat.
 
 = Connecting OpenClaw =
 
@@ -120,6 +122,19 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 5. Audit log showing recent ability executions, webhooks, and chat messages.
 
 == Changelog ==
+
+= 2.4.2 =
+* New: First-run wizard — step indicator, copy buttons for MCP URL and CLI command, Test Connection spinner and a11y. Wizard CSS/JS in admin assets.
+* New: Settings UI — Connection tab cards (Gateway & API, Webhook, Chat, PinchDrop). Audit log empty state, sticky table header. Design tokens in admin and block.
+* New: Pinch Chat — focus-visible outlines, "Scroll to bottom" when new message arrives off-screen, same-sender message grouping, design tokens and dark-mode contrast.
+* New: "Settings saved" admin notice after saving options.
+* Changed: Inline styles removed from wizard and audit; abilities table and circuit status in CSS. Audit page clamped to at least 1.
+* Security: Wizard loading state uses DOM APIs only (no innerHTML with translated text). Test Connection bound only when wpPinchAdmin.ajaxUrl exists.
+* Fixed: Lint (PHPCS, ESLint, Stylelint) and escaping.
+
+= 2.4.1 =
+* New: CodeQL and dependency review workflows. CONTRIBUTING with E2E/load testing notes.
+* Changed: Editorconfig, issue/PR templates, CODEOWNERS. PHPUnit 11, Composer PHP 8.2. PHPCS fixes.
 
 = 2.4.0 =
 * New: Quick Drop — PinchDrop option `save_as_note: true` creates a minimal post (title + body only). Lightweight capture from any channel.
@@ -256,6 +271,12 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 
 == Upgrade Notice ==
 
+= 2.4.2 =
+UI polish: first-run wizard (step indicator, copy buttons, Test Connection spinner), settings cards and audit empty state, Pinch Chat focus and scroll-to-bottom. Lint and security hardening. No breaking changes.
+
+= 2.4.1 =
+CI and docs: CodeQL, dependency review, CONTRIBUTING. PHPUnit 11, PHPCS fixes. No breaking changes.
+
 = 2.4.0 =
 Feature release: Quick Drop (save as note), Memory Bait (site-digest), Tide Report (daily digest webhook), Echo Net (related-posts), Weave (synthesize). Five new capabilities; seven governance tasks. No breaking changes from 2.3.1.
 
@@ -297,7 +318,7 @@ WP Pinch is built on many open-source projects. We are grateful to all of their 
 
 = Other Open-Source Projects =
 
-* [OpenClaw](https://github.com/nicepkg/openclaw) — The AI agent framework that makes the magic happen.
+* [OpenClaw](https://github.com/openclaw/openclaw) — The personal AI assistant (WhatsApp, Slack, Telegram, etc.) that uses WP Pinch as its WordPress tool.
 * [WP-CLI](https://wp-cli.org/) — Command-line interface for WordPress. Licensed under MIT.
 * [PHPUnit](https://phpunit.de/) — PHP testing framework. Licensed under BSD-3-Clause.
 * [PHPStan](https://phpstan.org/) — Static analysis tool. Licensed under MIT.

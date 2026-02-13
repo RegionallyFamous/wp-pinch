@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.2] - 2026-02-12
+
+### Added
+- **First-run wizard** — Step indicator (Step 1 of 3), copy buttons for MCP URL and CLI command with "Copied!" feedback, Test Connection loading state (spinner) and a11y (aria-live, aria-busy). Wizard CSS/JS moved into admin styles and script.
+- **Settings UI** — Connection tab grouped into cards (Gateway & API, Webhook defaults, Chat Settings, PinchDrop). Audit log: friendly empty state, sticky table header, filters bar styles in CSS. "What can I do?" and MCP info box styles in admin.css. Design tokens (primary, radius, spacing) in admin and block.
+- **Pinch Chat block** — Focus-visible outlines on interactive elements; "Scroll to bottom" control when user has scrolled up and a new message arrives; tighter gap between consecutive same-sender messages; design tokens and contrast tweaks for dark mode.
+- **Save feedback** — "Settings saved" admin notice when returning from options.php.
+
+### Changed
+- **Admin** — Inline styles removed from wizard and audit in favor of CSS classes. Abilities table checkbox column and circuit status margin in CSS. Audit pagination uses `max(1, ...)` so page is never 0.
+- **Security** — Wizard loading state no longer uses innerHTML with translated strings (DOM APIs only). Settings Test Connection only bound when wpPinchAdmin.ajaxUrl is present.
+
+### Fixed
+- Lint: PHPCS (translators comments, array alignment, escaped step indicator), ESLint (unused vars, navigator global, Prettier), Stylelint (selector order, duplicate selector, empty-line-before).
+
 ## [2.4.1] - 2026-02-12
 
 ### Added

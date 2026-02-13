@@ -1,23 +1,65 @@
 /**
  * WP Pinch admin styles.
+ *
+ * Uses design tokens for consistency with block styles where applicable.
  */
+
+/* =========================================================================
+   Design tokens (admin)
+   ========================================================================= */
+
+:root {
+	--wp-pinch-primary: var(--wp-admin-theme-color, #2271b1);
+	--wp-pinch-primary-darker: var(--wp-admin-theme-color-darker, #135e96);
+	--wp-pinch-radius: 4px;
+	--wp-pinch-spacing-xs: 4px;
+	--wp-pinch-spacing-sm: 8px;
+	--wp-pinch-spacing-md: 16px;
+	--wp-pinch-spacing-lg: 24px;
+	--wp-pinch-border: 1px solid #c3c4c7;
+	--wp-pinch-bg-subtle: #f0f0f1;
+	--wp-pinch-success: #00a32a;
+	--wp-pinch-error: #d63638;
+}
 
 /* Tab content area. */
 .wp-pinch-tab-content {
-	margin-top: 1em;
+	margin-top: var(--wp-pinch-spacing-md);
 }
 
 .wp-pinch-tab-content .form-table th {
 	width: 250px;
 }
 
+/* Card grouping for settings sections. */
+.wp-pinch-card {
+	background: #fff;
+	border: var(--wp-pinch-border);
+	border-radius: var(--wp-pinch-radius);
+	padding: var(--wp-pinch-spacing-lg);
+	margin-bottom: var(--wp-pinch-spacing-lg);
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.wp-pinch-card__title {
+	margin-top: 0;
+	margin-bottom: var(--wp-pinch-spacing-md);
+	font-size: 1.1em;
+}
+
+.wp-pinch-card + .wp-pinch-card {
+	margin-top: var(--wp-pinch-spacing-lg);
+}
+
 /* MCP endpoint info box. */
 .wp-pinch-mcp-info {
 	max-width: 600px;
-	margin-top: 2em;
-	padding: 1em;
-	background: #f0f0f1;
-	border-left: 4px solid #2271b1;
+	margin-top: var(--wp-pinch-spacing-lg);
+	padding: var(--wp-pinch-spacing-md);
+	background: var(--wp-pinch-bg-subtle);
+	border: var(--wp-pinch-border);
+	border-left: 4px solid var(--wp-pinch-primary);
+	border-radius: var(--wp-pinch-radius);
 }
 
 .wp-pinch-mcp-info h3 {
@@ -49,7 +91,263 @@
 	font-size: 13px;
 }
 
+/* Abilities table: narrow checkbox column */
+.wp-pinch-abilities-table th:first-child {
+	width: 40px;
+}
+
+/* Circuit breaker status block */
+.wp-pinch-circuit-status {
+	margin-top: var(--wp-pinch-spacing-lg);
+}
+
+/* Audit log: prevent date column wrap */
+.wp-pinch-audit-table .wp-pinch-audit-date {
+	white-space: nowrap;
+}
+
+/* Audit log: sticky table header. */
+.wp-pinch-audit-table-wrap {
+	max-height: 60vh;
+	overflow: auto;
+}
+
+.wp-pinch-audit-table-wrap .widefat thead th {
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	background: #fff;
+	box-shadow: 0 1px 0 #c3c4c7;
+}
+
+/* Audit log empty state. */
+.wp-pinch-audit-empty {
+	text-align: center;
+	padding: var(--wp-pinch-spacing-lg);
+	background: var(--wp-pinch-bg-subtle);
+	border: var(--wp-pinch-border);
+	border-radius: var(--wp-pinch-radius);
+	color: #50575e;
+}
+
+.wp-pinch-audit-empty-icon {
+	font-size: 2em;
+	opacity: 0.6;
+	margin-bottom: var(--wp-pinch-spacing-sm);
+}
+
+.wp-pinch-audit-empty p {
+	margin: 0 0 var(--wp-pinch-spacing-sm);
+}
+
+.wp-pinch-audit-empty .description {
+	margin: 0;
+	font-size: 13px;
+}
+
+/* Audit filters bar. */
+.wp-pinch-audit-filters {
+	background: #f9f9f9;
+	padding: var(--wp-pinch-spacing-md);
+	margin-bottom: var(--wp-pinch-spacing-md);
+	border: var(--wp-pinch-border);
+	border-radius: var(--wp-pinch-radius);
+}
+
+.wp-pinch-audit-filters .regular-text {
+	vertical-align: middle;
+}
+
+.wp-pinch-audit-filters input[type="date"] {
+	vertical-align: middle;
+}
+
+.wp-pinch-audit-filters .wp-pinch-audit-input-event {
+	width: 150px;
+}
+
+.wp-pinch-audit-filters .wp-pinch-audit-input-source {
+	width: 120px;
+}
+
+.wp-pinch-audit-filters-br {
+	display: block;
+	margin-bottom: var(--wp-pinch-spacing-sm);
+}
+
 /* Audit log pagination. */
 .wp-pinch-audit-nav {
-	margin-top: 1em;
+	margin-top: var(--wp-pinch-spacing-md);
+}
+
+/* =========================================================================
+   Wizard
+   ========================================================================= */
+
+.wp-pinch-wizard {
+	position: relative;
+}
+
+.wp-pinch-wizard__step-indicator {
+	margin-bottom: var(--wp-pinch-spacing-md);
+	font-size: 14px;
+	color: #50575e;
+}
+
+.wp-pinch-wizard__step-indicator [aria-live] {
+	font-weight: 600;
+}
+
+.wp-pinch-wizard__card {
+	background: #fff;
+	border: var(--wp-pinch-border);
+	border-radius: var(--wp-pinch-radius);
+	padding: var(--wp-pinch-spacing-lg);
+	max-width: 720px;
+	margin: var(--wp-pinch-spacing-lg) 0;
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.wp-pinch-wizard__card h2 {
+	margin-top: 0;
+	font-size: 1.5em;
+}
+
+.wp-pinch-wizard__card h3 {
+	margin-top: var(--wp-pinch-spacing-lg);
+}
+
+.wp-pinch-wizard__card ul.wp-pinch-wizard-list {
+	list-style: disc;
+	margin-left: 1.5em;
+}
+
+.wp-pinch-wizard__card .wp-pinch-copy-row {
+	display: flex;
+	align-items: center;
+	gap: var(--wp-pinch-spacing-sm);
+	flex-wrap: wrap;
+	margin-top: var(--wp-pinch-spacing-sm);
+}
+
+.wp-pinch-wizard__card .wp-pinch-copy-code {
+	padding: var(--wp-pinch-spacing-sm) 12px;
+	background: var(--wp-pinch-bg-subtle);
+	border: var(--wp-pinch-border);
+	border-radius: var(--wp-pinch-radius);
+	display: inline-block;
+	user-select: all;
+	font-size: 13px;
+	flex: 1;
+	min-width: 0;
+}
+
+.wp-pinch-wizard__card .wp-pinch-copy-btn {
+	flex-shrink: 0;
+}
+
+.wp-pinch-wizard__card .wp-pinch-copy-btn:focus-visible {
+	outline: 2px solid var(--wp-pinch-primary);
+	outline-offset: 2px;
+}
+
+.wp-pinch-wizard__card .wp-pinch-copy-feedback {
+	font-size: 12px;
+	color: var(--wp-pinch-success);
+	font-weight: 600;
+	opacity: 0;
+	transition: opacity 0.15s;
+}
+
+.wp-pinch-wizard__card .wp-pinch-copy-feedback.is-visible {
+	opacity: 1;
+}
+
+.wp-pinch-wizard-test-row {
+	display: flex;
+	align-items: center;
+	gap: var(--wp-pinch-spacing-sm);
+	flex-wrap: wrap;
+	margin-top: var(--wp-pinch-spacing-md);
+}
+
+.wp-pinch-wizard-test-result {
+	font-size: 14px;
+	font-weight: 500;
+}
+
+.wp-pinch-wizard-test-result.is-loading {
+	color: #50575e;
+}
+
+.wp-pinch-wizard-test-result.is-success {
+	color: var(--wp-pinch-success);
+}
+
+.wp-pinch-wizard-test-result.is-error {
+	color: var(--wp-pinch-error);
+}
+
+.wp-pinch-wizard-spinner {
+	display: inline-block;
+	width: 18px;
+	height: 18px;
+	border: 2px solid var(--wp-pinch-bg-subtle);
+	border-top-color: var(--wp-pinch-primary);
+	border-radius: 50%;
+	animation: wp-pinch-spin 0.7s linear infinite;
+	vertical-align: middle;
+	margin-right: 6px;
+}
+
+@keyframes wp-pinch-spin {
+
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.wp-pinch-wizard__card .wp-pinch-wizard-actions {
+	margin-top: var(--wp-pinch-spacing-lg);
+}
+
+.wp-pinch-wizard__card .wp-pinch-wizard-actions .button {
+	margin-right: var(--wp-pinch-spacing-sm);
+}
+
+.wp-pinch-wizard__card .wp-pinch-wizard-skip {
+	margin-top: var(--wp-pinch-spacing-md);
+}
+
+.wp-pinch-wizard__card hr {
+	margin: var(--wp-pinch-spacing-lg) 0;
+}
+
+.wp-pinch-wizard__card .wp-pinch-wizard-step-footer {
+	margin-top: var(--wp-pinch-spacing-lg);
+}
+
+/* =========================================================================
+   What can I do
+   ========================================================================= */
+
+.wp-pinch-what-can-i-do {
+	max-width: 42em;
+}
+
+.wp-pinch-what-can-i-do ul {
+	list-style: disc;
+	margin-left: 1.5em;
+}
+
+.wp-pinch-what-can-i-do li {
+	margin-bottom: var(--wp-pinch-spacing-sm);
+}
+
+@media (min-width: 1200px) {
+
+	.wp-pinch-what-can-i-do ul {
+		columns: 2;
+		column-gap: var(--wp-pinch-spacing-lg);
+	}
 }
