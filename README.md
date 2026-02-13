@@ -23,13 +23,28 @@ Manage your WordPress site from WhatsApp, Slack, Telegram, Discord -- or any cha
 
 ---
 
-## Six reasons to install WP Pinch
+## Abilities
 
-### 1. 35 AI Abilities
+Your AI agent gets **33 core abilities** across 9 categories: content (posts, pages), media, taxonomies, users, comments, settings, plugins & themes, analytics, and advanced (menus, meta, revisions, bulk ops, cron). Plus **10 WooCommerce abilities** when your shop is active. Every ability is locked down with capability checks, input sanitization, and audit logging. The AI works *for* you, not *around* you.
 
-Your AI agent gets full access to your WordPress site -- posts, pages, media, users, comments, settings, plugins, themes, menus, revisions, cron, and WooCommerce. Every ability is locked down with capability checks, input sanitization, and audit logging. The AI works *for* you, not *around* you. Core abilities cover content, media, users, and more; unique tools include PinchDrop and Ghost Writer.
+[Full abilities reference ->](https://github.com/RegionallyFamous/wp-pinch/wiki/Abilities-Reference)
 
-[Abilities & tools reference ->](https://github.com/RegionallyFamous/wp-pinch/wiki/Abilities-Reference)
+---
+
+## Tools
+
+WP Pinch adds **tools** on top of core abilities -- workflows that combine abilities, endpoints, and (where applicable) slash commands or governance.
+
+- **PinchDrop** — Send rough ideas from any OpenClaw-connected channel; signed captures hit `POST /wp-pinch/v1/pinchdrop/capture` and the `pinchdrop-generate` ability produces Draft Packs (blog post, product update, changelog, social). Optional draft persistence with trace metadata. Gated by `pinchdrop_engine`. [PinchDrop guide ->](https://github.com/RegionallyFamous/wp-pinch/wiki/PinchDrop)
+- **Ghost Writer** — Learns each author's writing voice from published posts and completes abandoned drafts in that voice. Abilities: `analyze-voice`, `list-abandoned-drafts`, `ghostwrite`. Use `/ghostwrite` in chat to list drafts or `/ghostwrite 123` to resurrect one. Weekly Draft Necromancer governance task. Gated by `ghost_writer`. [Ghost Writer guide ->](https://github.com/RegionallyFamous/wp-pinch/wiki/Ghost-Writer)
+
+---
+
+## Five reasons to install WP Pinch
+
+### 1. Abilities (above)
+
+33 core abilities + 10 WooCommerce. Content, media, users, settings, plugins, themes, menus, meta, revisions, cron. Full reference in the [wiki](https://github.com/RegionallyFamous/wp-pinch/wiki/Abilities-Reference).
 
 ### 2. Live Chat Block
 
@@ -45,13 +60,9 @@ Six background tasks patrol your site on autopilot: content freshness, SEO healt
 
 Post published? Comment posted? WooCommerce order shipped? WP Pinch fires events to OpenClaw the moment they happen. HMAC-SHA256 signed. Retry with exponential backoff. Circuit breaker for when the gateway goes down. Two-way: OpenClaw can push ability requests *back* to your site.
 
-### 5. PinchDrop (Capture Anywhere)
+### 5. Tools (above)
 
-Send rough ideas from any OpenClaw-connected channel and auto-generate a Draft Pack in WordPress. `POST /wp-pinch/v1/pinchdrop/capture` accepts signed inbound captures, runs the `pinchdrop_generate` ability, and can save draft posts with full trace metadata (`source`, `request_id`, timestamp, generator tag).
-
-### 6. Ghost Writer
-
-The AI that writes like *you*. Ghost Writer analyzes your published posts to learn your writing voice -- tone, vocabulary, sentence structure, quirks -- and builds a per-author style profile. When you abandon a draft, it finishes it in your voice. Type `/ghostwrite` in chat to see your draft graveyard, or `/ghostwrite 123` to resurrect one. A weekly Draft Necromancer governance task surfaces drafts worth saving. Ships behind the `ghost_writer` feature flag.
+PinchDrop and Ghost Writer. Capture-anywhere draft packs and AI that writes in your voice. See the [Tools](#tools) section and the [Abilities Reference](https://github.com/RegionallyFamous/wp-pinch/wiki/Abilities-Reference#tools-pinchdrop--ghost-writer) for details.
 
 ---
 
