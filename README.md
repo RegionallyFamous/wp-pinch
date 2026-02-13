@@ -1,150 +1,132 @@
 # WP Pinch
 
-### The AI agent plugin that grabs your WordPress site with both claws.
+**Your WordPress site. Your Slack. One very helpful lobster.**
 
-**[wp-pinch.com](https://wp-pinch.com)** | [Wiki](https://github.com/RegionallyFamous/wp-pinch/wiki) | [Releases](https://github.com/RegionallyFamous/wp-pinch/releases)
+**[wp-pinch.com](https://wp-pinch.com)** · [Wiki](https://github.com/RegionallyFamous/wp-pinch/wiki) · [Releases](https://github.com/RegionallyFamous/wp-pinch/releases)
 
 [![WordPress 6.9+](https://img.shields.io/badge/WordPress-6.9%2B-blue.svg)](https://wordpress.org/)
 [![PHP 8.1+](https://img.shields.io/badge/PHP-8.1%2B-purple.svg)](https://www.php.net/)
 [![License: GPL v2+](https://img.shields.io/badge/License-GPL%20v2%2B-green.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
 [![CI](https://github.com/RegionallyFamous/wp-pinch/actions/workflows/ci.yml/badge.svg)](https://github.com/RegionallyFamous/wp-pinch/actions/workflows/ci.yml)
 
-Manage your WordPress site from WhatsApp, Slack, Telegram, Discord -- or any chat platform. Powered by AI. Self-hosted. No SaaS middlemen getting their claws on your data.
+You're already in WhatsApp. Or Slack. Or Telegram. The last thing you want is another tab, another login, another "where did I put that draft?" WP Pinch gives your site a set of claws and connects it to the chat apps you actually use. Your AI can publish posts, upload media, tweak settings, and run your WooCommerce—from wherever you are. Self-hosted. No SaaS middlemen. Just you, your WordPress, and a lobster who actually does the work.
 
 ---
 
-## What if you could...
+## What if...
 
-**Publish a blog post by texting your site?** WP Pinch exposes 35 WordPress abilities to AI agents -- content, media, users, settings, plugins, WooCommerce -- so you can manage your site from any messaging platform [OpenClaw](https://github.com/nicepkg/openclaw) supports.
+**…you could publish a post by texting "ship the Q3 recap"?** WP Pinch exposes your site to AI agents through [OpenClaw](https://github.com/nicepkg/openclaw)—posts, media, users, settings, plugins, the works. One plugin. One lobster. Every group chat.
 
-**Have your site fix itself?** Six autonomous governance tasks run in the background — content freshness, SEO health, comment sweep, broken links, security scan, and draft necromancy. You set the schedule. The lobster does the work.
+**…your site could fix itself while you sleep?** Seven background tasks run on a schedule you set: stale content, SEO gaps, comment queue, broken links, security checks, abandoned drafts, and a daily "here's what needs attention" digest. The lobster patrols. You get the report.
 
-**Let visitors chat with an AI that knows your site?** Drop the Pinch Chat block on any page. Real-time streaming responses, dark mode, accessibility baked in, works on mobile. Your visitors get answers. You get happy visitors.
-
----
-
-## Abilities
-
-Your AI agent gets **35 core abilities** across 10 categories: content (posts, pages), media, taxonomies, users, comments, settings, plugins & themes, analytics (including site context export for agent memory), and advanced (menus, meta, revisions, bulk ops, cron). Plus **10 WooCommerce abilities** when your shop is active. Every ability is locked down with capability checks, input sanitization, and audit logging. The AI works *for* you, not *around* you.
-
-[Full abilities reference ->](https://github.com/RegionallyFamous/wp-pinch/wiki/Abilities-Reference)
+**…visitors could chat with an AI that knows your content?** Drop the Pinch Chat block on any page. Real-time streaming, dark mode, accessible, mobile-friendly. They get answers. You get to keep your afternoon.
 
 ---
 
-## Tools
+## What the lobster can do
 
-WP Pinch adds **tools** on top of core abilities -- workflows that combine abilities, endpoints, and (where applicable) slash commands or governance.
+Your AI doesn't just have "access"—it can *do* things. Publish and update posts. Upload and manage media. Tweak options. List and moderate comments. Toggle plugins and themes. Export data. Run cron. When WooCommerce is active, it gets another ten abilities for products and orders. We gave it the keys. We also gave it a very strict bouncer: capability checks, sanitization, audit logging. The AI works *for* you, not *around* you.
 
-- **PinchDrop** — Send rough ideas from any OpenClaw-connected channel; signed captures hit `POST /wp-pinch/v1/pinchdrop/capture` and the `pinchdrop-generate` ability produces Draft Packs (blog post, product update, changelog, social). Optional draft persistence with trace metadata. Gated by `pinchdrop_engine`. [PinchDrop guide ->](https://github.com/RegionallyFamous/wp-pinch/wiki/PinchDrop)
-- **Ghost Writer** — Learns each author's writing voice from published posts and completes abandoned drafts in that voice. Abilities: `analyze-voice`, `list-abandoned-drafts`, `ghostwrite`. Use `/ghostwrite` in chat to list drafts or `/ghostwrite 123` to resurrect one. Weekly Draft Necromancer governance task. Gated by `ghost_writer`. [Ghost Writer guide ->](https://github.com/RegionallyFamous/wp-pinch/wiki/Ghost-Writer)
-
----
-
-## Five reasons to install WP Pinch
-
-### 1. Abilities (above)
-
-35 core abilities + 10 WooCommerce. Content, media, users, settings, plugins, themes, analytics (including site context export), menus, meta, revisions, cron. Full reference in the [wiki](https://github.com/RegionallyFamous/wp-pinch/wiki/Abilities-Reference).
-
-### 2. Live Chat Block
-
-A Gutenberg block that gives your site a brain. SSE streaming for real-time responses. Slash commands (`/new`, `/status`). Message feedback. Token tracking. Markdown rendering. Session persistence. Public chat mode for anonymous visitors. Per-block agent overrides so every page can have its own personality. WCAG 2.1 AA accessible.
-
-[Chat block details ->](https://github.com/RegionallyFamous/wp-pinch/wiki/Chat-Block)
-
-### 3. Autonomous Governance
-
-Six background tasks patrol your site on autopilot: content freshness, SEO health, comment cleanup, broken link detection, security scanning, and draft necromancy. Findings get delivered to OpenClaw or processed server-side. Think of it as a site health monitor with claws.
-
-### 4. Real-Time Webhooks
-
-Post published? Comment posted? WooCommerce order shipped? WP Pinch fires events to OpenClaw the moment they happen. HMAC-SHA256 signed. Retry with exponential backoff. Circuit breaker for when the gateway goes down. Two-way: OpenClaw can push ability requests *back* to your site.
-
-### 5. Tools (above)
-
-PinchDrop and Ghost Writer. Capture-anywhere draft packs and AI that writes in your voice. See the [Tools](#tools) section and the [Abilities Reference](https://github.com/RegionallyFamous/wp-pinch/wiki/Abilities-Reference#tools-pinchdrop--ghost-writer) for details.
+[Full abilities reference →](https://github.com/RegionallyFamous/wp-pinch/wiki/Abilities-Reference)
 
 ---
 
-## Get started in 60 seconds
+## The fun stuff
+
+**PinchDrop** — Send a rough idea from any connected channel ("we're launching X next week, need a blog post and some social snippets"). Your site turns it into a draft pack: blog post, product update, changelog, social blurbs. Need just a quick note? Quick Drop: title and body, no fluff. The lobster takes dictation. [How it works →](https://github.com/RegionallyFamous/wp-pinch/wiki/PinchDrop)
+
+**Ghost Writer** — That draft you started in 2022? Ghost Writer learns each author's voice from their published posts and can finish abandoned drafts *in that voice*. List drafts, resurrect one by ID, or let the weekly Draft Necromancer task surface the ones worth saving. Even lobsters forget what they were writing. This one doesn't. [Ghost Writer guide →](https://github.com/RegionallyFamous/wp-pinch/wiki/Ghost-Writer)
+
+**Memory Bait, Echo Net, Weave** — Give your agent a site digest for context. Find posts that link to a given post or share its topics. Search and get a payload ready for synthesis. [Abilities reference →](https://github.com/RegionallyFamous/wp-pinch/wiki/Abilities-Reference)
+
+---
+
+## Why WP Pinch?
+
+**Run your site from the couch.** Yes, in your slippers. Thirty-eight abilities (plus ten for WooCommerce when you need them). Content, media, users, settings, plugins, themes, analytics, menus, meta, revisions, cron. Everything your AI needs to actually manage the site—with a full [reference](https://github.com/RegionallyFamous/wp-pinch/wiki/Abilities-Reference) when you want the nitty-gritty.
+
+**A chat block that doesn't suck.** Streaming responses. Slash commands. Message feedback. Token tracking. Markdown. Public chat for anonymous visitors. Per-block agent overrides so your support page and your blog can have different personalities. WCAG 2.1 AA. [Chat block details →](https://github.com/RegionallyFamous/wp-pinch/wiki/Chat-Block)
+
+**Governance that runs without you.** Stale content, SEO issues, comment backlog, broken links, security checks, draft graveyard, daily digest—seven tasks, one webhook or server-side delivery. Set the schedule. The lobster does the rest.
+
+**Webhooks that go both ways.** Post published? Comment posted? Order shipped? WP Pinch fires to OpenClaw the moment it happens. Signed, retried, with a circuit breaker when the gateway is down. And OpenClaw can push ability requests *back* to your site. The trap works both ways.
+
+**Tools that feel like magic.** PinchDrop and Ghost Writer (and the rest) turn "I'll do it when I get to my desk" into "done." [Tools & abilities →](https://github.com/RegionallyFamous/wp-pinch/wiki/Abilities-Reference#tools-pinchdrop--ghost-writer)
+
+---
+
+## Give your site claws in 60 seconds
 
 ```bash
 wp plugin install https://github.com/RegionallyFamous/wp-pinch/releases/latest/download/wp-pinch.zip --activate
 ```
 
-1. Go to **WP Pinch** in your admin sidebar
-2. Enter your OpenClaw Gateway URL and API Token
-3. Click **Test Connection**
-4. Add a **Pinch Chat** block to any page
+1. Open **WP Pinch** in your admin sidebar.
+2. Enter your OpenClaw Gateway URL and API Token.
+3. Click **Test Connection**.
+4. Add a **Pinch Chat** block to any page.
 
-That's it. Your site has claws now.
+That's it. We said 60 seconds. The lobster is punctual.
 
-[Detailed setup guide ->](https://github.com/RegionallyFamous/wp-pinch/wiki/Configuration)
+[Detailed setup →](https://github.com/RegionallyFamous/wp-pinch/wiki/Configuration)
 
 ---
 
-## Built for developers
+## For developers who like to customize everything
 
-12+ filters and 6+ actions let you customize everything. Remove abilities, modify webhook payloads, adjust governance schedules, block roles, suppress findings:
+Hooks. Lots of them. Remove an ability, change webhook payloads, tweak governance schedules, block roles—the lobster is configurable.
 
 ```php
-// Remove an ability your AI shouldn't have
 add_filter( 'wp_pinch_abilities', function ( array $abilities ): array {
     unset( $abilities['delete_post'] );
     return $abilities;
 } );
 ```
 
-Full WP-CLI support for scripting and automation:
+WP-CLI too: `wp pinch status`, `wp pinch audit list`, `wp pinch governance run`. Script it. Automate it.
 
-```bash
-wp pinch status            # Gateway health + abilities count
-wp pinch audit list        # Browse the audit log
-wp pinch governance run    # Trigger governance manually
-```
-
-[Hooks & filters reference ->](https://github.com/RegionallyFamous/wp-pinch/wiki/Hooks-and-Filters) | [WP-CLI commands ->](https://github.com/RegionallyFamous/wp-pinch/wiki/WP-CLI)
+[Hooks & filters →](https://github.com/RegionallyFamous/wp-pinch/wiki/Hooks-and-Filters) · [WP-CLI →](https://github.com/RegionallyFamous/wp-pinch/wiki/WP-CLI)
 
 ---
 
-## Security is not optional
+## We gave the AI keys. We also gave it a bouncer.
 
-Capability checks on every operation. Input sanitization and output escaping everywhere. Nonce verification on all endpoints. Prepared SQL statements (no raw queries, ever). HMAC-SHA256 webhook signatures with replay protection. Circuit breaker. Rate limiting. Option allowlists. Role escalation prevention. PHPStan Level 6 static analysis. 160+ PHPUnit tests. PHPCS WordPress-Extra + Security.
+Capability checks on every operation. Input sanitized, output escaped. Nonces, prepared SQL, HMAC-signed webhooks, rate limiting, circuit breaker. We're not reckless. PHPStan Level 6, 160+ tests, WordPress coding standards. Security isn't optional—it's how we sleep at night.
 
-[Full security model ->](https://github.com/RegionallyFamous/wp-pinch/wiki/Security) | [Report a vulnerability ->](SECURITY.md)
+[Full security model →](https://github.com/RegionallyFamous/wp-pinch/wiki/Security) · [Report a vulnerability →](SECURITY.md)
 
 ---
 
 ## Requirements
 
 | Requirement | Minimum |
-|---|---|
-| WordPress | 6.9+ |
+|-------------|---------|
+| WordPress | 6.9+ (that's when WordPress grew claws) |
 | PHP | 8.1+ |
 | Action Scheduler | Required (ships with WooCommerce) |
 | MCP Adapter plugin | Recommended |
 
 ---
 
-## Documentation
+## The fine print (and the actually useful docs)
 
 Everything lives in the [GitHub Wiki](https://github.com/RegionallyFamous/wp-pinch/wiki):
 
-- [Abilities Reference](https://github.com/RegionallyFamous/wp-pinch/wiki/Abilities-Reference) -- All 35 abilities across 10 categories
-- [Chat Block](https://github.com/RegionallyFamous/wp-pinch/wiki/Chat-Block) -- Streaming, slash commands, public mode, accessibility
-- [Architecture](https://github.com/RegionallyFamous/wp-pinch/wiki/Architecture) -- How the pieces fit together
-- [Hooks & Filters](https://github.com/RegionallyFamous/wp-pinch/wiki/Hooks-and-Filters) -- 12+ filters, 6+ actions
-- [Security](https://github.com/RegionallyFamous/wp-pinch/wiki/Security) -- The full security model
-- [Configuration](https://github.com/RegionallyFamous/wp-pinch/wiki/Configuration) -- Installation, OpenClaw setup, admin settings
-- [PinchDrop](https://github.com/RegionallyFamous/wp-pinch/wiki/PinchDrop) -- Capture-anywhere payload contract and draft-pack workflow
-- [WP-CLI](https://github.com/RegionallyFamous/wp-pinch/wiki/WP-CLI) -- Command reference
-- [Developer Guide](https://github.com/RegionallyFamous/wp-pinch/wiki/Developer-Guide) -- Contributing, testing, quality system
-- [FAQ](https://github.com/RegionallyFamous/wp-pinch/wiki/FAQ) -- Common questions answered
+- [Abilities Reference](https://github.com/RegionallyFamous/wp-pinch/wiki/Abilities-Reference) — What the lobster can do, in detail
+- [Chat Block](https://github.com/RegionallyFamous/wp-pinch/wiki/Chat-Block) — Streaming, slash commands, public mode
+- [Architecture](https://github.com/RegionallyFamous/wp-pinch/wiki/Architecture) — How the pieces fit together
+- [Hooks & Filters](https://github.com/RegionallyFamous/wp-pinch/wiki/Hooks-and-Filters) — Make the lobster do your bidding
+- [Security](https://github.com/RegionallyFamous/wp-pinch/wiki/Security) — The full model
+- [Configuration](https://github.com/RegionallyFamous/wp-pinch/wiki/Configuration) — Installation and OpenClaw setup
+- [PinchDrop](https://github.com/RegionallyFamous/wp-pinch/wiki/PinchDrop) — Capture-anywhere workflow
+- [WP-CLI](https://github.com/RegionallyFamous/wp-pinch/wiki/WP-CLI) — Command reference
+- [Developer Guide](https://github.com/RegionallyFamous/wp-pinch/wiki/Developer-Guide) — Contributing and testing
+- [FAQ](https://github.com/RegionallyFamous/wp-pinch/wiki/FAQ) — Common questions
 
 ---
 
 ## License
 
-[GPL-2.0-or-later](LICENSE). Built by [Nick Hamze](https://github.com/RegionallyFamous) with coffee, crustacean puns, and an unreasonable number of PHPStan runs.
+[GPL-2.0-or-later](LICENSE). Built by [Nick Hamze](https://github.com/RegionallyFamous) with diet pepsi, crustacean puns, and an unreasonable number of PHPStan runs. No lobsters were harmed in the making of this plugin.
 
 **[wp-pinch.com](https://wp-pinch.com)**

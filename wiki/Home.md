@@ -8,12 +8,12 @@ WP Pinch bridges WordPress and [OpenClaw](https://github.com/nicepkg/openclaw), 
 
 ## Quick Links
 
-Core abilities cover standard WordPress operations; Tools cover PinchDrop and Ghost Writer workflows.
+Core abilities (38+) cover standard WordPress operations; Tools cover PinchDrop, Ghost Writer, and context/discovery (site-digest, related-posts, synthesize). Seven governance tasks including Tide Report (daily digest).
 
 | Page | What's Inside |
 |---|---|
-| [Abilities Reference](Abilities-Reference) | Core abilities by category and Tools (PinchDrop, Ghost Writer) with parameters and examples |
-| [PinchDrop](PinchDrop) | Capture ideas from any OpenClaw channel and auto-create Draft Packs |
+| [Abilities Reference](Abilities-Reference) | Core abilities by category and Tools (PinchDrop, Ghost Writer, Memory Bait, Echo Net, Weave) with parameters and examples |
+| [PinchDrop](PinchDrop) | Capture ideas from any OpenClaw channel and auto-create Draft Packs; Quick Drop for minimal notes |
 | [Ghost Writer](Ghost-Writer) | Voice profiles, abandoned-draft completion, slash command, Draft Necromancer |
 | [Chat Block](Chat-Block) | SSE streaming, slash commands, public mode, agent overrides, accessibility |
 | [Architecture](Architecture) | How the pieces fit together -- diagram and subsystem overview |

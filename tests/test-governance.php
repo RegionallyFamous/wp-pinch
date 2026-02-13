@@ -30,10 +30,10 @@ class Test_Governance extends WP_UnitTestCase {
 	// =========================================================================
 
 	/**
-	 * Test DEFAULT_INTERVALS contains all governance tasks (currently 6).
+	 * Test DEFAULT_INTERVALS contains all governance tasks (currently 7).
 	 */
 	public function test_default_intervals_count(): void {
-		$this->assertCount( 6, Governance::DEFAULT_INTERVALS );
+		$this->assertCount( 7, Governance::DEFAULT_INTERVALS );
 	}
 
 	/**
@@ -47,6 +47,7 @@ class Test_Governance extends WP_UnitTestCase {
 			'broken_links',
 			'security_scan',
 			'draft_necromancer',
+			'tide_report',
 		);
 
 		foreach ( $expected as $key ) {
@@ -99,12 +100,12 @@ class Test_Governance extends WP_UnitTestCase {
 	// =========================================================================
 
 	/**
-	 * Test get_available_tasks returns all 6 tasks with labels.
+	 * Test get_available_tasks returns all 7 tasks with labels.
 	 */
 	public function test_get_available_tasks(): void {
 		$tasks = Governance::get_available_tasks();
 
-		$this->assertCount( 6, $tasks );
+		$this->assertCount( 7, $tasks );
 		foreach ( $tasks as $key => $label ) {
 			$this->assertIsString( $label );
 			$this->assertNotEmpty( $label );

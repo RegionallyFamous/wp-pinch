@@ -1,6 +1,6 @@
 # Abilities Reference
 
-WP Pinch provides **core abilities** (standard WordPress operations the AI can perform) and **tools** (PinchDrop and Ghost Writer workflows). You get **35 core abilities** across 10 categories, plus **PinchDrop** and **Ghost Writer** (4 tool abilities), and **10 WooCommerce abilities** when WooCommerce is active. Every ability has built-in security guards: capability checks, input sanitization, existence validation, and audit logging. We don't let AI agents run around your site like unsupervised lobsters in a kitchen.
+WP Pinch provides **core abilities** (standard WordPress operations the AI can perform) and **tools** (PinchDrop and Ghost Writer workflows). You get **38 core abilities** across 10 categories, plus **PinchDrop** and **Ghost Writer** (4 tool abilities), and **10 WooCommerce abilities** when WooCommerce is active. Every ability has built-in security guards: capability checks, input sanitization, existence validation, and audit logging. We don't let AI agents run around your site like unsupervised lobsters in a kitchen.
 
 ---
 
@@ -17,7 +17,7 @@ Core abilities cover content, media, users, comments, settings, plugins/themes, 
 | **Comments** | Moderation and cleanup | `list-comments`, `moderate-comment` |
 | **Settings** | Read and update options (allowlisted) | `get-option`, `update-option` |
 | **Plugins & Themes** | Extension management | `list-plugins`, `toggle-plugin`, `list-themes`, `switch-theme` |
-| **Analytics** | Site health and data export | `site-health`, `recent-activity`, `search-content`, `export-data`, `export-site-context` |
+| **Analytics** | Site health, data export, context & discovery | `site-health`, `recent-activity`, `search-content`, `export-data`, `site-digest`, `related-posts`, `synthesize` |
 | **Advanced** | Menus, meta, revisions, bulk ops, cron | `list-menus`, `manage-menu-item`, `get-post-meta`, `update-post-meta`, `list-revisions`, `restore-revision`, `bulk-edit-posts`, `list-cron-events`, `manage-cron` |
 | **WooCommerce** | Shop abilities (when WooCommerce is active) | `woo-list-products`, `woo-manage-order`, `woo-create-product`, `woo-update-product`, `woo-manage-inventory`, `woo-list-orders`, `woo-list-customers`, `woo-list-coupons`, `woo-create-coupon`, `woo-revenue-summary` |
 
@@ -29,7 +29,7 @@ Tools are WP Pinch–specific workflows that combine abilities, REST endpoints, 
 
 ### PinchDrop
 
-Capture rough ideas from any OpenClaw-connected channel and auto-generate a Draft Pack in WordPress. The **`pinchdrop-generate`** ability produces structured drafts (blog post, product update, changelog, social). Signed captures hit `POST /wp-pinch/v1/pinchdrop/capture`; the endpoint runs the ability and can save draft posts with full trace metadata (`source`, `request_id`, timestamp). Gated by the `pinchdrop_engine` feature flag.
+Capture rough ideas from any OpenClaw-connected channel and auto-generate a Draft Pack in WordPress. The **`pinchdrop-generate`** ability produces structured drafts (blog post, product update, changelog, social). Use **Quick Drop** (`options.save_as_note: true`) to skip AI expansion and create a minimal post (title + body only). Signed captures hit `POST /wp-pinch/v1/pinchdrop/capture`; the endpoint runs the ability and can save draft posts with full trace metadata (`source`, `request_id`, timestamp). Gated by the `pinchdrop_engine` feature flag.
 
 **[PinchDrop (full guide) →](PinchDrop)**
 
@@ -38,6 +38,12 @@ Capture rough ideas from any OpenClaw-connected channel and auto-generate a Draf
 The AI that writes like *you*. Ghost Writer learns each author's writing voice from their published posts and can complete abandoned drafts in that voice. Three abilities: **`analyze-voice`** (build or refresh a per-author style profile), **`list-abandoned-drafts`** (rank drafts by resurrection potential), **`ghostwrite`** (return AI-completed content for a draft). The **`/wp-pinch/v1/ghostwrite`** REST endpoint powers the **`/ghostwrite`** slash command in chat (list drafts or resurrect by ID). A weekly Draft Necromancer governance task surfaces drafts worth saving. Gated by the `ghost_writer` feature flag.
 
 **[Ghost Writer (full guide) →](Ghost-Writer)**
+
+### Context & discovery (Memory Bait, Echo Net, Weave)
+
+- **`site-digest` (Memory Bait)** — Compact export of recent posts (title, excerpt, taxonomy terms) for agent memory-core or system prompt.
+- **`related-posts` (Echo Net)** — Given a post ID, returns posts that link to it (backlinks) or share taxonomy terms.
+- **`synthesize` (Weave)** — Given a query, search posts and return a payload (title, excerpt, content snippet) for LLM synthesis; first draft, human refines.
 
 ---
 

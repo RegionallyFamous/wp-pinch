@@ -4,21 +4,21 @@ Tags: ai, agent, openclaw, mcp, automation
 Requires at least: 6.9
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 2.3.1
+Stable tag: 2.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Manage your WordPress site from WhatsApp, Slack, Telegram, Discord — or any chat platform. 35 AI abilities, autonomous governance, a live chat block, and real-time webhooks. Self-hosted. No SaaS middlemen.
+Manage your WordPress site from WhatsApp, Slack, Telegram, Discord — or any chat platform. 38 AI abilities, seven governance tasks, a live chat block, and real-time webhooks. Self-hosted. No SaaS middlemen.
 
 == Description ==
 
 **What if you could manage your WordPress site by texting it?**
 
-WP Pinch bridges WordPress and [OpenClaw](https://github.com/nicepkg/openclaw) — an open-source AI agent framework — giving your site 35 AI-accessible abilities through the Abilities API and Model Context Protocol (MCP) in WordPress 6.9. Manage posts, media, users, plugins, WooCommerce, and more from any messaging platform. All self-hosted. All under your control.
+WP Pinch bridges WordPress and [OpenClaw](https://github.com/nicepkg/openclaw) — an open-source AI agent framework — giving your site 38 AI-accessible abilities through the Abilities API and Model Context Protocol (MCP) in WordPress 6.9. Manage posts, media, users, plugins, WooCommerce, and more from any messaging platform. All self-hosted. All under your control.
 
-= 35 AI Abilities =
+= 38 AI Abilities =
 
-Your AI agent gets full access to your WordPress site — posts, pages, media, users, comments, settings, plugins, themes, menus, revisions, cron, and WooCommerce. Every ability is locked down with capability checks, input sanitization, and audit logging. Core abilities cover content, media, users, and more; unique tools include PinchDrop and Ghost Writer. 10 categories. 10 bonus WooCommerce abilities when your shop is active.
+Your AI agent gets full access to your WordPress site — posts, pages, media, users, comments, settings, plugins, themes, menus, revisions, cron, and WooCommerce. Every ability is locked down with capability checks, input sanitization, and audit logging. Core abilities cover content, media, users, and more; unique tools include PinchDrop, Ghost Writer, and context/discovery abilities (site-digest, related-posts, synthesize). 10 categories. 10 bonus WooCommerce abilities when your shop is active.
 
 = Live Chat Block =
 
@@ -26,7 +26,7 @@ Drop an AI chat widget on any page with the Pinch Chat Gutenberg block. SSE stre
 
 = Autonomous Governance =
 
-Six background tasks patrol your site on autopilot: content freshness, SEO health, comment cleanup, broken link detection, security scanning, and draft necromancy. Findings get delivered to OpenClaw automatically. Set it and forget it.
+Seven background tasks patrol your site on autopilot: content freshness, SEO health, comment cleanup, broken link detection, security scanning, draft necromancy, and Tide Report (daily digest). Findings get delivered to OpenClaw automatically. Set it and forget it.
 
 = Real-Time Webhooks =
 
@@ -116,6 +116,14 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 5. Audit log showing recent ability executions, webhooks, and chat messages.
 
 == Changelog ==
+
+= 2.4.0 =
+* New: Quick Drop — PinchDrop option `save_as_note: true` creates a minimal post (title + body only). Lightweight capture from any channel.
+* New: Memory Bait — ability `wp-pinch/site-digest` returns recent posts with title, excerpt, and taxonomy terms for agent memory or system prompt.
+* New: Tide Report — daily governance task that bundles content freshness, SEO, comments, and (optionally) draft necromancer into one webhook payload.
+* New: Echo Net — ability `wp-pinch/related-posts` returns backlinks and posts that share taxonomy terms for a given post ID.
+* New: Weave — ability `wp-pinch/synthesize` searches posts and returns a payload for LLM synthesis (first draft; human refines).
+* Governance: 7 tasks total; Tide Report added. Shared helpers for findings used by individual tasks and Tide Report.
 
 = 2.3.1 =
 * Doc: README and readme.txt now say "Six reasons to install WP Pinch" and list six governance tasks (including draft necromancy).
@@ -243,6 +251,9 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 * 12+ developer filters and 6+ action hooks for extensibility.
 
 == Upgrade Notice ==
+
+= 2.4.0 =
+Feature release: Quick Drop (save as note), Memory Bait (site-digest), Tide Report (daily digest webhook), Echo Net (related-posts), Weave (synthesize). Five new capabilities; seven governance tasks. No breaking changes from 2.3.1.
 
 = 2.3.1 =
 Documentation update: "Six reasons" and six governance tasks in README/readme.txt. No code changes from 2.3.0.

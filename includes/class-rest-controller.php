@@ -1270,6 +1270,7 @@ class Rest_Controller {
 			'audience'      => sanitize_text_field( (string) ( $options['audience'] ?? '' ) ),
 			'output_types'  => array_map( 'sanitize_key', (array) ( $options['output_types'] ?? $default_outputs ) ),
 			'save_as_draft' => isset( $options['save_as_draft'] ) ? (bool) $options['save_as_draft'] : (bool) get_option( 'wp_pinch_pinchdrop_auto_save_drafts', true ),
+			'save_as_note'  => ! empty( $options['save_as_note'] ),
 		);
 
 		$result = self::execute_ability_as_admin( 'wp-pinch/pinchdrop-generate', $payload );

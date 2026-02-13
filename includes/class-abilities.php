@@ -198,6 +198,9 @@ class Abilities {
 			'wp-pinch/recent-activity',
 			'wp-pinch/search-content',
 			'wp-pinch/export-data',
+			'wp-pinch/site-digest',
+			'wp-pinch/related-posts',
+			'wp-pinch/synthesize',
 			'wp-pinch/pinchdrop-generate',
 
 			// Navigation Menus.
@@ -813,6 +816,78 @@ class Abilities {
 		);
 
 		self::register(
+			'wp-pinch/site-digest',
+			__( 'Memory Bait (Site Digest)', 'wp-pinch' ),
+			__( 'Compact export of recent posts: title, excerpt, and key taxonomy terms. For agent memory-core or system prompt so the agent knows your site.', 'wp-pinch' ),
+			array(
+				'type'       => 'object',
+				'properties' => array(
+					'per_page'  => array(
+						'type'    => 'integer',
+						'default' => 10,
+					),
+					'post_type' => array(
+						'type'    => 'string',
+						'default' => 'post',
+					),
+				),
+			),
+			array( 'type' => 'object' ),
+			'edit_posts',
+			array( __CLASS__, 'execute_site_digest' ),
+			true
+		);
+
+		self::register(
+			'wp-pinch/related-posts',
+			__( 'Echo Net (Related Posts)', 'wp-pinch' ),
+			__( 'Given a post ID, return posts that link to it (backlinks) or share taxonomy terms. Enables "you wrote about X before" and graph-like discovery.', 'wp-pinch' ),
+			array(
+				'type'       => 'object',
+				'required'   => array( 'post_id' ),
+				'properties' => array(
+					'post_id' => array(
+						'type'        => 'integer',
+						'description' => 'Post ID to find related posts for.',
+					),
+					'limit'   => array(
+						'type'    => 'integer',
+						'default' => 20,
+					),
+				),
+			),
+			array( 'type' => 'object' ),
+			'edit_posts',
+			array( __CLASS__, 'execute_related_posts' ),
+			true
+		);
+
+		self::register(
+			'wp-pinch/synthesize',
+			__( 'Weave (Synthesize)', 'wp-pinch' ),
+			__( 'Given a query, search posts, fetch matching content, and return a payload for LLM synthesis. First-draft synthesis; human refines.', 'wp-pinch' ),
+			array(
+				'type'       => 'object',
+				'required'   => array( 'query' ),
+				'properties' => array(
+					'query'     => array( 'type' => 'string' ),
+					'per_page'  => array(
+						'type'    => 'integer',
+						'default' => 10,
+					),
+					'post_type' => array(
+						'type'    => 'string',
+						'default' => 'post',
+					),
+				),
+			),
+			array( 'type' => 'object' ),
+			'edit_posts',
+			array( __CLASS__, 'execute_synthesize' ),
+			true
+		);
+
+		self::register(
 			'wp-pinch/pinchdrop-generate',
 			__( 'PinchDrop Generate', 'wp-pinch' ),
 			__( 'Turn rough idea text into a draft content pack (post, product update, changelog, social snippets).', 'wp-pinch' ),
@@ -844,6 +919,11 @@ class Abilities {
 					'save_as_draft' => array(
 						'type'    => 'boolean',
 						'default' => true,
+					),
+					'save_as_note'  => array(
+						'type'        => 'boolean',
+						'default'     => false,
+						'description' => 'Quick Drop: skip AI expansion; create minimal post (title + body only, no blocks).',
 					),
 					'output_types'  => array(
 						'type'    => 'array',
@@ -2564,6 +2644,198 @@ class Abilities {
 	}
 
 	/**
+	 * Memory Bait: compact site digest for agent context.
+	 *
+	 * Returns recent N posts with title, excerpt, and key taxonomy terms.
+	 *
+	 * @param array $input Ability input.
+	 * @return array
+	 */
+	public static function execute_site_digest( array $input ): array {
+		$per_page  = max( 1, min( absint( $input['per_page'] ?? 10 ), 50 ) );
+		$post_type = sanitize_key( (string) ( $input['post_type'] ?? 'post' ) );
+		$pt_obj    = get_post_type_object( $post_type );
+		if ( ! $pt_obj || ! current_user_can( $pt_obj->cap->edit_posts ) ) {
+			return array( 'error' => __( 'Invalid post type or insufficient permissions.', 'wp-pinch' ) );
+		}
+
+		$query = new \WP_Query(
+			array(
+				'post_type'      => $post_type,
+				'post_status'    => 'publish',
+				'posts_per_page' => $per_page,
+				'orderby'        => 'date',
+			)
+		);
+
+		$items = array();
+		foreach ( $query->posts as $post ) {
+			$terms = array();
+			foreach ( get_object_taxonomies( $post->post_type, 'objects' ) as $tax ) {
+				if ( ! $tax->public ) {
+					continue;
+				}
+				$term_list = wp_get_post_terms( $post->ID, $tax->name );
+				if ( is_array( $term_list ) ) {
+					foreach ( $term_list as $t ) {
+						$terms[ $tax->name ][] = $t->name;
+					}
+				}
+			}
+			$items[] = array(
+				'id'         => $post->ID,
+				'title'      => $post->post_title,
+				'excerpt'    => wp_trim_words( wp_strip_all_tags( $post->post_content ), 30 ),
+				'url'        => get_permalink( $post->ID ),
+				'date'       => $post->post_date,
+				'taxonomies' => $terms,
+			);
+		}
+
+		return array(
+			'items'    => $items,
+			'total'    => $query->found_posts,
+			'site_url' => home_url( '/' ),
+		);
+	}
+
+	/**
+	 * Echo Net: posts that link to this one or share taxonomy terms.
+	 *
+	 * @param array $input Ability input.
+	 * @return array
+	 */
+	public static function execute_related_posts( array $input ): array {
+		$post_id = absint( $input['post_id'] ?? 0 );
+		$limit   = max( 1, min( absint( $input['limit'] ?? 20 ), 50 ) );
+		$post    = get_post( $post_id );
+		if ( ! $post || ! current_user_can( 'edit_post', $post_id ) ) {
+			return array( 'error' => __( 'Post not found or insufficient permissions.', 'wp-pinch' ) );
+		}
+
+		$permalink    = get_permalink( $post_id );
+		$url_variants = array(
+			$permalink,
+			home_url( '/?p=' . $post_id ),
+			wp_shortlink( $post_id ),
+		);
+		$url_variants = array_filter( array_unique( $url_variants ) );
+
+		global $wpdb;
+		$backlink_ids = array();
+		foreach ( $url_variants as $url ) {
+			if ( '' === $url ) {
+				continue;
+			}
+			$escaped      = $wpdb->esc_like( $url );
+			$ids          = $wpdb->get_col(
+				$wpdb->prepare(
+					'SELECT ID FROM ' . $wpdb->posts . " WHERE post_type IN ('post','page') AND post_status = 'publish' AND ID != %d AND post_content LIKE %s LIMIT %d",
+					$post_id,
+					'%' . $escaped . '%',
+					$limit
+				)
+			);
+			$backlink_ids = array_merge( $backlink_ids, array_map( 'absint', (array) $ids ) );
+		}
+		$backlink_ids = array_unique( array_slice( $backlink_ids, 0, $limit ) );
+
+		$term_taxonomy_ids = array();
+		foreach ( get_object_taxonomies( $post->post_type, 'objects' ) as $tax ) {
+			if ( ! $tax->public ) {
+				continue;
+			}
+			$terms = wp_get_post_terms( $post_id, $tax->name );
+			if ( is_array( $terms ) ) {
+				foreach ( $terms as $t ) {
+					$term_taxonomy_ids[] = (int) $t->term_taxonomy_id;
+				}
+			}
+		}
+		$term_taxonomy_ids = array_unique( $term_taxonomy_ids );
+		$by_taxonomy_ids   = array();
+		if ( ! empty( $term_taxonomy_ids ) ) {
+			$in_placeholders = implode( ',', array_fill( 0, count( $term_taxonomy_ids ), '%d' ) );
+			$by_taxonomy_ids = $wpdb->get_col(
+				$wpdb->prepare( // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Dynamic IN; placeholders match array_merge.
+					'SELECT object_id FROM ' . $wpdb->term_relationships . ' WHERE object_id != %d AND term_taxonomy_id IN (' . $in_placeholders . ') LIMIT %d', // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $in_placeholders is safe (%d list).
+					array_merge( array( $post_id ), $term_taxonomy_ids, array( $limit ) )
+				)
+			);
+			$by_taxonomy_ids = array_map( 'absint', (array) $by_taxonomy_ids );
+		}
+
+		$format = function ( $id ) {
+			$p = get_post( $id );
+			if ( ! $p ) {
+				return null;
+			}
+			return array(
+				'id'    => (int) $p->ID,
+				'title' => $p->post_title,
+				'url'   => get_permalink( $p->ID ),
+				'type'  => $p->post_type,
+			);
+		};
+
+		return array(
+			'post_id'     => $post_id,
+			'backlinks'   => array_values( array_filter( array_map( $format, $backlink_ids ) ) ),
+			'by_taxonomy' => array_values( array_filter( array_map( $format, array_diff( $by_taxonomy_ids, $backlink_ids ) ) ) ),
+		);
+	}
+
+	/**
+	 * Weave: search posts and return payload for LLM synthesis.
+	 *
+	 * @param array $input Ability input.
+	 * @return array
+	 */
+	public static function execute_synthesize( array $input ): array {
+		$query     = sanitize_text_field( (string) ( $input['query'] ?? '' ) );
+		$per_page  = max( 1, min( absint( $input['per_page'] ?? 10 ), 25 ) );
+		$post_type = sanitize_key( (string) ( $input['post_type'] ?? 'post' ) );
+		if ( '' === trim( $query ) ) {
+			return array( 'error' => __( 'Query is required.', 'wp-pinch' ) );
+		}
+		$pt_obj = get_post_type_object( $post_type );
+		if ( ! $pt_obj || ! current_user_can( $pt_obj->cap->edit_posts ) ) {
+			return array( 'error' => __( 'Invalid post type or insufficient permissions.', 'wp-pinch' ) );
+		}
+
+		$q = new \WP_Query(
+			array(
+				's'              => $query,
+				'post_type'      => $post_type,
+				'post_status'    => array( 'publish', 'draft', 'private' ),
+				'posts_per_page' => $per_page,
+			)
+		);
+
+		$posts = array();
+		foreach ( $q->posts as $post ) {
+			if ( ! current_user_can( 'read_post', $post->ID ) ) {
+				continue;
+			}
+			$content = wp_strip_all_tags( $post->post_content );
+			$posts[] = array(
+				'id'              => $post->ID,
+				'title'           => $post->post_title,
+				'excerpt'         => wp_trim_words( $content, 40 ),
+				'content_snippet' => wp_trim_words( $content, 150 ),
+				'url'             => get_permalink( $post->ID ),
+				'date'            => $post->post_date,
+			);
+		}
+
+		return array(
+			'query' => $query,
+			'posts' => $posts,
+			'total' => $q->found_posts,
+		);
+	}
+
+	/**
 	 * Generate PinchDrop drafts from rough source text.
 	 *
 	 * @param array $input Ability input.
@@ -2598,6 +2870,69 @@ class Abilities {
 		}
 
 		$save_as_draft = ! empty( $input['save_as_draft'] );
+		$save_as_note  = ! empty( $input['save_as_note'] );
+
+		// Quick Drop: minimal capture — title + body only, no draft pack expansion.
+		if ( $save_as_note ) {
+			$first_line     = preg_split( "/\r\n|\r|\n/", $source_text, 2 );
+			$first_line     = trim( $first_line[0] ?? '' );
+			$title          = sanitize_text_field( preg_replace( '/^[\-\*\d\.\)\s]+/', '', $first_line ) );
+			$title          = wp_trim_words( $title, 15, '' );
+			$title          = ( '' !== $title ) ? $title : __( 'New note', 'wp-pinch' );
+			$body           = sanitize_textarea_field( $source_text );
+			$minimal        = array(
+				'post' => array(
+					'title'   => $title,
+					'content' => $body,
+				),
+			);
+			$created_drafts = array();
+			if ( $save_as_draft ) {
+				$post_id = wp_insert_post(
+					array(
+						'post_title'   => $title,
+						'post_content' => wp_kses_post( $body ),
+						'post_status'  => 'draft',
+						'post_type'    => 'post',
+					),
+					true
+				);
+				if ( ! is_wp_error( $post_id ) ) {
+					update_post_meta( $post_id, 'wp_pinch_generated', 1 );
+					update_post_meta( $post_id, 'wp_pinch_generator', 'pinchdrop' );
+					update_post_meta( $post_id, 'wp_pinch_pinchdrop_source', $source );
+					update_post_meta( $post_id, 'wp_pinch_pinchdrop_author', $author );
+					update_post_meta( $post_id, 'wp_pinch_pinchdrop_request_id', $request_id );
+					update_post_meta( $post_id, 'wp_pinch_pinchdrop_created_at', gmdate( 'c' ) );
+					$created_drafts['post'] = array(
+						'id'  => $post_id,
+						'url' => get_edit_post_link( $post_id, '' ),
+					);
+				}
+			}
+			Audit_Table::insert(
+				'pinchdrop_capture',
+				'ability',
+				sprintf( 'Quick Drop: minimal note saved (%s).', $save_as_draft ? 'draft created' : 'returned only' ),
+				array(
+					'source'      => $source,
+					'request_id'  => $request_id,
+					'save_drafts' => $save_as_draft,
+				)
+			);
+			return array(
+				'title'          => $title,
+				'draft_pack'     => $minimal,
+				'created_drafts' => $created_drafts,
+				'meta'           => array(
+					'source'      => $source,
+					'author'      => $author,
+					'request_id'  => $request_id,
+					'save_drafts' => $save_as_draft,
+					'quick_drop'  => true,
+				),
+			);
+		}
 
 		$lines = preg_split( "/\r\n|\r|\n/", $source_text );
 		$lines = is_array( $lines ) ? $lines : array();

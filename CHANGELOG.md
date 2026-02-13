@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-02-11
+
+### Added
+- **Quick Drop (save as note)** — PinchDrop option `options.save_as_note: true` skips AI expansion and creates a minimal post (title + body only, no blocks). Channel-accessible lightweight capture; fits the Capture pillar.
+- **Memory Bait (site-digest)** — New ability `wp-pinch/site-digest`: compact export of recent N posts with title, excerpt, and key taxonomy terms. For OpenClaw memory-core or system prompt so the agent knows your site.
+- **Tide Report** — New daily governance task that bundles findings (content freshness, SEO health, comment sweep, draft necromancer when Ghost Writer is on) into one webhook payload. Delivers "here's what needs attention" to Slack/Telegram.
+- **Echo Net (related-posts)** — New ability `wp-pinch/related-posts`: given a post ID, returns posts that link to it (backlinks) or share taxonomy terms. Enables "you wrote about X before" and graph-like discovery.
+- **Weave (synthesize)** — New ability `wp-pinch/synthesize`: given a query, search → fetch matching posts → return payload (title, excerpt, content snippet) for LLM synthesis. First-draft synthesis; human refines.
+- Governance task count increased from 6 to 7 with `tide_report`; refactored content freshness, SEO health, comment sweep, and draft necromancer to use shared `get_*_findings()` helpers for Tide Report bundling.
+
+### Changed
+- Ability catalog now includes `wp-pinch/site-digest`, `wp-pinch/related-posts`, and `wp-pinch/synthesize`.
+- PinchDrop capture payload accepts `options.save_as_note`; ability schema documents `save_as_note` for Quick Drop.
+
 ## [2.3.1] - 2026-02-11
 
 ### Changed

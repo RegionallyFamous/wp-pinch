@@ -34,6 +34,7 @@ class Governance {
 		'broken_links'      => WEEK_IN_SECONDS,
 		'security_scan'     => DAY_IN_SECONDS,
 		'draft_necromancer' => WEEK_IN_SECONDS,
+		'tide_report'       => DAY_IN_SECONDS,
 	);
 
 	/**
@@ -46,6 +47,7 @@ class Governance {
 		add_action( 'wp_pinch_governance_broken_links', array( __CLASS__, 'task_broken_links' ) );
 		add_action( 'wp_pinch_governance_security_scan', array( __CLASS__, 'task_security_scan' ) );
 		add_action( 'wp_pinch_governance_draft_necromancer', array( __CLASS__, 'task_draft_necromancer' ) );
+		add_action( 'wp_pinch_governance_tide_report', array( __CLASS__, 'task_tide_report' ) );
 
 		// Re-evaluate task schedules once per plugin version (avoids DB queries on every admin load).
 		add_action( 'admin_init', array( __CLASS__, 'maybe_schedule_tasks' ) );
@@ -114,49 +116,11 @@ class Governance {
 	 * Identifies published posts not modified in X days.
 	 */
 	public static function task_content_freshness(): void {
-		/**
-		 * Filter the stale content threshold in days.
-		 *
-		 * @since 1.0.0
-		 *
-		 * @param int $days Days since last modification. Default 180.
-		 */
-		$threshold_days = apply_filters( 'wp_pinch_freshness_threshold', 180 );
-		$cutoff         = gmdate( 'Y-m-d H:i:s', time() - ( $threshold_days * DAY_IN_SECONDS ) );
-
-		// Paginate to catch all stale posts, not just the first 100.
-		$page     = 1;
-		$findings = array();
-		do {
-			$stale = get_posts(
-				array(
-					'post_type'      => 'post',
-					'post_status'    => 'publish',
-					'posts_per_page' => 100,
-					'paged'          => $page,
-					'date_query'     => array(
-						array(
-							'column' => 'post_modified_gmt',
-							'before' => $cutoff,
-						),
-					),
-				)
-			);
-
-			foreach ( $stale as $post ) {
-				$findings[] = array(
-					'post_id'       => $post->ID,
-					'title'         => $post->post_title,
-					'last_modified' => $post->post_modified,
-					'days_stale'    => floor( ( time() - strtotime( $post->post_modified_gmt ) ) / DAY_IN_SECONDS ),
-					'url'           => get_permalink( $post->ID ),
-				);
-			}
-
-			$stale_count = count( $stale );
-			++$page;
-		} while ( 100 === $stale_count && $page <= 10 ); // Cap at 1000 posts max.
-
+		$findings = self::get_content_freshness_findings();
+		if ( empty( $findings ) ) {
+			return;
+		}
+		$threshold_days = (int) apply_filters( 'wp_pinch_freshness_threshold', 180 );
 		self::deliver_findings(
 			'content_freshness',
 			$findings,
@@ -174,71 +138,10 @@ class Governance {
 	 * Flags posts missing meta descriptions, short titles, missing alt text on images.
 	 */
 	public static function task_seo_health(): void {
-		$findings = array();
-		$page     = 1;
-
-		do {
-			$posts = get_posts(
-				array(
-					'post_type'      => array( 'post', 'page' ),
-					'post_status'    => 'publish',
-					'posts_per_page' => 100,
-					'paged'          => $page,
-				)
-			);
-
-			foreach ( $posts as $post ) {
-				$issues = array();
-
-				// Short title.
-				if ( mb_strlen( $post->post_title ) < 20 ) {
-					$issues[] = 'Title is shorter than 20 characters.';
-				}
-
-				// Very long title.
-				if ( mb_strlen( $post->post_title ) > 60 ) {
-					$issues[] = 'Title exceeds 60 characters (may truncate in SERPs).';
-				}
-
-				// Thin content — uses preg_match for Unicode-aware word counting (CJK-safe).
-				$stripped   = wp_strip_all_tags( $post->post_content );
-				$word_count = preg_match_all( '/[\w\p{L}\p{N}]+/u', $stripped );
-				if ( $word_count < 100 ) {
-					$issues[] = 'Content has fewer than 100 words.';
-				}
-
-				// Missing featured image.
-				if ( ! has_post_thumbnail( $post->ID ) ) {
-					$issues[] = 'No featured image set.';
-				}
-
-				// Images without alt text (alt="" is valid for decorative images).
-				preg_match_all( '/<img[^>]+>/i', $post->post_content, $img_matches );
-				foreach ( $img_matches[0] as $img ) {
-					if ( ! preg_match( '/\balt\s*=\s*["\']/', $img ) ) {
-						$issues[] = 'Image found without alt attribute.';
-						break; // One finding is enough.
-					}
-				}
-
-				if ( ! empty( $issues ) ) {
-					$findings[] = array(
-						'post_id' => $post->ID,
-						'title'   => $post->post_title,
-						'url'     => get_permalink( $post->ID ),
-						'issues'  => $issues,
-					);
-				}
-			}
-
-			$posts_count = count( $posts );
-			++$page;
-		} while ( 100 === $posts_count && $page <= 10 ); // Cap at 1000 posts max.
-
+		$findings = self::get_seo_health_findings();
 		if ( empty( $findings ) ) {
 			return;
 		}
-
 		self::deliver_findings(
 			'seo_health',
 			$findings,
@@ -255,40 +158,19 @@ class Governance {
 	 * Flags pending and spam comments that need moderation.
 	 */
 	public static function task_comment_sweep(): void {
-		$pending = get_comments(
-			array(
-				'status' => 'hold',
-				'number' => 50,
-			)
-		);
-
-		$spam_count = (int) wp_count_comments()->spam;
-
-		$findings = array(
-			'pending_comments' => array_map(
-				function ( $c ) {
-					return array(
-						'id'      => (int) $c->comment_ID,
-						'post_id' => (int) $c->comment_post_ID,
-						'date'    => $c->comment_date,
-					);
-				},
-				$pending
-			),
-			'spam_count'       => $spam_count,
-		);
-
-		if ( empty( $pending ) && 0 === $spam_count ) {
+		$findings = self::get_comment_sweep_findings();
+		$pending  = $findings['pending_comments'] ?? array();
+		$spam     = $findings['spam_count'] ?? 0;
+		if ( empty( $pending ) && 0 === $spam ) {
 			return;
 		}
-
 		self::deliver_findings(
 			'comment_sweep',
 			$findings,
 			sprintf(
 				'%d comments awaiting moderation, %d in spam.',
 				count( $pending ),
-				$spam_count
+				$spam
 			)
 		);
 	}
@@ -489,27 +371,10 @@ class Governance {
 		if ( ! Feature_Flags::is_enabled( 'ghost_writer' ) ) {
 			return;
 		}
-
-		$drafts = Ghost_Writer::assess_drafts();
-
-		if ( empty( $drafts ) ) {
+		$findings = self::get_draft_necromancer_findings();
+		if ( empty( $findings ) ) {
 			return;
 		}
-
-		// Only report drafts with a reasonable resurrection score.
-		$worthy = array_filter(
-			$drafts,
-			function ( $draft ) {
-				return $draft['resurrection_score'] >= 20;
-			}
-		);
-
-		if ( empty( $worthy ) ) {
-			return;
-		}
-
-		$findings = array_values( $worthy );
-
 		self::deliver_findings(
 			'draft_necromancer',
 			$findings,
@@ -642,6 +507,205 @@ class Governance {
 			'comment_sweep'     => __( 'Comment Sweep — pending moderation and spam count', 'wp-pinch' ),
 			'broken_links'      => __( 'Broken Links — check for dead links in content', 'wp-pinch' ),
 			'security_scan'     => __( 'Security Scan — outdated software, debug mode, file editing', 'wp-pinch' ),
+			'draft_necromancer' => __( 'Draft Necromancer — surface abandoned drafts worth resurrecting', 'wp-pinch' ),
+			'tide_report'       => __( 'Tide Report — daily digest: drafts, SEO, comments in one webhook', 'wp-pinch' ),
+		);
+	}
+
+	/**
+	 * Tide Report — bundle findings from content freshness, SEO, comments (and optionally drafts) into one webhook.
+	 *
+	 * Delivers "here's what needs attention" to Slack/Telegram. Fits resurface-and-remind.
+	 */
+	public static function task_tide_report(): void {
+		$bundle = array();
+
+		$freshness = self::get_content_freshness_findings();
+		if ( ! empty( $freshness ) ) {
+			$bundle['content_freshness'] = $freshness;
+		}
+
+		$seo = self::get_seo_health_findings();
+		if ( ! empty( $seo ) ) {
+			$bundle['seo_health'] = $seo;
+		}
+
+		$comments = self::get_comment_sweep_findings();
+		if ( ! empty( $comments['pending_comments'] ) || ( isset( $comments['spam_count'] ) && $comments['spam_count'] > 0 ) ) {
+			$bundle['comment_sweep'] = $comments;
+		}
+
+		if ( Feature_Flags::is_enabled( 'ghost_writer' ) ) {
+			$drafts = self::get_draft_necromancer_findings();
+			if ( ! empty( $drafts ) ) {
+				$bundle['draft_necromancer'] = $drafts;
+			}
+		}
+
+		if ( empty( $bundle ) ) {
+			return;
+		}
+
+		$parts = array();
+		if ( ! empty( $bundle['content_freshness'] ) ) {
+			$parts[] = count( $bundle['content_freshness'] ) . ' stale posts';
+		}
+		if ( ! empty( $bundle['seo_health'] ) ) {
+			$parts[] = count( $bundle['seo_health'] ) . ' SEO issues';
+		}
+		if ( ! empty( $bundle['comment_sweep'] ) ) {
+			$pending = count( $bundle['comment_sweep']['pending_comments'] ?? array() );
+			$spam    = $bundle['comment_sweep']['spam_count'] ?? 0;
+			$parts[] = $pending . ' pending, ' . $spam . ' spam';
+		}
+		if ( ! empty( $bundle['draft_necromancer'] ) ) {
+			$parts[] = count( $bundle['draft_necromancer'] ) . ' drafts worth resurrecting';
+		}
+		$summary = __( 'Tide Report: ', 'wp-pinch' ) . implode( '; ', $parts ) . '.';
+
+		self::deliver_findings( 'tide_report', $bundle, $summary );
+	}
+
+	/**
+	 * Return content freshness findings (no delivery).
+	 *
+	 * @return array
+	 */
+	private static function get_content_freshness_findings(): array {
+		$threshold_days = (int) apply_filters( 'wp_pinch_freshness_threshold', 180 );
+		$cutoff         = gmdate( 'Y-m-d H:i:s', time() - ( $threshold_days * DAY_IN_SECONDS ) );
+		$page           = 1;
+		$findings       = array();
+		do {
+			$stale = get_posts(
+				array(
+					'post_type'      => 'post',
+					'post_status'    => 'publish',
+					'posts_per_page' => 100,
+					'paged'          => $page,
+					'date_query'     => array(
+						array(
+							'column' => 'post_modified_gmt',
+							'before' => $cutoff,
+						),
+					),
+				)
+			);
+			foreach ( $stale as $post ) {
+				$findings[] = array(
+					'post_id'       => $post->ID,
+					'title'         => $post->post_title,
+					'last_modified' => $post->post_modified,
+					'days_stale'    => (int) floor( ( time() - strtotime( $post->post_modified_gmt ) ) / DAY_IN_SECONDS ),
+					'url'           => get_permalink( $post->ID ),
+				);
+			}
+			$stale_count = count( $stale );
+			++$page;
+		} while ( 100 === $stale_count && $page <= 10 );
+		return $findings;
+	}
+
+	/**
+	 * Return SEO health findings (no delivery).
+	 *
+	 * @return array
+	 */
+	private static function get_seo_health_findings(): array {
+		$findings = array();
+		$page     = 1;
+		do {
+			$posts = get_posts(
+				array(
+					'post_type'      => array( 'post', 'page' ),
+					'post_status'    => 'publish',
+					'posts_per_page' => 100,
+					'paged'          => $page,
+				)
+			);
+			foreach ( $posts as $post ) {
+				$issues = array();
+				if ( mb_strlen( $post->post_title ) < 20 ) {
+					$issues[] = 'Title is shorter than 20 characters.';
+				}
+				if ( mb_strlen( $post->post_title ) > 60 ) {
+					$issues[] = 'Title exceeds 60 characters (may truncate in SERPs).';
+				}
+				$stripped   = wp_strip_all_tags( $post->post_content );
+				$word_count = preg_match_all( '/[\w\p{L}\p{N}]+/u', $stripped );
+				if ( $word_count < 100 ) {
+					$issues[] = 'Content has fewer than 100 words.';
+				}
+				if ( ! has_post_thumbnail( $post->ID ) ) {
+					$issues[] = 'No featured image set.';
+				}
+				preg_match_all( '/<img[^>]+>/i', $post->post_content, $img_matches );
+				foreach ( $img_matches[0] ?? array() as $img ) {
+					if ( ! preg_match( '/\balt\s*=\s*["\']/', $img ) ) {
+						$issues[] = 'Image found without alt attribute.';
+						break;
+					}
+				}
+				if ( ! empty( $issues ) ) {
+					$findings[] = array(
+						'post_id' => $post->ID,
+						'title'   => $post->post_title,
+						'url'     => get_permalink( $post->ID ),
+						'issues'  => $issues,
+					);
+				}
+			}
+			$posts_count = count( $posts );
+			++$page;
+		} while ( 100 === $posts_count && $page <= 10 );
+		return $findings;
+	}
+
+	/**
+	 * Return comment sweep findings (no delivery).
+	 *
+	 * @return array
+	 */
+	private static function get_comment_sweep_findings(): array {
+		$pending    = get_comments(
+			array(
+				'status' => 'hold',
+				'number' => 50,
+			)
+		);
+		$spam_count = (int) wp_count_comments()->spam;
+		return array(
+			'pending_comments' => array_map(
+				function ( $c ) {
+					return array(
+						'id'      => (int) $c->comment_ID,
+						'post_id' => (int) $c->comment_post_ID,
+						'date'    => $c->comment_date,
+					);
+				},
+				$pending
+			),
+			'spam_count'       => $spam_count,
+		);
+	}
+
+	/**
+	 * Return draft necromancer findings (no delivery).
+	 *
+	 * @return array
+	 */
+	private static function get_draft_necromancer_findings(): array {
+		$drafts = Ghost_Writer::assess_drafts();
+		if ( empty( $drafts ) ) {
+			return array();
+		}
+		return array_values(
+			array_filter(
+				$drafts,
+				function ( $draft ) {
+					return $draft['resurrection_score'] >= 20;
+				}
+			)
 		);
 	}
 }

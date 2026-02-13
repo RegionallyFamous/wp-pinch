@@ -105,7 +105,10 @@ setup-hooks: ## Install git pre-commit hook
 # ---------------------------------------------------------------------------
 
 .PHONY: zip
-zip: build vendor i18n ## Create distributable plugin ZIP
+zip: i18n zip-dist ## Create distributable plugin ZIP (requires WP-CLI for i18n)
+
+.PHONY: zip-dist
+zip-dist: build vendor ## Create distributable plugin ZIP (skips i18n when WP-CLI unavailable)
 	@echo "Packaging $(ZIP_NAME)..."
 	@rm -rf $(DIST_DIR)
 	@mkdir -p $(DIST_DIR)/$(PLUGIN_SLUG)

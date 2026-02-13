@@ -152,6 +152,8 @@ Configure which governance tasks run and on what schedule:
 - Comment Sweep
 - Broken Link Detection
 - Security Scanning
+- Draft Necromancer (abandoned drafts worth resurrecting; requires Ghost Writer)
+- Tide Report (daily digest — bundles findings into one webhook)
 
 ### Abilities Tab
 

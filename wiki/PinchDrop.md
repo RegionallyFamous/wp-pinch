@@ -32,6 +32,7 @@ PinchDrop lets ideas from any OpenClaw-connected channel — Slack, Telegram, Wh
 - `options.tone` (string)
 - `options.audience` (string)
 - `options.save_as_draft` (boolean)
+- `options.save_as_note` (boolean) — **Quick Drop:** skip AI expansion; create a minimal post (title + body only). Ideal for quick captures from any channel.
 
 ---
 
