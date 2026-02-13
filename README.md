@@ -23,7 +23,7 @@ Manage your WordPress site from WhatsApp, Slack, Telegram, Discord -- or any cha
 
 ---
 
-## Four reasons to install WP Pinch
+## Five reasons to install WP Pinch
 
 ### 1. 35 AI Abilities
 
