@@ -4,7 +4,7 @@ Tags: ai, agent, openclaw, mcp, automation
 Requires at least: 6.9
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 2.3.0
+Stable tag: 2.3.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -26,7 +26,7 @@ Drop an AI chat widget on any page with the Pinch Chat Gutenberg block. SSE stre
 
 = Autonomous Governance =
 
-Five background tasks patrol your site on autopilot: content freshness, SEO health, comment cleanup, broken link detection, and security scanning. Findings get delivered to OpenClaw automatically. Set it and forget it.
+Six background tasks patrol your site on autopilot: content freshness, SEO health, comment cleanup, broken link detection, security scanning, and draft necromancy. Findings get delivered to OpenClaw automatically. Set it and forget it.
 
 = Real-Time Webhooks =
 
@@ -117,11 +117,20 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 
 == Changelog ==
 
+= 2.3.1 =
+* Doc: README and readme.txt now say "Six reasons to install WP Pinch" and list six governance tasks (including draft necromancy).
+
 = 2.3.0 =
+* New: Ghost Writer — AI voice profile engine that learns each author's writing style from their published posts. Tone, vocabulary, structural habits, quirks — all captured in a per-author profile.
+* New: Ghost Writer — draft completion. Resurrects abandoned drafts in the original author's voice via OpenClaw. Your draft graveyard just got a necromancer.
+* New: /ghostwrite slash command — type /ghostwrite in chat to see abandoned drafts, or /ghostwrite 123 to resurrect one.
+* New: Draft Necromancer governance task — weekly scan for abandoned drafts worth resurrecting, delivered via webhook.
+* New: 3 new abilities (analyze-voice, list-abandoned-drafts, ghostwrite) behind ghost_writer feature flag.
+* New: ghost_writer feature flag (disabled by default) — enable to unlock the full Ghost Writer system.
+* New: Ghost Writer threshold setting — configurable abandoned draft age (default 30 days).
 * New: PinchDrop (Capture Anywhere) pipeline — signed inbound capture endpoint (`/wp-pinch/v1/pinchdrop/capture`) with idempotency by `request_id`, source allowlist support, and draft-pack generation.
 * New: `pinchdrop_generate` ability to build structured draft packs and optionally persist draft posts with capture metadata (`source`, `author`, `request_id`, capture timestamp).
 * New: PinchDrop settings (`wp_pinch_pinchdrop_enabled`, default outputs, auto-save drafts, allowed sources) and `pinchdrop_engine` feature flag.
-* New: Public chat mode — unauthenticated visitors can chat with your AI agent. Separate /chat/public endpoint with strict rate limiting, gated behind the public_chat feature flag. Because even lobsters believe in open doors.
 * New: Per-block agent override — new agentId attribute lets individual chat blocks target different OpenClaw agents.
 * New: Slash commands — /new, /reset, /status, and /compact in the chat input (behind slash_commands feature flag). For power users who type faster than a lobster snaps.
 * New: Message feedback — thumbs up/down buttons on assistant messages.
@@ -235,8 +244,11 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 
 == Upgrade Notice ==
 
+= 2.3.1 =
+Documentation update: "Six reasons" and six governance tasks in README/readme.txt. No code changes from 2.3.0.
+
 = 2.3.0 =
-Feature release: PinchDrop Capture Anywhere is live with signed inbound capture, idempotency, source allowlisting, structured draft-pack generation, and trace metadata persisted to drafts/audit logs. Includes the `pinchdrop_engine` feature flag and PinchDrop settings controls. No breaking changes from 2.2.0.
+Feature release: Ghost Writer learns your writing voice and resurrects abandoned drafts. New /ghostwrite slash command, Draft Necromancer governance task, 3 new abilities, and the ghost_writer feature flag. Also includes PinchDrop Capture Anywhere with signed inbound capture, idempotency, source allowlisting, and structured draft-pack generation. No breaking changes from 2.2.0.
 
 = 2.1.0 =
 Feature release: Circuit breaker, feature flags, webhook signatures, SSE streaming, health endpoint, admin ability toggle, audit log search/export, chat UX overhaul (character counter, clear chat, copy button, Markdown, typing indicator, nonce refresh, keyboard shortcuts), WP-CLI format support, rate limit headers, and much more. No breaking changes from 2.0.0.

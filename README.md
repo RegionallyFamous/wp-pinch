@@ -23,7 +23,7 @@ Manage your WordPress site from WhatsApp, Slack, Telegram, Discord -- or any cha
 
 ---
 
-## Five reasons to install WP Pinch
+## Six reasons to install WP Pinch
 
 ### 1. 35 AI Abilities
 
@@ -39,7 +39,7 @@ A Gutenberg block that gives your site a brain. SSE streaming for real-time resp
 
 ### 3. Autonomous Governance
 
-Five background tasks patrol your site on autopilot: content freshness, SEO health, comment cleanup, broken link detection, and security scanning. Findings get delivered to OpenClaw or processed server-side. Think of it as a site health monitor with claws.
+Six background tasks patrol your site on autopilot: content freshness, SEO health, comment cleanup, broken link detection, security scanning, and draft necromancy. Findings get delivered to OpenClaw or processed server-side. Think of it as a site health monitor with claws.
 
 ### 4. Real-Time Webhooks
 
@@ -48,6 +48,10 @@ Post published? Comment posted? WooCommerce order shipped? WP Pinch fires events
 ### 5. PinchDrop (Capture Anywhere)
 
 Send rough ideas from any OpenClaw-connected channel and auto-generate a Draft Pack in WordPress. `POST /wp-pinch/v1/pinchdrop/capture` accepts signed inbound captures, runs the `pinchdrop_generate` ability, and can save draft posts with full trace metadata (`source`, `request_id`, timestamp, generator tag).
+
+### 6. Ghost Writer
+
+The AI that writes like *you*. Ghost Writer analyzes your published posts to learn your writing voice -- tone, vocabulary, sentence structure, quirks -- and builds a per-author style profile. When you abandon a draft, it finishes it in your voice. Type `/ghostwrite` in chat to see your draft graveyard, or `/ghostwrite 123` to resurrect one. A weekly Draft Necromancer governance task surfaces drafts worth saving. Ships behind the `ghost_writer` feature flag.
 
 ---
 

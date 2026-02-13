@@ -7,9 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.1] - 2026-02-11
+
+### Changed
+- Docs: README and readme.txt now say "Six reasons to install WP Pinch" and list six governance tasks (including draft necromancy) for consistency with the feature set.
+
 ## [2.3.0] - 2026-02-11
 
 ### Added
+- **Ghost Writer — AI voice profile engine** — analyzes an author's published posts to learn their writing style (tone, vocabulary, structural habits, quirks) and stores a per-author voice profile in user meta. "You started this post 8 months ago. You were going somewhere good."
+- **Ghost Writer — draft completion** — completes abandoned drafts in the original author's voice via OpenClaw. The `ghostwrite` ability sends the draft + voice profile to the gateway and returns AI-completed content. Does not auto-publish — the draft stays a draft.
+- **Ghost Writer — abandoned draft scanner** — `list-abandoned-drafts` ability ranks drafts by resurrection potential (freshness + completion %) so the AI knows which ones are worth saving.
+- **`/ghostwrite` slash command** — type `/ghostwrite` in chat to see your abandoned drafts, or `/ghostwrite 123` to resurrect a specific draft. The spirits are cooperative.
+- **Draft Necromancer governance task** — weekly scan for abandoned drafts worth resurrecting, delivered via webhook like all other governance findings. Because even lobsters forget what they started writing.
+- **3 new abilities** — `analyze-voice`, `list-abandoned-drafts`, `ghostwrite` (all gated behind `ghost_writer` feature flag).
+- **`ghost_writer` feature flag** — ships disabled by default. Enable it to unlock the Ghost Writer system.
+- **Ghost Writer REST endpoint** (`/wp-pinch/v1/ghostwrite`) — serves the `/ghostwrite` slash command with list and write actions.
+- **Ghost Writer threshold setting** — configurable abandoned draft age threshold (`wp_pinch_ghost_writer_threshold`, default 30 days).
 - **PinchDrop capture endpoint** — new signed inbound channel-agnostic endpoint at `/wp-pinch/v1/pinchdrop/capture` with payload validation, source allowlisting, and endpoint-specific rate limiting.
 - **Idempotency controls** — duplicate suppression on PinchDrop captures via `request_id` caching; repeated requests return a deduplicated response without creating duplicate drafts.
 - **`pinchdrop_generate` ability** — structured Draft Pack generation for `post`, `product_update`, `changelog`, and `social` output types with optional draft persistence.
@@ -17,11 +31,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **PinchDrop docs** — new wiki page (`PinchDrop`) and configuration/docs updates with payload contract and integration notes.
 
 ### Security
+- Ghost Writer voice analysis requires `edit_others_posts` to analyze another author's voice — can only analyze your own by default.
+- Ghostwrite ability enforces per-post `current_user_can( 'edit_post', $post_id )` before touching any draft.
+- Voice profiles stored in user meta (not exposed via REST API).
+- AI-generated content sanitized with `wp_kses_post()` before storage.
+- Ghost Writer endpoint reuses existing rate limiting.
 - Reused authenticated hook trust model (Bearer/OpenClaw token + optional HMAC timestamp signatures) for PinchDrop captures.
 - Enforced source allowlist and bounded input sizes for capture payloads.
 
 ### Changed
-- Ability catalog now includes `wp-pinch/pinchdrop-generate`.
+- Ability catalog now includes `wp-pinch/analyze-voice`, `wp-pinch/list-abandoned-drafts`, `wp-pinch/ghostwrite`, and `wp-pinch/pinchdrop-generate`.
+- Feature flag count increased from 11 to 12 with `ghost_writer`.
+- Governance task count increased from 5 to 6 with `draft_necromancer`.
+- Uninstall cleanup expanded to include `wp_pinch_ghost_writer_threshold` option and `wp_pinch_voice_profile` user meta.
 
 ## [2.2.0] - 2026-02-12
 
@@ -211,7 +233,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Admin settings page with connection testing, webhook configuration, and governance controls.
 - GitHub Actions CI pipeline with PHPUnit, build verification, and plugin check.
 
-[Unreleased]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.3.0...HEAD
+[Unreleased]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.3.1...HEAD
+[2.3.1]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.0.0...v2.1.0
