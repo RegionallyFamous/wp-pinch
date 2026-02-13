@@ -757,7 +757,7 @@ class Settings {
 			<nav class="nav-tab-wrapper" aria-label="<?php esc_attr_e( 'Settings tabs', 'wp-pinch' ); ?>">
 				<?php foreach ( $tabs as $slug => $label ) : ?>
 					<a href="<?php echo esc_url( add_query_arg( 'tab', $slug ) ); ?>"
-						class="nav-tab <?php echo $active_tab === $slug ? 'nav-tab-active' : ''; ?>">
+						class="<?php echo esc_attr( $active_tab === $slug ? 'nav-tab nav-tab-active' : 'nav-tab' ); ?>">
 						<?php echo esc_html( $label ); ?>
 					</a>
 				<?php endforeach; ?>

@@ -813,8 +813,8 @@ const { state, actions } = store( 'wp-pinch/chat', {
 						text:
 							action === 'write'
 								? 'Ghostwriting draft #' +
-									postId +
-									'... channeling your voice.'
+								  postId +
+								  '... channeling your voice.'
 								: 'Searching the draft graveyard...',
 						isUser: false,
 						isSystem: true,
@@ -870,11 +870,7 @@ const { state, actions } = store( 'wp-pinch/chat', {
 				return true;
 			}
 
-			if (
-				cmd === '/molt' &&
-				state.moltOn &&
-				state.moltUrl
-			) {
+			if ( cmd === '/molt' && state.moltOn && state.moltUrl ) {
 				const parts = text.trim().split( /\s+/ );
 				const postId = parts[ 1 ] ? parseInt( parts[ 1 ], 10 ) : 0;
 
@@ -895,7 +891,10 @@ const { state, actions } = store( 'wp-pinch/chat', {
 				try {
 					const loadingMsg = {
 						id: 'msg-' + Date.now() + '-' + ++msgCounter,
-						text: 'Molting post #' + postId + '... shedding one form, emerging in many.',
+						text:
+							'Molting post #' +
+							postId +
+							'... shedding one form, emerging in many.',
 						isUser: false,
 						isSystem: true,
 						timestamp: new Date().toISOString(),

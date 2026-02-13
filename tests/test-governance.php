@@ -30,10 +30,10 @@ class Test_Governance extends WP_UnitTestCase {
 	// =========================================================================
 
 	/**
-	 * Test DEFAULT_INTERVALS contains all 5 governance tasks.
+	 * Test DEFAULT_INTERVALS contains all governance tasks (currently 6).
 	 */
 	public function test_default_intervals_count(): void {
-		$this->assertCount( 5, Governance::DEFAULT_INTERVALS );
+		$this->assertCount( 6, Governance::DEFAULT_INTERVALS );
 	}
 
 	/**
@@ -46,6 +46,7 @@ class Test_Governance extends WP_UnitTestCase {
 			'comment_sweep',
 			'broken_links',
 			'security_scan',
+			'draft_necromancer',
 		);
 
 		foreach ( $expected as $key ) {
@@ -73,8 +74,9 @@ class Test_Governance extends WP_UnitTestCase {
 		delete_option( 'wp_pinch_governance_tasks' );
 
 		$enabled = Governance::get_enabled_tasks();
+		$expected = count( Governance::DEFAULT_INTERVALS );
 
-		$this->assertCount( 5, $enabled );
+		$this->assertCount( $expected, $enabled );
 		$this->assertContains( 'content_freshness', $enabled );
 		$this->assertContains( 'security_scan', $enabled );
 	}
@@ -97,12 +99,12 @@ class Test_Governance extends WP_UnitTestCase {
 	// =========================================================================
 
 	/**
-	 * Test get_available_tasks returns all 5 tasks with labels.
+	 * Test get_available_tasks returns all 6 tasks with labels.
 	 */
 	public function test_get_available_tasks(): void {
 		$tasks = Governance::get_available_tasks();
 
-		$this->assertCount( 5, $tasks );
+		$this->assertCount( 6, $tasks );
 		foreach ( $tasks as $key => $label ) {
 			$this->assertIsString( $label );
 			$this->assertNotEmpty( $label );
