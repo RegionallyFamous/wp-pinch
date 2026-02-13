@@ -1,6 +1,6 @@
 # WP-CLI Commands
 
-WP Pinch includes a full set of WP-CLI commands for scripting, automation, and debugging.
+For the terminal-dwelling lobsters among us: WP Pinch includes a full set of WP-CLI commands for scripting, automation, and debugging. Pipe it, script it, cron it. Your shell, your rules.
 
 ---
 
@@ -27,7 +27,7 @@ wp pinch abilities list --format=csv
 
 ### `wp pinch webhook-test`
 
-Fire a test webhook to verify your OpenClaw connection.
+Fire a test webhook to verify your OpenClaw connection. Poke the lobster and see if it pinches back.
 
 ```bash
 wp pinch webhook-test

@@ -1,6 +1,6 @@
 # Hooks & Filters Reference
 
-WP Pinch provides over 12 filters and 6 actions for customizing every aspect of the plugin.
+WP Pinch provides over 12 filters and 6 actions for customizing every aspect of the plugin. If you can hook it, you can pinch it.
 
 ---
 

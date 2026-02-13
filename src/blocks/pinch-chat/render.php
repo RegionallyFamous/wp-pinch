@@ -74,6 +74,10 @@ wp_interactivity_state(
 		'tokenUsage'      => null,
 		'slashCommandsOn' => $slash_commands_on,
 		'tokenDisplayOn'  => $token_display_on,
+		'ghostWriterOn'   => \WP_Pinch\Feature_Flags::is_enabled( 'ghost_writer' ),
+		'ghostWriteUrl'   => $can_chat ? rest_url( 'wp-pinch/v1/ghostwrite' ) : '',
+		'moltOn'          => \WP_Pinch\Feature_Flags::is_enabled( 'molt' ),
+		'moltUrl'         => $can_chat ? rest_url( 'wp-pinch/v1/molt' ) : '',
 	)
 );
 ?>

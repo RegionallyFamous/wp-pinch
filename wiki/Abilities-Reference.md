@@ -1,6 +1,6 @@
 # Abilities Reference
 
-WP Pinch provides **core abilities** (standard WordPress operations the AI can perform) and **tools** (PinchDrop and Ghost Writer workflows). You get **33 core abilities** across 9 categories, plus **PinchDrop** and **Ghost Writer** (4 tool abilities), and **10 WooCommerce abilities** when WooCommerce is active. Every ability has built-in security guards: capability checks, input sanitization, existence validation, and audit logging.
+WP Pinch provides **core abilities** (standard WordPress operations the AI can perform) and **tools** (PinchDrop and Ghost Writer workflows). You get **35 core abilities** across 10 categories, plus **PinchDrop** and **Ghost Writer** (4 tool abilities), and **10 WooCommerce abilities** when WooCommerce is active. Every ability has built-in security guards: capability checks, input sanitization, existence validation, and audit logging. We don't let AI agents run around your site like unsupervised lobsters in a kitchen.
 
 ---
 
@@ -17,7 +17,7 @@ Core abilities cover content, media, users, comments, settings, plugins/themes, 
 | **Comments** | Moderation and cleanup | `list-comments`, `moderate-comment` |
 | **Settings** | Read and update options (allowlisted) | `get-option`, `update-option` |
 | **Plugins & Themes** | Extension management | `list-plugins`, `toggle-plugin`, `list-themes`, `switch-theme` |
-| **Analytics** | Site health and data export | `site-health`, `recent-activity`, `search-content`, `export-data` |
+| **Analytics** | Site health and data export | `site-health`, `recent-activity`, `search-content`, `export-data`, `export-site-context` |
 | **Advanced** | Menus, meta, revisions, bulk ops, cron | `list-menus`, `manage-menu-item`, `get-post-meta`, `update-post-meta`, `list-revisions`, `restore-revision`, `bulk-edit-posts`, `list-cron-events`, `manage-cron` |
 | **WooCommerce** | Shop abilities (when WooCommerce is active) | `woo-list-products`, `woo-manage-order`, `woo-create-product`, `woo-update-product`, `woo-manage-inventory`, `woo-list-orders`, `woo-list-customers`, `woo-list-coupons`, `woo-create-coupon`, `woo-revenue-summary` |
 
@@ -43,7 +43,7 @@ The AI that writes like *you*. Ghost Writer learns each author's writing voice f
 
 ## Security Guards
 
-Every ability execution goes through these checks before any work is done:
+Every ability execution goes through these checks before any work is done. Think of it as a bouncer at a seafood restaurant — only the right claws get past the velvet rope:
 
 1. **Capability check** -- Does the current user have permission? (e.g., `edit_posts`, `manage_options`)
 2. **Per-post verification** -- For meta operations, verifies `current_user_can( 'edit_post', $post_id )`
@@ -87,7 +87,7 @@ Navigate to **WP Pinch > Abilities** in your admin sidebar. Toggle individual ab
 
 ## MCP Server
 
-WP Pinch registers a dedicated `wp-pinch` MCP endpoint that curates which abilities are exposed to AI agents. Only abilities you've enabled (via the admin UI or filters) are discoverable through MCP.
+WP Pinch registers a dedicated `wp-pinch` MCP endpoint that curates which abilities are exposed to AI agents. Only abilities you've enabled (via the admin UI or filters) are discoverable through MCP. Your site, your rules — and your lobster's guest list.
 
 The MCP endpoint is available at:
 

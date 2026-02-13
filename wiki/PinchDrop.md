@@ -1,6 +1,6 @@
 # PinchDrop (Capture Anywhere)
 
-PinchDrop lets OpenClaw-forwarded ideas from any connected channel become structured WordPress Draft Packs automatically.
+PinchDrop lets ideas from any OpenClaw-connected channel — Slack, Telegram, WhatsApp, you name it — become structured WordPress Draft Packs automatically. Think of it as your lobster antenna twitching every time someone has a good idea. Capture it. Structure it. Optionally save it as a draft.
 
 ---
 

@@ -1,5 +1,7 @@
 # Configuration
 
+Get your lobster in the water. This page covers installation, OpenClaw connection, and every setting in the admin.
+
 ## Installation
 
 ### The Quick Way (WP-CLI)
@@ -26,7 +28,7 @@ npm install && npm run build
 wp plugin activate wp-pinch
 ```
 
-> **Note:** If you install from source, you must run `npm run build` to generate the `build/` directory. Without it, admin assets will 404.
+> **Note:** If you install from source, you must run `npm run build` to generate the `build/` directory. Without it, admin assets will 404. A lobster without a shell is just a confused crustacean.
 
 ---
 
@@ -48,9 +50,9 @@ Point OpenClaw at your site's MCP endpoint:
 npx openclaw connect --mcp-url https://your-site.com/wp-json/wp-pinch/v1/mcp
 ```
 
-OpenClaw will discover available abilities and begin routing messages from your configured channels (WhatsApp, Telegram, Slack, Discord, etc.) to your WordPress site.
+OpenClaw will discover available abilities and begin routing messages from your configured channels (WhatsApp, Telegram, Slack, Discord, etc.) to your WordPress site. Two commands and you're pinching.
 
-You can also add your Gateway URL directly in the WP Pinch settings for webhook-based integration -- ideal for sites that want real-time push notifications when content changes.
+You can also add your Gateway URL directly in the WP Pinch settings for webhook-based integration — ideal for sites that want real-time push notifications when content changes. Your site and OpenClaw, holding claws.
 
 ---
 

@@ -53,6 +53,9 @@ function wp_pinch_cleanup_site() {
 		// Feature flags & abilities.
 		'wp_pinch_feature_flags',
 		'wp_pinch_disabled_abilities',
+
+		// Ghost Writer.
+		'wp_pinch_ghost_writer_threshold',
 	);
 
 	foreach ( $wp_pinch_options as $wp_pinch_option ) {
@@ -84,8 +87,9 @@ function wp_pinch_cleanup_site() {
 	$wp_pinch_table = $wpdb->prefix . 'wp_pinch_audit_log';
 	$wpdb->query( "DROP TABLE IF EXISTS {$wp_pinch_table}" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
-	// Clean up user meta (dismissible notice state).
+	// Clean up user meta (dismissible notice state + voice profiles).
 	delete_metadata( 'user', 0, 'wp_pinch_dismissed_config_notice', '', true );
+	delete_metadata( 'user', 0, 'wp_pinch_voice_profile', '', true );
 
 	// Clean up any remaining Action Scheduler jobs.
 	if ( function_exists( 'as_unschedule_all_actions' ) ) {
@@ -96,6 +100,7 @@ function wp_pinch_cleanup_site() {
 		as_unschedule_all_actions( 'wp_pinch_governance_security_scan' );
 		as_unschedule_all_actions( 'wp_pinch_audit_cleanup' );
 		as_unschedule_all_actions( 'wp_pinch_retry_webhook' );
+		as_unschedule_all_actions( 'wp_pinch_governance_draft_necromancer' );
 	}
 }
 

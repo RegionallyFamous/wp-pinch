@@ -1,5 +1,7 @@
 # Architecture
 
+How the lobster trap is wired. WP Pinch sits inside WordPress and talks to OpenClaw; agents go in, do work, and report back.
+
 ## System Overview
 
 ```
@@ -8,7 +10,7 @@
 │                                                           │
 │  ┌─────────────┐  ┌──────────────┐  ┌────────────────┐  │
 │  │  Abilities   │  │  MCP Server  │  │   Governance   │  │
-│  │  (35 tools)  │──│  (endpoint)  │  │   (5 tasks)    │  │
+│  │  (35 tools)  │──│  (endpoint)  │  │   (6 tasks)    │  │
 │  └──────┬───────┘  └──────┬───────┘  └───────┬────────┘  │
 │         │                 │                   │           │
 │  ┌──────┴─────────────────┴───────────────────┴────────┐ │
@@ -76,7 +78,7 @@ The `/hook` endpoint lets OpenClaw push ability execution requests back to WordP
 
 ### Governance Engine
 
-Five recurring background tasks run via Action Scheduler:
+Six recurring background tasks run via Action Scheduler (even lobsters pace themselves):
 
 | Task | What It Catches |
 |---|---|
@@ -85,8 +87,9 @@ Five recurring background tasks run via Action Scheduler:
 | **Comment Sweep** | Spam, orphaned comments, and other bottom-feeders |
 | **Broken Link Detection** | Dead links lurking in your content |
 | **Security Scanning** | Suspicious plugin changes, available updates |
+| **Draft Necromancer** | Abandoned drafts worth resurrecting (Ghost Writer) |
 
-Findings are delivered via webhook to OpenClaw or processed server-side. Tasks can run on a schedule or be triggered manually via WP-CLI (`wp pinch governance run`).
+Findings are delivered via webhook to OpenClaw or processed server-side. Tasks can run on a schedule or be triggered manually via WP-CLI (`wp pinch governance run`). Set it and check it — like a lobster trap.
 
 ### Pinch Chat Block
 
@@ -94,7 +97,7 @@ A Gutenberg block built with the WordPress Interactivity API. See the [Chat Bloc
 
 ### Audit Log (`class-audit-table.php`)
 
-Every ability execution, webhook dispatch, governance finding, and chat message is logged to a custom database table. Features:
+Every ability execution, webhook dispatch, governance finding, and chat message is logged to a custom database table. Nothing happens on your site without leaving a trail — even lobsters leave tracks on the ocean floor. Features:
 
 - **90-day automatic retention** -- old entries are purged by a scheduled task
 - **Admin UI** -- browse, search, filter by date, export as CSV
@@ -103,7 +106,7 @@ Every ability execution, webhook dispatch, governance finding, and chat message 
 
 ### Circuit Breaker (`class-circuit-breaker.php`)
 
-Wraps outbound HTTP calls to the gateway. Three states:
+Wraps outbound HTTP calls to the gateway. When the gateway is down, we fail fast instead of flailing — no point waving your claws at an empty ocean. Three states:
 
 - **Closed** -- normal operation, all requests go through
 - **Open** -- gateway is down, requests fail fast without attempting the call
@@ -113,13 +116,13 @@ Configurable failure threshold and recovery timeout. Admin notice when the circu
 
 ### Feature Flags (`class-feature-flags.php`)
 
-10 boolean toggles for enabling/disabling features without code changes:
+12 boolean toggles for enabling/disabling features without code changes:
 
 - `streaming_chat`, `webhook_signatures`, `circuit_breaker`, `ability_toggle`
 - `webhook_dashboard`, `audit_search`, `health_endpoint`, `public_chat`
-- `slash_commands`, `token_display`
+- `slash_commands`, `token_display`, `pinchdrop_engine`, `ghost_writer`
 
-Toggle via the admin UI (WP Pinch > Features) or override with a filter.
+Toggle via the admin UI (WP Pinch > Features) or override with a filter. Your reef, your rules.
 
 ### REST Controller (`class-rest-controller.php`)
 

@@ -33,6 +33,7 @@ class Governance {
 		'comment_sweep'     => 6 * HOUR_IN_SECONDS,
 		'broken_links'      => WEEK_IN_SECONDS,
 		'security_scan'     => DAY_IN_SECONDS,
+		'draft_necromancer' => WEEK_IN_SECONDS,
 	);
 
 	/**
@@ -44,6 +45,7 @@ class Governance {
 		add_action( 'wp_pinch_governance_comment_sweep', array( __CLASS__, 'task_comment_sweep' ) );
 		add_action( 'wp_pinch_governance_broken_links', array( __CLASS__, 'task_broken_links' ) );
 		add_action( 'wp_pinch_governance_security_scan', array( __CLASS__, 'task_security_scan' ) );
+		add_action( 'wp_pinch_governance_draft_necromancer', array( __CLASS__, 'task_draft_necromancer' ) );
 
 		// Re-evaluate task schedules once per plugin version (avoids DB queries on every admin load).
 		add_action( 'admin_init', array( __CLASS__, 'maybe_schedule_tasks' ) );
@@ -472,6 +474,51 @@ class Governance {
 		}
 
 		self::deliver_findings( 'security_scan', $findings, implode( '; ', $summary_parts ) . '.' );
+	}
+
+	/**
+	 * Draft necromancer — surface abandoned drafts worth resurrecting.
+	 *
+	 * Requires the ghost_writer feature flag to be enabled.
+	 * Finds drafts across all authors, ranks them by resurrection potential,
+	 * and delivers findings so OpenClaw can remind authors to finish their work.
+	 *
+	 * @since 2.3.0
+	 */
+	public static function task_draft_necromancer(): void {
+		if ( ! Feature_Flags::is_enabled( 'ghost_writer' ) ) {
+			return;
+		}
+
+		$drafts = Ghost_Writer::assess_drafts();
+
+		if ( empty( $drafts ) ) {
+			return;
+		}
+
+		// Only report drafts with a reasonable resurrection score.
+		$worthy = array_filter(
+			$drafts,
+			function ( $draft ) {
+				return $draft['resurrection_score'] >= 20;
+			}
+		);
+
+		if ( empty( $worthy ) ) {
+			return;
+		}
+
+		$findings = array_values( $worthy );
+
+		self::deliver_findings(
+			'draft_necromancer',
+			$findings,
+			sprintf(
+				/* translators: %d: number of abandoned drafts */
+				'%d abandoned drafts found worth resurrecting. The draft graveyard has company.',
+				count( $findings )
+			)
+		);
 	}
 
 	// =========================================================================

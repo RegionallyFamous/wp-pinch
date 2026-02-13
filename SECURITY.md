@@ -2,7 +2,7 @@
 
 **Website:** [wp-pinch.com](https://wp-pinch.com) | **Repository:** [GitHub](https://github.com/RegionallyFamous/wp-pinch)
 
-WP Pinch handles sensitive data including API tokens and webhook URLs. Security is a top priority for this project, and we take all reports seriously.
+WP Pinch handles sensitive data including API tokens and webhook URLs. Security is a top priority — we take it more seriously than a lobster takes its territory — and we take all reports seriously.
 
 ## Supported Versions
 

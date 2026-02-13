@@ -414,6 +414,18 @@ class Settings {
 			)
 		);
 
+		// Ghost Writer settings.
+		register_setting(
+			'wp_pinch_governance',
+			'wp_pinch_ghost_writer_threshold',
+			array(
+				'type'              => 'integer',
+				'sanitize_callback' => 'absint',
+				'default'           => 30,
+				'show_in_rest'      => false,
+			)
+		);
+
 		register_setting(
 			'wp_pinch_connection',
 			'wp_pinch_wizard_completed',

@@ -136,6 +136,67 @@ class Rest_Controller {
 			)
 		);
 
+		// Ghost Writer endpoint (list abandoned drafts / trigger ghostwriting).
+		if ( Feature_Flags::is_enabled( 'ghost_writer' ) ) {
+			register_rest_route(
+				'wp-pinch/v1',
+				'/ghostwrite',
+				array(
+					array(
+						'methods'             => \WP_REST_Server::CREATABLE,
+						'callback'            => array( __CLASS__, 'handle_ghostwrite' ),
+						'permission_callback' => array( __CLASS__, 'check_permission' ),
+						'args'                => array(
+							'action'  => array(
+								'required'          => true,
+								'type'              => 'string',
+								'enum'              => array( 'list', 'write' ),
+								'sanitize_callback' => 'sanitize_key',
+							),
+							'post_id' => array(
+								'type'              => 'integer',
+								'default'           => 0,
+								'sanitize_callback' => 'absint',
+							),
+						),
+					),
+				)
+			);
+		}
+
+		// Molt endpoint — repackage post into multiple formats.
+		if ( Feature_Flags::is_enabled( 'molt' ) ) {
+			register_rest_route(
+				'wp-pinch/v1',
+				'/molt',
+				array(
+					array(
+						'methods'             => \WP_REST_Server::CREATABLE,
+						'callback'            => array( __CLASS__, 'handle_molt' ),
+						'permission_callback' => array( __CLASS__, 'check_permission' ),
+						'args'                => array(
+							'post_id'      => array(
+								'required'          => true,
+								'type'              => 'integer',
+								'sanitize_callback' => 'absint',
+							),
+							'output_types' => array(
+								'type'              => 'array',
+								'items'             => array( 'type' => 'string' ),
+								'default'           => array(),
+								'sanitize_callback' => function ( $value ) {
+									if ( ! is_array( $value ) ) {
+										return array();
+									}
+									return array_map( 'sanitize_key', $value );
+								},
+							),
+						),
+					),
+				)
+			);
+		}
+
 		// PinchDrop capture endpoint (channel-agnostic inbound ideas).
 		register_rest_route(
 			'wp-pinch/v1',
@@ -1722,6 +1783,167 @@ class Rest_Controller {
 	 *
 	 * @return bool
 	 */
+
+	// =========================================================================
+	// Ghost Writer endpoint
+	// =========================================================================
+
+	/**
+	 * Handle Ghost Writer requests (list drafts or trigger ghostwriting).
+	 *
+	 * @param \WP_REST_Request $request The REST request.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public static function handle_ghostwrite( \WP_REST_Request $request ) {
+		if ( ! self::check_rate_limit() ) {
+			$response = new \WP_REST_Response(
+				array(
+					'code'    => 'rate_limited',
+					'message' => __( 'Too many requests. Please wait a moment.', 'wp-pinch' ),
+				),
+				429
+			);
+			$response->header( 'Retry-After', '60' );
+			return $response;
+		}
+
+		$action  = $request->get_param( 'action' );
+		$post_id = (int) $request->get_param( 'post_id' );
+
+		if ( 'list' === $action ) {
+			$user_id = get_current_user_id();
+
+			// Only show own drafts unless user can edit others.
+			$scope = current_user_can( 'edit_others_posts' ) ? 0 : $user_id;
+			$drafts = Ghost_Writer::assess_drafts( $scope );
+
+			if ( empty( $drafts ) ) {
+				return new \WP_REST_Response(
+					array(
+						'reply' => __( 'No abandoned drafts found. Your draft graveyard is empty — either you finish what you start, or you never start at all.', 'wp-pinch' ),
+					),
+					200
+				);
+			}
+
+			$lines = array();
+			foreach ( array_slice( $drafts, 0, 10 ) as $draft ) {
+				$lines[] = sprintf(
+					'#%d — "%s" (%d words, %d%% done, %d days old, score: %d)',
+					$draft['post_id'],
+					$draft['title'],
+					$draft['word_count'],
+					$draft['estimated_completion'],
+					$draft['days_abandoned'],
+					$draft['resurrection_score']
+				);
+			}
+
+			$reply = sprintf(
+				/* translators: %d: number of drafts */
+				__( "Found %d abandoned drafts:\n\n", 'wp-pinch' ),
+				count( $drafts )
+			) . implode( "\n", $lines );
+
+			if ( count( $drafts ) > 10 ) {
+				$reply .= sprintf(
+					"\n\n" . __( '...and %d more. Use /ghostwrite [post_id] to resurrect one.', 'wp-pinch' ),
+					count( $drafts ) - 10
+				);
+			} else {
+				$reply .= "\n\n" . __( 'Use /ghostwrite [post_id] to resurrect one.', 'wp-pinch' );
+			}
+
+			return new \WP_REST_Response( array( 'reply' => $reply ), 200 );
+		}
+
+		if ( 'write' === $action ) {
+			if ( $post_id < 1 ) {
+				return new \WP_Error(
+					'missing_post_id',
+					__( 'Please specify a post ID. Usage: /ghostwrite 123', 'wp-pinch' ),
+					array( 'status' => 400 )
+				);
+			}
+
+			$result = Ghost_Writer::ghostwrite( $post_id, true );
+
+			if ( is_wp_error( $result ) ) {
+				return $result;
+			}
+
+			$reply = sprintf(
+				/* translators: 1: post title, 2: edit URL */
+				__( "Draft \"%1\$s\" has been resurrected. The ghost writer has spoken in your voice.\n\nEdit it here: %2\$s", 'wp-pinch' ),
+				$result['title'],
+				$result['edit_url']
+			);
+
+			return new \WP_REST_Response( array( 'reply' => $reply ), 200 );
+		}
+
+		return new \WP_Error(
+			'invalid_action',
+			__( 'Invalid action. Use "list" or "write".', 'wp-pinch' ),
+			array( 'status' => 400 )
+		);
+	}
+
+	/**
+	 * Handle Molt requests — repackage post into multiple output formats.
+	 *
+	 * @param \WP_REST_Request $request The REST request.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public static function handle_molt( \WP_REST_Request $request ) {
+		if ( ! self::check_rate_limit() ) {
+			$response = new \WP_REST_Response(
+				array(
+					'code'    => 'rate_limited',
+					'message' => __( 'Too many requests. Please wait a moment.', 'wp-pinch' ),
+				),
+				429
+			);
+			$response->header( 'Retry-After', '60' );
+			return $response;
+		}
+
+		$post_id      = (int) $request->get_param( 'post_id' );
+		$output_types = $request->get_param( 'output_types' ) ?: array();
+
+		if ( $post_id < 1 ) {
+			return new \WP_Error(
+				'missing_post_id',
+				__( 'Please specify a post ID. Usage: /molt 123', 'wp-pinch' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		if ( ! current_user_can( 'read_post', $post_id ) ) {
+			return new \WP_Error(
+				'forbidden',
+				__( 'You do not have permission to read this post.', 'wp-pinch' ),
+				array( 'status' => 403 )
+			);
+		}
+
+		$result = Molt::molt( $post_id, $output_types );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		$reply = Molt::format_for_chat( $result );
+
+		return new \WP_REST_Response(
+			array(
+				'output' => $result,
+				'reply'  => $reply,
+			),
+			200
+		);
+	}
+
 	private static function check_rate_limit(): bool {
 		$user_id = get_current_user_id();
 		$key     = 'wp_pinch_rest_rate_' . $user_id;

@@ -1,6 +1,6 @@
 # Ghost Writer
 
-Ghost Writer learns each author's writing voice from their published posts and can complete abandoned drafts in that voice. The AI writes like *you* — tone, vocabulary, sentence structure, and quirks — so resurrected drafts stay on-brand.
+Ghost Writer learns each author's writing voice from their published posts and can complete abandoned drafts in that voice. The AI writes like *you* — tone, vocabulary, sentence structure, and quirks — so resurrected drafts stay on-brand. Because even lobsters forget what they started writing. The spirits are cooperative.
 
 ---
 

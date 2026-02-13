@@ -2,7 +2,7 @@
 
 **The AI agent plugin that grabs your WordPress site with both claws.**
 
-WP Pinch bridges WordPress and [OpenClaw](https://github.com/nicepkg/openclaw), exposing your entire site as a set of AI-accessible tools through the Abilities API and Model Context Protocol (MCP) introduced in WordPress 6.9. Manage your site from WhatsApp, Telegram, Slack, Discord -- or any platform OpenClaw supports.
+WP Pinch bridges WordPress and [OpenClaw](https://github.com/nicepkg/openclaw), exposing your entire site as a set of AI-accessible tools through the Abilities API and Model Context Protocol (MCP) introduced in WordPress 6.9. Manage your site from WhatsApp, Telegram, Slack, Discord — or any platform OpenClaw supports. All self-hosted. No third-party SaaS middlemen getting their claws on your data. Think of it as giving your WordPress site a brain, a mouth, and a pair of very capable pincers.
 
 ---
 
@@ -43,3 +43,5 @@ Core abilities cover standard WordPress operations; Tools cover PinchDrop and Gh
 - **Security vulnerabilities:** See [SECURITY.md](https://github.com/RegionallyFamous/wp-pinch/blob/main/SECURITY.md)
 - **Contributing:** See [CONTRIBUTING.md](https://github.com/RegionallyFamous/wp-pinch/blob/main/CONTRIBUTING.md)
 - **Website:** [wp-pinch.com](https://wp-pinch.com)
+
+*In a world full of plugins that promise the ocean... this one actually delivers the whole lobster.*

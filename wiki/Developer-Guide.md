@@ -1,5 +1,7 @@
 # Developer Guide
 
+Contributing to WP Pinch means joining a project built with coffee, crustacean puns, and an unreasonable number of PHPStan runs. This guide gets you from clone to merge.
+
 ## Prerequisites
 
 - [Docker](https://www.docker.com/) (for `wp-env`)
@@ -72,7 +74,7 @@ npm test           # Jest (frontend tests)
 
 ## Bug Fix Workflow (Test-First)
 
-We follow a test-first approach for bug fixes:
+We follow a test-first approach for bug fixes — because lobsters learn from their mistakes:
 
 1. Write a failing test that reproduces the bug
 2. Run the test to confirm it fails

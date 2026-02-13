@@ -1100,6 +1100,107 @@ class Abilities {
 			array( __CLASS__, 'execute_manage_cron' )
 		);
 
+		// -- Ghost Writer abilities (conditional on feature flag) ----------------
+
+		if ( Feature_Flags::is_enabled( 'ghost_writer' ) ) {
+			self::register(
+				'wp-pinch/analyze-voice',
+				__( 'Analyze Author Voice', 'wp-pinch' ),
+				__( 'Analyze an author\'s published posts and build a writing voice profile.', 'wp-pinch' ),
+				array(
+					'type'       => 'object',
+					'properties' => array(
+						'user_id' => array(
+							'type'        => 'integer',
+							'default'     => 0,
+							'description' => 'User ID to analyze. Defaults to the current user.',
+						),
+					),
+				),
+				array( 'type' => 'object' ),
+				'edit_posts',
+				array( __CLASS__, 'execute_analyze_voice' )
+			);
+
+			self::register(
+				'wp-pinch/list-abandoned-drafts',
+				__( 'List Abandoned Drafts', 'wp-pinch' ),
+				__( 'Find abandoned drafts ranked by resurrection potential. Your draft graveyard, sorted by who still has a pulse.', 'wp-pinch' ),
+				array(
+					'type'       => 'object',
+					'properties' => array(
+						'days'    => array(
+							'type'        => 'integer',
+							'default'     => 0,
+							'description' => 'Minimum days since last modification. 0 = use global threshold.',
+						),
+						'user_id' => array(
+							'type'        => 'integer',
+							'default'     => 0,
+							'description' => 'Scope to a single author. 0 = all authors.',
+						),
+					),
+				),
+				array( 'type' => 'object' ),
+				'edit_posts',
+				array( __CLASS__, 'execute_list_abandoned_drafts' ),
+				true
+			);
+
+			self::register(
+				'wp-pinch/ghostwrite',
+				__( 'Ghostwrite Draft', 'wp-pinch' ),
+				__( 'Complete an abandoned draft in the original author\'s voice using their voice profile.', 'wp-pinch' ),
+				array(
+					'type'       => 'object',
+					'required'   => array( 'post_id' ),
+					'properties' => array(
+						'post_id' => array(
+							'type'        => 'integer',
+							'description' => 'ID of the draft post to complete.',
+						),
+						'apply'   => array(
+							'type'        => 'boolean',
+							'default'     => false,
+							'description' => 'Whether to save the generated content directly to the draft.',
+						),
+					),
+				),
+				array( 'type' => 'object' ),
+				'edit_posts',
+				array( __CLASS__, 'execute_ghostwrite' )
+			);
+		}
+
+		// -- Molt abilities (conditional on feature flag) -----------------------
+
+		if ( Feature_Flags::is_enabled( 'molt' ) ) {
+			self::register(
+				'wp-pinch/molt',
+				__( 'Molt Content', 'wp-pinch' ),
+				__( 'Repackage a post into multiple formats: social, email snippet, FAQ block, thread, summary, meta description, pull quote, key takeaways, CTA variants.', 'wp-pinch' ),
+				array(
+					'type'       => 'object',
+					'required'   => array( 'post_id' ),
+					'properties' => array(
+						'post_id'      => array(
+							'type'        => 'integer',
+							'description' => 'ID of the post to repackage.',
+						),
+						'output_types' => array(
+							'type'        => 'array',
+							'items'       => array( 'type' => 'string' ),
+							'default'     => array(),
+							'description' => 'Format keys to generate. Empty = all formats.',
+						),
+					),
+				),
+				array( 'type' => 'object' ),
+				'edit_posts',
+				array( __CLASS__, 'execute_molt' )
+			);
+		}
+
 		// -- WooCommerce abilities (conditional) --------------------------------
 
 		if ( class_exists( 'WooCommerce' ) ) {
@@ -3682,6 +3783,127 @@ class Abilities {
 	// =========================================================================
 	// Format helpers
 	// =========================================================================
+
+	// =========================================================================
+	// Ghost Writer ability callbacks
+	// =========================================================================
+
+	/**
+	 * Execute the analyze-voice ability.
+	 *
+	 * @param array $input Ability input.
+	 * @return array Result.
+	 */
+	public static function execute_analyze_voice( array $input ): array {
+		$user_id = absint( $input['user_id'] ?? 0 );
+
+		if ( 0 === $user_id ) {
+			$user_id = get_current_user_id();
+		}
+
+		// Analyzing another user's voice requires edit_others_posts.
+		if ( $user_id !== get_current_user_id() && ! current_user_can( 'edit_others_posts' ) ) {
+			return array( 'error' => __( 'You do not have permission to analyze another author\'s voice.', 'wp-pinch' ) );
+		}
+
+		$profile = Ghost_Writer::analyze_voice( $user_id );
+
+		if ( is_wp_error( $profile ) ) {
+			return array( 'error' => $profile->get_error_message() );
+		}
+
+		return array(
+			'user_id'             => $user_id,
+			'post_count_analyzed' => $profile['post_count_analyzed'],
+			'voice'               => $profile['voice'],
+			'metrics'             => $profile['metrics'],
+		);
+	}
+
+	/**
+	 * Execute the list-abandoned-drafts ability.
+	 *
+	 * @param array $input Ability input.
+	 * @return array Result.
+	 */
+	public static function execute_list_abandoned_drafts( array $input ): array {
+		$user_id = absint( $input['user_id'] ?? 0 );
+
+		// Listing other authors' drafts requires edit_others_posts.
+		if ( $user_id > 0 && $user_id !== get_current_user_id() && ! current_user_can( 'edit_others_posts' ) ) {
+			return array( 'error' => __( 'You do not have permission to view another author\'s drafts.', 'wp-pinch' ) );
+		}
+
+		// If not scoped and user can't edit others' posts, scope to self.
+		if ( 0 === $user_id && ! current_user_can( 'edit_others_posts' ) ) {
+			$user_id = get_current_user_id();
+		}
+
+		$drafts = Ghost_Writer::assess_drafts( $user_id );
+
+		return array(
+			'count'  => count( $drafts ),
+			'drafts' => $drafts,
+		);
+	}
+
+	/**
+	 * Execute the ghostwrite ability.
+	 *
+	 * @param array $input Ability input.
+	 * @return array Result.
+	 */
+	public static function execute_ghostwrite( array $input ): array {
+		$post_id = absint( $input['post_id'] );
+		$apply   = ! empty( $input['apply'] );
+
+		if ( ! $post_id ) {
+			return array( 'error' => __( 'A valid post_id is required.', 'wp-pinch' ) );
+		}
+
+		// Per-post capability check.
+		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+			return array( 'error' => __( 'You do not have permission to edit this post.', 'wp-pinch' ) );
+		}
+
+		$result = Ghost_Writer::ghostwrite( $post_id, $apply );
+
+		if ( is_wp_error( $result ) ) {
+			return array( 'error' => $result->get_error_message() );
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Execute the molt ability.
+	 *
+	 * @param array $input Ability input.
+	 * @return array Result.
+	 */
+	public static function execute_molt( array $input ): array {
+		$post_id = absint( $input['post_id'] ?? 0 );
+
+		if ( ! $post_id ) {
+			return array( 'error' => __( 'A valid post_id is required.', 'wp-pinch' ) );
+		}
+
+		if ( ! current_user_can( 'read_post', $post_id ) ) {
+			return array( 'error' => __( 'You do not have permission to read this post.', 'wp-pinch' ) );
+		}
+
+		$output_types = isset( $input['output_types'] ) && is_array( $input['output_types'] )
+			? array_map( 'sanitize_key', $input['output_types'] )
+			: array();
+
+		$result = Molt::molt( $post_id, $output_types );
+
+		if ( is_wp_error( $result ) ) {
+			return array( 'error' => $result->get_error_message() );
+		}
+
+		return $result;
+	}
 
 	/**
 	 * Format a navigation menu item for API output.

@@ -89,6 +89,7 @@ final class Plugin {
 				'wp_pinch_governance_security_scan',
 				'wp_pinch_audit_cleanup',
 				'wp_pinch_retry_webhook',
+				'wp_pinch_governance_draft_necromancer',
 			);
 			foreach ( $hooks as $hook ) {
 				as_unschedule_all_actions( $hook );

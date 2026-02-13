@@ -1,6 +1,6 @@
 # Chat Block
 
-The Pinch Chat block is a Gutenberg block built with the WordPress Interactivity API. It drops a reactive, accessible chat interface into any page or post, letting visitors talk to your AI agent directly on your site.
+The Pinch Chat block is a Gutenberg block built with the WordPress Interactivity API. It drops a reactive, accessible chat interface into any page or post — letting visitors talk to your AI agent directly on your site. It's like giving your website a little chat window with claws.
 
 ---
 
@@ -8,7 +8,7 @@ The Pinch Chat block is a Gutenberg block built with the WordPress Interactivity
 
 ### SSE Streaming
 
-Real-time character-by-character message delivery via Server-Sent Events. As the AI generates its response, text appears progressively with an animated cursor indicator. Falls back to standard request/response if streaming is disabled or fails.
+Real-time character-by-character message delivery via Server-Sent Events. As the AI generates its response, text appears progressively with an animated cursor indicator. Watching the lobster type is oddly satisfying. Falls back to standard request/response if streaming is disabled or fails.
 
 Enable via **WP Pinch > Features > Streaming Chat**.
 
@@ -50,7 +50,7 @@ Agent replies support bold, italic, inline code, code blocks, and links.
 
 ### Session Persistence
 
-Chat history is stored in `sessionStorage`, scoped per block instance (using the stable `blockId` attribute). Multiple chat blocks on one page maintain separate conversations. Sessions survive page reloads within the same browser tab.
+Chat history is stored in `sessionStorage`, scoped per block instance (using the stable `blockId` attribute). Multiple chat blocks on one page maintain separate conversations — like different tide pools. Sessions survive page reloads within the same browser tab.
 
 ### Fetch Retry with Backoff
 

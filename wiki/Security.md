@@ -1,6 +1,6 @@
 # Security
 
-WP Pinch takes security seriously. This page documents every defense layer in the plugin.
+WP Pinch takes security seriously — more seriously than a lobster takes its territory. This page documents every defense layer in the plugin.
 
 ---
 
@@ -54,7 +54,7 @@ WP Pinch takes security seriously. This page documents every defense layer in th
 ### Infrastructure
 
 - **`Update URI: false`** to prevent third-party update hijacking
-- **Complete uninstall cleanup** -- all options, transients, audit table, user meta, and cron jobs removed
+- **Complete uninstall cleanup** — all options, transients, audit table, user meta, and cron jobs removed (we leave no claw prints)
 - **Multisite cleanup** on uninstall
 - **Constant redefinition guards**
 - **GDPR-ready** -- full integration with WordPress privacy export and erasure

@@ -40,6 +40,8 @@ class Feature_Flags {
 		'slash_commands'     => false,
 		'token_display'      => false,
 		'pinchdrop_engine'   => false,
+		'ghost_writer'       => false,
+		'molt'               => false,
 	);
 
 	/**

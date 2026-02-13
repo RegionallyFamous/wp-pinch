@@ -1,6 +1,6 @@
 # Contributing to WP Pinch
 
-Thank you for your interest in contributing to WP Pinch. Whether you are reporting a bug, suggesting a feature, improving documentation, or writing code, your contributions are valued and appreciated. This guide outlines the process and expectations for contributing to the project.
+Thank you for your interest in contributing to WP Pinch. Whether you're reporting a bug, suggesting a feature, improving documentation, or writing code, your contributions are valued and appreciated. This guide outlines the process and expectations for contributing. We're glad to have another lobster in the reef.
 
 **Website:** [wp-pinch.com](https://wp-pinch.com) | **Repository:** [GitHub](https://github.com/RegionallyFamous/wp-pinch)
 

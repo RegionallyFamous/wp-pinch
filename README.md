@@ -17,7 +17,7 @@ Manage your WordPress site from WhatsApp, Slack, Telegram, Discord -- or any cha
 
 **Publish a blog post by texting your site?** WP Pinch exposes 35 WordPress abilities to AI agents -- content, media, users, settings, plugins, WooCommerce -- so you can manage your site from any messaging platform [OpenClaw](https://github.com/nicepkg/openclaw) supports.
 
-**Have your site fix itself?** Five autonomous governance tasks run in the background, flagging stale content, broken links, SEO gaps, comment spam, and security issues. You set the schedule. The lobster does the work.
+**Have your site fix itself?** Six autonomous governance tasks run in the background — content freshness, SEO health, comment sweep, broken links, security scan, and draft necromancy. You set the schedule. The lobster does the work.
 
 **Let visitors chat with an AI that knows your site?** Drop the Pinch Chat block on any page. Real-time streaming responses, dark mode, accessibility baked in, works on mobile. Your visitors get answers. You get happy visitors.
 
@@ -25,7 +25,7 @@ Manage your WordPress site from WhatsApp, Slack, Telegram, Discord -- or any cha
 
 ## Abilities
 
-Your AI agent gets **33 core abilities** across 9 categories: content (posts, pages), media, taxonomies, users, comments, settings, plugins & themes, analytics, and advanced (menus, meta, revisions, bulk ops, cron). Plus **10 WooCommerce abilities** when your shop is active. Every ability is locked down with capability checks, input sanitization, and audit logging. The AI works *for* you, not *around* you.
+Your AI agent gets **35 core abilities** across 10 categories: content (posts, pages), media, taxonomies, users, comments, settings, plugins & themes, analytics (including site context export for agent memory), and advanced (menus, meta, revisions, bulk ops, cron). Plus **10 WooCommerce abilities** when your shop is active. Every ability is locked down with capability checks, input sanitization, and audit logging. The AI works *for* you, not *around* you.
 
 [Full abilities reference ->](https://github.com/RegionallyFamous/wp-pinch/wiki/Abilities-Reference)
 
@@ -44,7 +44,7 @@ WP Pinch adds **tools** on top of core abilities -- workflows that combine abili
 
 ### 1. Abilities (above)
 
-33 core abilities + 10 WooCommerce. Content, media, users, settings, plugins, themes, menus, meta, revisions, cron. Full reference in the [wiki](https://github.com/RegionallyFamous/wp-pinch/wiki/Abilities-Reference).
+35 core abilities + 10 WooCommerce. Content, media, users, settings, plugins, themes, analytics (including site context export), menus, meta, revisions, cron. Full reference in the [wiki](https://github.com/RegionallyFamous/wp-pinch/wiki/Abilities-Reference).
 
 ### 2. Live Chat Block
 

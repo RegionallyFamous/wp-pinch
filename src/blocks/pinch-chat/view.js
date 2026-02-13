@@ -798,6 +798,155 @@ const { state, actions } = store( 'wp-pinch/chat', {
 				return true;
 			}
 
+			if (
+				cmd === '/ghostwrite' &&
+				state.ghostWriterOn &&
+				state.ghostWriteUrl
+			) {
+				const parts = text.trim().split( /\s+/ );
+				const postId = parts[ 1 ] ? parseInt( parts[ 1 ], 10 ) : 0;
+				const action = postId > 0 ? 'write' : 'list';
+
+				try {
+					const loadingMsg = {
+						id: 'msg-' + Date.now() + '-' + ++msgCounter,
+						text:
+							action === 'write'
+								? 'Ghostwriting draft #' +
+									postId +
+									'... channeling your voice.'
+								: 'Searching the draft graveyard...',
+						isUser: false,
+						isSystem: true,
+						timestamp: new Date().toISOString(),
+					};
+					state.messages = [ ...state.messages, loadingMsg ];
+					state.isLoading = true;
+
+					const body = { action };
+					if ( postId > 0 ) {
+						body.post_id = postId;
+					}
+
+					const res = await fetch( state.ghostWriteUrl, {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+							...( state.nonce
+								? { 'X-WP-Nonce': state.nonce }
+								: {} ),
+						},
+						body: JSON.stringify( body ),
+					} );
+
+					const data = await res.json();
+					const replyText =
+						data.reply ||
+						data.message ||
+						'Ghost Writer returned an unexpected response.';
+
+					const replyMsg = {
+						id: 'msg-' + Date.now() + '-' + ++msgCounter,
+						text: replyText,
+						isUser: false,
+						isSystem: false,
+						timestamp: new Date().toISOString(),
+					};
+					state.messages = [ ...state.messages, replyMsg ];
+					actions.saveSession();
+				} catch ( e ) {
+					const errMsg = {
+						id: 'msg-' + Date.now() + '-' + ++msgCounter,
+						text: 'Ghost Writer request failed. The spirits are uncooperative.',
+						isUser: false,
+						isSystem: true,
+						timestamp: new Date().toISOString(),
+					};
+					state.messages = [ ...state.messages, errMsg ];
+				} finally {
+					state.isLoading = false;
+					actions.scrollToBottom();
+				}
+				return true;
+			}
+
+			if (
+				cmd === '/molt' &&
+				state.moltOn &&
+				state.moltUrl
+			) {
+				const parts = text.trim().split( /\s+/ );
+				const postId = parts[ 1 ] ? parseInt( parts[ 1 ], 10 ) : 0;
+
+				if ( postId < 1 ) {
+					const errMsg = {
+						id: 'msg-' + Date.now() + '-' + ++msgCounter,
+						text: 'Usage: /molt [post_id] — e.g. /molt 123',
+						isUser: false,
+						isSystem: true,
+						timestamp: new Date().toISOString(),
+					};
+					state.messages = [ ...state.messages, errMsg ];
+					actions.saveSession();
+					actions.scrollToBottom();
+					return true;
+				}
+
+				try {
+					const loadingMsg = {
+						id: 'msg-' + Date.now() + '-' + ++msgCounter,
+						text: 'Molting post #' + postId + '... shedding one form, emerging in many.',
+						isUser: false,
+						isSystem: true,
+						timestamp: new Date().toISOString(),
+					};
+					state.messages = [ ...state.messages, loadingMsg ];
+					state.isLoading = true;
+
+					const res = await fetch( state.moltUrl, {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json',
+							...( state.nonce
+								? { 'X-WP-Nonce': state.nonce }
+								: {} ),
+						},
+						body: JSON.stringify( { post_id: postId } ),
+					} );
+
+					const data = await res.json();
+					const replyText =
+						data.reply ||
+						data.message ||
+						( data.code === 'rate_limited'
+							? 'Too many requests. Please wait a moment.'
+							: 'Molt returned an unexpected response.' );
+
+					const replyMsg = {
+						id: 'msg-' + Date.now() + '-' + ++msgCounter,
+						text: replyText,
+						isUser: false,
+						isSystem: false,
+						timestamp: new Date().toISOString(),
+					};
+					state.messages = [ ...state.messages, replyMsg ];
+					actions.saveSession();
+				} catch ( e ) {
+					const errMsg = {
+						id: 'msg-' + Date.now() + '-' + ++msgCounter,
+						text: 'Molt request failed. The lobster could not shed its shell.',
+						isUser: false,
+						isSystem: true,
+						timestamp: new Date().toISOString(),
+					};
+					state.messages = [ ...state.messages, errMsg ];
+				} finally {
+					state.isLoading = false;
+					actions.scrollToBottom();
+				}
+				return true;
+			}
+
 			if ( cmd === '/compact' ) {
 				// Let it go through as a normal message.
 				// The gateway handles /compact as a session command.
