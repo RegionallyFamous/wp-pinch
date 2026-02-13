@@ -8,79 +8,37 @@ Stable tag: 2.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-The AI agent plugin that grabs your WordPress site with both claws. OpenClaw + WordPress integration via MCP, with 34 abilities, autonomous governance, and a chat block. Visit [wp-pinch.com](https://wp-pinch.com) for full documentation.
+Manage your WordPress site from WhatsApp, Slack, Telegram, Discord — or any chat platform. 35 AI abilities, autonomous governance, a live chat block, and real-time webhooks. Self-hosted. No SaaS middlemen.
 
 == Description ==
 
-**WP Pinch turns your WordPress site into an AI-powered crustacean of productivity.**
+**What if you could manage your WordPress site by texting it?**
 
-It bridges WordPress and [OpenClaw](https://github.com/nicepkg/openclaw) — an open-source AI agent framework — exposing your site as a set of AI-accessible tools through the Abilities API and Model Context Protocol (MCP) introduced in WordPress 6.9.
+WP Pinch bridges WordPress and [OpenClaw](https://github.com/nicepkg/openclaw) — an open-source AI agent framework — giving your site 35 AI-accessible abilities through the Abilities API and Model Context Protocol (MCP) in WordPress 6.9. Manage posts, media, users, plugins, WooCommerce, and more from any messaging platform. All self-hosted. All under your control.
 
-The result? Manage your WordPress site from **WhatsApp, Telegram, Slack, Discord**, or any messaging platform OpenClaw supports. All self-hosted. All under your control. No third-party SaaS middlemen getting their claws on your data.
+= 35 AI Abilities =
 
-= Why "Pinch"? =
+Your AI agent gets full access to your WordPress site — posts, pages, media, users, comments, settings, plugins, themes, menus, revisions, cron, and WooCommerce. Every ability is locked down with capability checks, input sanitization, and audit logging. 10 categories. 10 bonus WooCommerce abilities when your shop is active.
 
-Because OpenClaw needed a WordPress plugin with grip. And because every good lobster knows: you don't just *touch* things — you **pinch** them. Hard. With precision. And then you manage their post meta.
+= Live Chat Block =
 
-= 34 WordPress Abilities =
-
-We didn't stop at the appetizer. WP Pinch registers **34 core abilities** across 9 categories, plus 2 bonus WooCommerce abilities if you're running a shop. That's more abilities than a lobster has legs. (Lobsters have 10. We have 36. We win.)
-
-* **Content** — Full CRUD on posts and pages (list, create, update, delete)
-* **Media** — Upload, list, and manage media library items
-* **Taxonomies** — Manage terms and browse taxonomies
-* **Users** — List users, update roles (with escalation guards), view profiles
-* **Comments** — Moderate, approve, trash, list (with privacy-safe output)
-* **Settings** — Read and update allowlisted site options
-* **Plugins & Themes** — Activate, deactivate, switch, list installed extensions
-* **Analytics** — Site health diagnostics, recent activity, content search, data export
-* **Advanced** — Menus, post meta, revisions, bulk edits, cron management
-
-Every ability has built-in security guards: capability checks, input sanitization, existence validation, and audit logging. We don't let AI agents run around your site like unsupervised lobsters in a kitchen.
-
-= Custom MCP Server =
-
-A dedicated `wp-pinch` MCP endpoint curates which abilities are exposed to AI agents. Like a bouncer at a seafood restaurant — only the abilities you approve get past the velvet rope.
-
-= Webhook Dispatcher =
-
-Fires real-time events to OpenClaw when posts are published, comments posted, users register, or WooCommerce orders change. Includes exponential backoff retry (4 attempts) and fixed-duration rate limiting so your site doesn't get overwhelmed. Even lobsters pace themselves.
+Drop an AI chat widget on any page with the Pinch Chat Gutenberg block. SSE streaming for real-time responses. Slash commands. Message feedback. Token tracking. Markdown rendering. Public chat mode for anonymous visitors. Per-block agent overrides — every page can have its own AI personality. Dark mode. WCAG 2.1 AA accessible. Mobile responsive.
 
 = Autonomous Governance =
 
-Five recurring background tasks via Action Scheduler keep your site healthy without lifting a claw:
+Five background tasks patrol your site on autopilot: content freshness, SEO health, comment cleanup, broken link detection, and security scanning. Findings get delivered to OpenClaw automatically. Set it and forget it.
 
-1. **Content Freshness** — flags stale posts (staler than yesterday's catch)
-2. **SEO Health** — missing meta descriptions, short titles, images without alt text
-3. **Comment Sweep** — spam, orphaned comments, and other bottom-feeders
-4. **Broken Link Detection** — dead links lurking in your content
-5. **Security Scanning** — suspicious plugin changes and available updates
+= Real-Time Webhooks =
 
-= Pinch Chat Block =
+Post published? Comment posted? WooCommerce order shipped? Events fire to OpenClaw the moment they happen. HMAC-SHA256 signed. Retry with exponential backoff. Circuit breaker for when the gateway goes down. Two-way — OpenClaw can push ability requests back to your site.
 
-A Gutenberg block built with the Interactivity API. Drop a reactive, accessible chat interface on any page. Your visitors talk to your AI agent right on your site. Real-time SSE streaming, session persistence, slash commands (/new, /reset, /status, /compact), message feedback, token usage tracking, Markdown rendering, screen reader support, dark mode, high-contrast mode, and reduced-motion accessible. Now with public chat mode and per-block agent overrides — every chat block can have its own personality. It's like giving your website a little chat window with claws.
+= Built for Developers =
 
-= WP-CLI Commands =
-
-For the terminal-dwelling lobsters among us:
-
-* `wp pinch status` — Connection status, abilities, gateway health
-* `wp pinch webhook-test` — Fire a test webhook
-* `wp pinch governance run` — Trigger governance tasks manually
-* `wp pinch audit list` — Browse audit log entries
-* `wp pinch abilities list` — See all registered abilities
-
-= Comprehensive Audit Log =
-
-Every ability execution, webhook dispatch, governance finding, and chat message is logged with automatic 90-day retention. Nothing happens without leaving a trail. Even lobsters leave tracks on the ocean floor.
-
-= Developer Extensible =
-
-12+ filters and 6+ actions for customizing abilities, webhook payloads, governance, role allowlists, and more. If you can hook it, you can pinch it.
+12+ filters and 6+ actions. Full WP-CLI support. Customize abilities, webhook payloads, governance schedules, role allowlists, and more. If you can hook it, you can pinch it.
 
 = Production-Ready Security =
 
-Capability checks (including per-post verification on meta operations), input sanitization, output escaping, nonce verification, prepared SQL statements, option allowlists, role escalation prevention, self-deactivation guards, CSS injection prevention, fixed-duration rate limiting, HMAC-SHA256 webhook signatures with replay protection, circuit breaker for gateway failures, and `show_in_rest => false` on all 24 settings. It's as battle-tested as a lobster that survived the tank at Red Lobster.
+Capability checks on every operation. Input sanitization. Output escaping. Nonce verification. Prepared SQL. HMAC-SHA256 webhook signatures. Circuit breaker. Rate limiting. PHPStan Level 6. 160+ PHPUnit tests. See the [GitHub Wiki](https://github.com/RegionallyFamous/wp-pinch/wiki/Security) for the full security model.
 
 == Installation ==
 
