@@ -53,6 +53,7 @@ class Test_Feature_Flags extends WP_UnitTestCase {
 			'webhook_dashboard',
 			'audit_search',
 			'health_endpoint',
+			'pinchdrop_engine',
 		);
 
 		foreach ( $expected as $flag ) {

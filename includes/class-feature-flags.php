@@ -39,6 +39,7 @@ class Feature_Flags {
 		'public_chat'        => false,
 		'slash_commands'     => false,
 		'token_display'      => false,
+		'pinchdrop_engine'   => false,
 	);
 
 	/**

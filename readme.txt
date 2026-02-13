@@ -4,7 +4,7 @@ Tags: ai, agent, openclaw, mcp, automation
 Requires at least: 6.9
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 2.2.0
+Stable tag: 2.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,6 +31,10 @@ Five background tasks patrol your site on autopilot: content freshness, SEO heal
 = Real-Time Webhooks =
 
 Post published? Comment posted? WooCommerce order shipped? Events fire to OpenClaw the moment they happen. HMAC-SHA256 signed. Retry with exponential backoff. Circuit breaker for when the gateway goes down. Two-way — OpenClaw can push ability requests back to your site.
+
+= PinchDrop (Capture Anywhere) =
+
+Drop rough ideas from any OpenClaw channel and WP Pinch turns them into a Draft Pack automatically. Signed captures hit `/wp-pinch/v1/pinchdrop/capture`, then `pinchdrop_generate` produces blog-post, product-update, changelog, and social drafts with request-level traceability.
 
 = Built for Developers =
 
@@ -113,7 +117,10 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 
 == Changelog ==
 
-= 2.2.0 =
+= 2.3.0 =
+* New: PinchDrop (Capture Anywhere) pipeline — signed inbound capture endpoint (`/wp-pinch/v1/pinchdrop/capture`) with idempotency by `request_id`, source allowlist support, and draft-pack generation.
+* New: `pinchdrop_generate` ability to build structured draft packs and optionally persist draft posts with capture metadata (`source`, `author`, `request_id`, capture timestamp).
+* New: PinchDrop settings (`wp_pinch_pinchdrop_enabled`, default outputs, auto-save drafts, allowed sources) and `pinchdrop_engine` feature flag.
 * New: Public chat mode — unauthenticated visitors can chat with your AI agent. Separate /chat/public endpoint with strict rate limiting, gated behind the public_chat feature flag. Because even lobsters believe in open doors.
 * New: Per-block agent override — new agentId attribute lets individual chat blocks target different OpenClaw agents.
 * New: Slash commands — /new, /reset, /status, and /compact in the chat input (behind slash_commands feature flag). For power users who type faster than a lobster snaps.
@@ -228,8 +235,8 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 
 == Upgrade Notice ==
 
-= 2.2.0 =
-Feature release: Public chat mode, per-block agent override, slash commands, message feedback, token usage display, incoming webhook receiver, SSE streaming, 3 new feature flags, 14 new settings, WCAG 2.1 AA motion & high-contrast support, plus security hardening for post meta abilities and uninstall cleanup. The lobster is now fully ambidextrous. No breaking changes from 2.1.0.
+= 2.3.0 =
+Feature release: PinchDrop Capture Anywhere is live with signed inbound capture, idempotency, source allowlisting, structured draft-pack generation, and trace metadata persisted to drafts/audit logs. Includes the `pinchdrop_engine` feature flag and PinchDrop settings controls. No breaking changes from 2.2.0.
 
 = 2.1.0 =
 Feature release: Circuit breaker, feature flags, webhook signatures, SSE streaming, health endpoint, admin ability toggle, audit log search/export, chat UX overhaul (character counter, clear chat, copy button, Markdown, typing indicator, nonce refresh, keyboard shortcuts), WP-CLI format support, rate limit headers, and much more. No breaking changes from 2.0.0.

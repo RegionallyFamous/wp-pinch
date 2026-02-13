@@ -240,6 +240,60 @@ class Settings {
 			)
 		);
 
+		register_setting(
+			'wp_pinch_connection',
+			'wp_pinch_pinchdrop_enabled',
+			array(
+				'type'              => 'boolean',
+				'sanitize_callback' => 'rest_sanitize_boolean',
+				'default'           => false,
+				'show_in_rest'      => false,
+			)
+		);
+
+		register_setting(
+			'wp_pinch_connection',
+			'wp_pinch_pinchdrop_default_outputs',
+			array(
+				'type'              => 'array',
+				'sanitize_callback' => function ( $value ) {
+					$allowed = array( 'post', 'product_update', 'changelog', 'social' );
+					if ( ! is_array( $value ) ) {
+						return array( 'post', 'product_update', 'changelog', 'social' );
+					}
+					$value = array_values( array_intersect( $allowed, array_map( 'sanitize_key', $value ) ) );
+					return empty( $value ) ? array( 'post', 'product_update', 'changelog', 'social' ) : $value;
+				},
+				'default'           => array( 'post', 'product_update', 'changelog', 'social' ),
+				'show_in_rest'      => false,
+			)
+		);
+
+		register_setting(
+			'wp_pinch_connection',
+			'wp_pinch_pinchdrop_auto_save_drafts',
+			array(
+				'type'              => 'boolean',
+				'sanitize_callback' => 'rest_sanitize_boolean',
+				'default'           => true,
+				'show_in_rest'      => false,
+			)
+		);
+
+		register_setting(
+			'wp_pinch_connection',
+			'wp_pinch_pinchdrop_allowed_sources',
+			array(
+				'type'              => 'string',
+				'sanitize_callback' => function ( $value ) {
+					$parts = array_filter( array_map( 'sanitize_key', array_map( 'trim', explode( ',', (string) $value ) ) ) );
+					return implode( ',', $parts );
+				},
+				'default'           => '',
+				'show_in_rest'      => false,
+			)
+		);
+
 		// Webhooks tab settings.
 		register_setting(
 			'wp_pinch_webhooks',
@@ -970,6 +1024,53 @@ class Settings {
 				</tr>
 			</table>
 
+			<h3><?php esc_html_e( 'PinchDrop (Capture Anywhere)', 'wp-pinch' ); ?></h3>
+			<p class="description"><?php esc_html_e( 'Capture ideas from OpenClaw channels and auto-generate draft packs.', 'wp-pinch' ); ?></p>
+			<table class="form-table">
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Enable PinchDrop', 'wp-pinch' ); ?></th>
+					<td>
+						<label for="wp_pinch_pinchdrop_enabled">
+							<input type="checkbox" id="wp_pinch_pinchdrop_enabled" name="wp_pinch_pinchdrop_enabled" value="1"
+								<?php checked( (bool) get_option( 'wp_pinch_pinchdrop_enabled', false ) ); ?> />
+							<?php esc_html_e( 'Accept capture requests on /wp-pinch/v1/pinchdrop/capture', 'wp-pinch' ); ?>
+						</label>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Default output types', 'wp-pinch' ); ?></th>
+					<td>
+						<?php $pd_outputs = (array) get_option( 'wp_pinch_pinchdrop_default_outputs', array( 'post', 'product_update', 'changelog', 'social' ) ); ?>
+						<label><input type="checkbox" name="wp_pinch_pinchdrop_default_outputs[]" value="post" <?php checked( in_array( 'post', $pd_outputs, true ) ); ?> /> <?php esc_html_e( 'Blog post', 'wp-pinch' ); ?></label><br />
+						<label><input type="checkbox" name="wp_pinch_pinchdrop_default_outputs[]" value="product_update" <?php checked( in_array( 'product_update', $pd_outputs, true ) ); ?> /> <?php esc_html_e( 'Product update', 'wp-pinch' ); ?></label><br />
+						<label><input type="checkbox" name="wp_pinch_pinchdrop_default_outputs[]" value="changelog" <?php checked( in_array( 'changelog', $pd_outputs, true ) ); ?> /> <?php esc_html_e( 'Changelog', 'wp-pinch' ); ?></label><br />
+						<label><input type="checkbox" name="wp_pinch_pinchdrop_default_outputs[]" value="social" <?php checked( in_array( 'social', $pd_outputs, true ) ); ?> /> <?php esc_html_e( 'Social snippets', 'wp-pinch' ); ?></label>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Auto-save generated drafts', 'wp-pinch' ); ?></th>
+					<td>
+						<label for="wp_pinch_pinchdrop_auto_save_drafts">
+							<input type="checkbox" id="wp_pinch_pinchdrop_auto_save_drafts" name="wp_pinch_pinchdrop_auto_save_drafts" value="1"
+								<?php checked( (bool) get_option( 'wp_pinch_pinchdrop_auto_save_drafts', true ) ); ?> />
+							<?php esc_html_e( 'Create draft posts automatically from generated output', 'wp-pinch' ); ?>
+						</label>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="wp_pinch_pinchdrop_allowed_sources"><?php esc_html_e( 'Allowed capture sources', 'wp-pinch' ); ?></label>
+					</th>
+					<td>
+						<input type="text" id="wp_pinch_pinchdrop_allowed_sources" name="wp_pinch_pinchdrop_allowed_sources"
+							value="<?php echo esc_attr( get_option( 'wp_pinch_pinchdrop_allowed_sources', '' ) ); ?>"
+							class="regular-text"
+							placeholder="<?php esc_attr_e( 'slack,telegram,whatsapp', 'wp-pinch' ); ?>" />
+						<p class="description"><?php esc_html_e( 'Optional comma-separated source allowlist. Leave empty to allow all sources.', 'wp-pinch' ); ?></p>
+					</td>
+				</tr>
+			</table>
+
 			<p>
 				<button type="button" id="wp-pinch-test-connection" class="button button-secondary">
 					<?php esc_html_e( 'Test Connection', 'wp-pinch' ); ?>
@@ -1185,6 +1286,7 @@ class Settings {
 			'health_endpoint'    => __( 'Public Health Check Endpoint', 'wp-pinch' ),
 			'slash_commands'     => __( 'Slash commands (/new, /status) in chat', 'wp-pinch' ),
 			'token_display'      => __( 'Show token usage in chat footer', 'wp-pinch' ),
+			'pinchdrop_engine'   => __( 'PinchDrop engine (capture anywhere draft packs)', 'wp-pinch' ),
 		);
 		?>
 		<form method="post" action="options.php">

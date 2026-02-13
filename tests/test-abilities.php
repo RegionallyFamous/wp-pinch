@@ -45,11 +45,12 @@ class Test_Abilities extends WP_UnitTestCase {
 	// =========================================================================
 
 	/**
-	 * Test that get_ability_names returns the expected count (34 without WooCommerce).
+	 * Test that get_ability_names returns the expected count (35 without WooCommerce).
 	 */
 	public function test_ability_names_count(): void {
 		$names = Abilities::get_ability_names();
-		$this->assertCount( 34, $names, 'Expected 34 abilities to be registered (without WooCommerce).' );
+		$this->assertCount( 35, $names, 'Expected 35 abilities to be registered (without WooCommerce).' );
+		$this->assertContains( 'wp-pinch/pinchdrop-generate', $names );
 	}
 
 	/**
@@ -749,6 +750,32 @@ class Test_Abilities extends WP_UnitTestCase {
 	public function test_export_data_invalid_type(): void {
 		$result = Abilities::execute_export_data( array( 'type' => 'invalid' ) );
 		$this->assertArrayHasKey( 'error', $result );
+	}
+
+	/**
+	 * Test PinchDrop generation returns draft pack and draft IDs.
+	 */
+	public function test_pinchdrop_generate_creates_drafts(): void {
+		$result = Abilities::execute_pinchdrop_generate(
+			array(
+				'source_text'   => "Launch notes\n- Faster sync\n- Better onboarding",
+				'source'        => 'slack',
+				'request_id'    => 'req-abc-123',
+				'save_as_draft' => true,
+				'output_types'  => array( 'post', 'changelog' ),
+			)
+		);
+
+		$this->assertArrayNotHasKey( 'error', $result );
+		$this->assertArrayHasKey( 'draft_pack', $result );
+		$this->assertArrayHasKey( 'post', $result['draft_pack'] );
+		$this->assertArrayHasKey( 'changelog', $result['draft_pack'] );
+		$this->assertArrayHasKey( 'created_drafts', $result );
+		$this->assertArrayHasKey( 'post', $result['created_drafts'] );
+
+		$post_id = (int) $result['created_drafts']['post']['id'];
+		$this->assertEquals( 'slack', get_post_meta( $post_id, 'wp_pinch_pinchdrop_source', true ) );
+		$this->assertEquals( 'req-abc-123', get_post_meta( $post_id, 'wp_pinch_pinchdrop_request_id', true ) );
 	}
 
 	// =========================================================================

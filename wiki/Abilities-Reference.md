@@ -15,7 +15,8 @@ WP Pinch registers **35 core abilities** across 10 categories, plus 10 WooCommer
 | **Comments** | Moderation and cleanup | `list-comments`, `moderate-comment` |
 | **Settings** | Read and update options (allowlisted) | `get-option`, `update-option` |
 | **Plugins & Themes** | Extension management | `list-plugins`, `toggle-plugin`, `list-themes`, `switch-theme` |
-| **Analytics** | Site health and data export | `site-health`, `recent-activity`, `search-content`, `export-data`, `export-site-context` |
+| **Analytics** | Site health and data export | `site-health`, `recent-activity`, `search-content`, `export-data` |
+| **Automation** | Capture-to-draft workflows | `pinchdrop-generate` |
 | **Advanced** | Menus, meta, revisions, bulk ops, cron | `list-menus`, `manage-menu-item`, `get-post-meta`, `update-post-meta`, `list-revisions`, `restore-revision`, `bulk-edit-posts`, `list-cron-events`, `manage-cron` |
 | **WooCommerce** | Shop abilities (when WooCommerce is active) | `woo-list-products`, `woo-manage-order`, `woo-create-product`, `woo-update-product`, `woo-manage-inventory`, `woo-list-orders`, `woo-list-customers`, `woo-list-coupons`, `woo-create-coupon`, `woo-revenue-summary` |
 

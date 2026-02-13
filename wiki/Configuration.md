@@ -85,6 +85,15 @@ You can also add your Gateway URL directly in the WP Pinch settings for webhook-
 | **Chat Timeout** | Request timeout in seconds (0-600). 0 = gateway default |
 | **Session Idle Timeout** | Minutes of inactivity before a new session starts. 0 = gateway default |
 
+### PinchDrop Settings
+
+| Setting | Description |
+|---|---|
+| **Enable PinchDrop** | Enables the `/wp-pinch/v1/pinchdrop/capture` endpoint |
+| **Default output types** | Default Draft Pack outputs (`post`, `product_update`, `changelog`, `social`) |
+| **Auto-save generated drafts** | Creates WordPress draft posts automatically from generated outputs |
+| **Allowed capture sources** | Optional comma-separated allowlist (`slack,telegram,whatsapp`) |
+
 ### Feature Flags
 
 Toggle features on/off without code changes:
@@ -101,6 +110,36 @@ Toggle features on/off without code changes:
 | `public_chat` | Off | Allow unauthenticated visitors to chat |
 | `slash_commands` | Off | Enable /new, /status, /compact in chat |
 | `token_display` | Off | Show token usage in chat footer |
+| `pinchdrop_engine` | Off | Enable PinchDrop capture-anywhere pipeline |
+
+---
+
+## PinchDrop Capture Contract
+
+Signed inbound capture endpoint:
+
+```
+POST /wp-json/wp-pinch/v1/pinchdrop/capture
+```
+
+Required payload:
+
+- `text` (string, required)
+- `source` (string, channel identifier)
+- `request_id` (string, idempotency key)
+
+Optional payload:
+
+- `author` (string)
+- `options.output_types` (array: `post`, `product_update`, `changelog`, `social`)
+- `options.tone` (string)
+- `options.audience` (string)
+- `options.save_as_draft` (boolean)
+
+Auth model matches hook receivers:
+
+- Bearer token (`Authorization: Bearer ...`) or `X-OpenClaw-Token`
+- Optional HMAC signature (`X-WP-Pinch-Signature` + `X-WP-Pinch-Timestamp`) when webhook signatures are enabled
 
 ### Governance Tab
 

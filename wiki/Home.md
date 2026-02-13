@@ -14,6 +14,7 @@ WP Pinch bridges WordPress and [OpenClaw](https://github.com/nicepkg/openclaw), 
 | [Chat Block](Chat-Block) | SSE streaming, slash commands, public mode, agent overrides, accessibility |
 | [Architecture](Architecture) | How the pieces fit together -- diagram and subsystem overview |
 | [Configuration](Configuration) | Installation, OpenClaw connection, admin settings, feature flags |
+| [PinchDrop](PinchDrop) | Capture ideas from any OpenClaw channel and auto-create Draft Packs |
 | [Hooks & Filters](Hooks-and-Filters) | 12+ filters and 6+ actions with code examples |
 | [Security](Security) | The full security model -- 20+ defense layers |
 | [WP-CLI](WP-CLI) | Command reference with examples and output formats |

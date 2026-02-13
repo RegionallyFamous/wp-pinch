@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-02-11
+
+### Added
+- **PinchDrop capture endpoint** — new signed inbound channel-agnostic endpoint at `/wp-pinch/v1/pinchdrop/capture` with payload validation, source allowlisting, and endpoint-specific rate limiting.
+- **Idempotency controls** — duplicate suppression on PinchDrop captures via `request_id` caching; repeated requests return a deduplicated response without creating duplicate drafts.
+- **`pinchdrop_generate` ability** — structured Draft Pack generation for `post`, `product_update`, `changelog`, and `social` output types with optional draft persistence.
+- **PinchDrop settings and feature flag** — new settings for enable toggle, default outputs, auto-save drafts, and allowed sources; shipped behind `pinchdrop_engine`.
+- **PinchDrop docs** — new wiki page (`PinchDrop`) and configuration/docs updates with payload contract and integration notes.
+
+### Security
+- Reused authenticated hook trust model (Bearer/OpenClaw token + optional HMAC timestamp signatures) for PinchDrop captures.
+- Enforced source allowlist and bounded input sizes for capture payloads.
+
+### Changed
+- Ability catalog now includes `wp-pinch/pinchdrop-generate`.
+
 ## [2.2.0] - 2026-02-12
 
 ### Added
@@ -195,7 +211,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Admin settings page with connection testing, webhook configuration, and governance controls.
 - GitHub Actions CI pipeline with PHPUnit, build verification, and plugin check.
 
-[Unreleased]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.2.0...HEAD
+[Unreleased]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.3.0...HEAD
+[2.3.0]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/RegionallyFamous/wp-pinch/compare/v1.0.2...v2.0.0

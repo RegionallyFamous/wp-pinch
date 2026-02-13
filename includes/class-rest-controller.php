@@ -136,6 +136,68 @@ class Rest_Controller {
 			)
 		);
 
+		// PinchDrop capture endpoint (channel-agnostic inbound ideas).
+		register_rest_route(
+			'wp-pinch/v1',
+			'/pinchdrop/capture',
+			array(
+				array(
+					'methods'             => \WP_REST_Server::CREATABLE,
+					'callback'            => array( __CLASS__, 'handle_pinchdrop_capture' ),
+					'permission_callback' => array( __CLASS__, 'check_hook_token' ),
+					'args'                => array(
+						'text'       => array(
+							'required'          => true,
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_textarea_field',
+							'validate_callback' => function ( $value ) {
+								if ( ! is_string( $value ) || '' === trim( $value ) ) {
+									return new \WP_Error(
+										'rest_invalid_param',
+										__( 'Text cannot be empty.', 'wp-pinch' ),
+										array( 'status' => 400 )
+									);
+								}
+								if ( mb_strlen( $value ) > 20000 ) {
+									return new \WP_Error(
+										'rest_invalid_param',
+										__( 'Text is too long.', 'wp-pinch' ),
+										array( 'status' => 400 )
+									);
+								}
+								return true;
+							},
+						),
+						'source'     => array(
+							'type'              => 'string',
+							'default'           => 'openclaw',
+							'sanitize_callback' => 'sanitize_key',
+						),
+						'author'     => array(
+							'type'              => 'string',
+							'default'           => '',
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+						'request_id' => array(
+							'type'              => 'string',
+							'default'           => '',
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+						'options'    => array(
+							'type'              => 'object',
+							'default'           => array(),
+							'sanitize_callback' => function ( $value ) {
+								if ( ! is_array( $value ) ) {
+									return array();
+								}
+								return self::sanitize_params_recursive( $value );
+							},
+						),
+					),
+				),
+			)
+		);
+
 		// Public chat endpoint (no auth required, strict rate limiting).
 		if ( Feature_Flags::is_enabled( 'public_chat' ) ) {
 			register_rest_route(
@@ -1069,6 +1131,180 @@ class Rest_Controller {
 			array( 'session_key' => $session_key ),
 			200
 		);
+	}
+
+	/**
+	 * Handle PinchDrop capture requests from OpenClaw channels.
+	 *
+	 * Auth is shared with hook receiver (Bearer token and optional HMAC headers).
+	 * Uses request_id idempotency to suppress duplicate draft creation.
+	 *
+	 * @param \WP_REST_Request $request REST request.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public static function handle_pinchdrop_capture( \WP_REST_Request $request ) {
+		$feature_enabled = Feature_Flags::is_enabled( 'pinchdrop_engine' );
+		$setting_enabled = (bool) get_option( 'wp_pinch_pinchdrop_enabled', false );
+		if ( ! $feature_enabled || ! $setting_enabled ) {
+			return new \WP_Error(
+				'pinchdrop_disabled',
+				__( 'PinchDrop capture is currently disabled.', 'wp-pinch' ),
+				array( 'status' => 404 )
+			);
+		}
+
+		$allowed_sources_raw = (string) get_option( 'wp_pinch_pinchdrop_allowed_sources', '' );
+		$allowed_sources     = array_filter( array_map( 'sanitize_key', array_map( 'trim', explode( ',', $allowed_sources_raw ) ) ) );
+
+		$source = sanitize_key( (string) $request->get_param( 'source' ) );
+		if ( ! empty( $allowed_sources ) && ! in_array( $source, $allowed_sources, true ) ) {
+			return new \WP_Error(
+				'invalid_source',
+				__( 'Source is not allowlisted for PinchDrop.', 'wp-pinch' ),
+				array( 'status' => 403 )
+			);
+		}
+
+		// Lightweight endpoint-specific rate limiting by source + client IP.
+		$rate_key = 'wp_pinch_pdrop_rate_' . substr( hash_hmac( 'sha256', $source . '|' . self::get_client_ip(), wp_salt() ), 0, 16 );
+		$rate     = (int) get_transient( $rate_key );
+		if ( $rate >= 20 ) {
+			$response = new \WP_REST_Response(
+				array(
+					'code'    => 'rate_limited',
+					'message' => __( 'Too many capture requests. Please retry shortly.', 'wp-pinch' ),
+				),
+				429
+			);
+			$response->header( 'Retry-After', '60' );
+			return $response;
+		}
+		set_transient( $rate_key, $rate + 1, 60 );
+
+		$request_id = sanitize_text_field( (string) $request->get_param( 'request_id' ) );
+		$idem_key   = '';
+		if ( '' !== $request_id ) {
+			$idem_key = 'wp_pinch_pdrop_idem_' . substr( hash_hmac( 'sha256', $request_id, wp_salt() ), 0, 32 );
+			$cached   = get_transient( $idem_key );
+			if ( is_array( $cached ) ) {
+				$cached['deduplicated'] = true;
+				return new \WP_REST_Response( $cached, 200 );
+			}
+		}
+
+		$options = $request->get_param( 'options' );
+		$options = is_array( $options ) ? $options : array();
+
+		$default_outputs = get_option( 'wp_pinch_pinchdrop_default_outputs', array( 'post', 'product_update', 'changelog', 'social' ) );
+		if ( ! is_array( $default_outputs ) || empty( $default_outputs ) ) {
+			$default_outputs = array( 'post', 'product_update', 'changelog', 'social' );
+		}
+
+		$payload = array(
+			'source_text'   => sanitize_textarea_field( (string) $request->get_param( 'text' ) ),
+			'source'        => $source,
+			'author'        => sanitize_text_field( (string) $request->get_param( 'author' ) ),
+			'request_id'    => $request_id,
+			'tone'          => sanitize_text_field( (string) ( $options['tone'] ?? '' ) ),
+			'audience'      => sanitize_text_field( (string) ( $options['audience'] ?? '' ) ),
+			'output_types'  => array_map( 'sanitize_key', (array) ( $options['output_types'] ?? $default_outputs ) ),
+			'save_as_draft' => isset( $options['save_as_draft'] ) ? (bool) $options['save_as_draft'] : (bool) get_option( 'wp_pinch_pinchdrop_auto_save_drafts', true ),
+		);
+
+		$result = self::execute_ability_as_admin( 'wp-pinch/pinchdrop-generate', $payload );
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		$response_data = array(
+			'status'       => 'ok',
+			'request_id'   => $request_id,
+			'source'       => $source,
+			'deduplicated' => false,
+			'result'       => $result,
+		);
+
+		if ( '' !== $idem_key ) {
+			set_transient( $idem_key, $response_data, 15 * MINUTE_IN_SECONDS );
+		}
+
+		Audit_Table::insert(
+			'pinchdrop_capture',
+			'webhook',
+			sprintf( 'PinchDrop capture accepted from source "%s".', $source ),
+			array(
+				'source'     => $source,
+				'request_id' => $request_id,
+			)
+		);
+
+		return new \WP_REST_Response( $response_data, 200 );
+	}
+
+	/**
+	 * Execute an ability in an administrator context for trusted system hooks.
+	 *
+	 * @param string $ability_name Ability name.
+	 * @param array  $params       Ability params.
+	 * @return array|\WP_Error
+	 */
+	private static function execute_ability_as_admin( string $ability_name, array $params ) {
+		if ( ! function_exists( 'wp_execute_ability' ) ) {
+			return new \WP_Error(
+				'abilities_unavailable',
+				__( 'WordPress Abilities API is not available.', 'wp-pinch' ),
+				array( 'status' => 500 )
+			);
+		}
+
+		$ability_names = Abilities::get_ability_names();
+		if ( ! in_array( $ability_name, $ability_names, true ) ) {
+			return new \WP_Error(
+				'unknown_ability',
+				__( 'Requested ability is not registered.', 'wp-pinch' ),
+				array( 'status' => 404 )
+			);
+		}
+
+		$disabled = get_option( 'wp_pinch_disabled_abilities', array() );
+		if ( is_array( $disabled ) && in_array( $ability_name, $disabled, true ) ) {
+			return new \WP_Error(
+				'ability_disabled',
+				__( 'Requested ability is currently disabled.', 'wp-pinch' ),
+				array( 'status' => 403 )
+			);
+		}
+
+		$previous_user = get_current_user_id();
+		$admins        = get_users(
+			array(
+				'role'   => 'administrator',
+				'number' => 1,
+				'fields' => 'ID',
+			)
+		);
+
+		if ( empty( $admins ) ) {
+			return new \WP_Error(
+				'no_admin',
+				__( 'No administrator account found to execute the ability.', 'wp-pinch' ),
+				array( 'status' => 500 )
+			);
+		}
+
+		wp_set_current_user( (int) $admins[0] );
+		$result = wp_execute_ability( $ability_name, $params );
+		wp_set_current_user( $previous_user );
+
+		if ( is_wp_error( $result ) ) {
+			return new \WP_Error(
+				'ability_error',
+				$result->get_error_message(),
+				array( 'status' => 422 )
+			);
+		}
+
+		return $result;
 	}
 
 	/**

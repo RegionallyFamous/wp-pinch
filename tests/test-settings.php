@@ -42,6 +42,10 @@ class Test_Settings extends WP_UnitTestCase {
 		$this->assertNotFalse( get_registered_settings()['wp_pinch_gateway_url'] ?? false );
 		$this->assertNotFalse( get_registered_settings()['wp_pinch_api_token'] ?? false );
 		$this->assertNotFalse( get_registered_settings()['wp_pinch_rate_limit'] ?? false );
+		$this->assertNotFalse( get_registered_settings()['wp_pinch_pinchdrop_enabled'] ?? false );
+		$this->assertNotFalse( get_registered_settings()['wp_pinch_pinchdrop_default_outputs'] ?? false );
+		$this->assertNotFalse( get_registered_settings()['wp_pinch_pinchdrop_auto_save_drafts'] ?? false );
+		$this->assertNotFalse( get_registered_settings()['wp_pinch_pinchdrop_allowed_sources'] ?? false );
 
 		// Webhooks group.
 		$this->assertNotFalse( get_registered_settings()['wp_pinch_webhook_events'] ?? false );
@@ -61,6 +65,10 @@ class Test_Settings extends WP_UnitTestCase {
 			'wp_pinch_gateway_url',
 			'wp_pinch_api_token',
 			'wp_pinch_rate_limit',
+			'wp_pinch_pinchdrop_enabled',
+			'wp_pinch_pinchdrop_default_outputs',
+			'wp_pinch_pinchdrop_auto_save_drafts',
+			'wp_pinch_pinchdrop_allowed_sources',
 			'wp_pinch_webhook_events',
 			'wp_pinch_governance_tasks',
 			'wp_pinch_governance_mode',
@@ -157,6 +165,19 @@ class Test_Settings extends WP_UnitTestCase {
 		// sanitize_key lowercases and removes non-alphanumeric characters.
 		$this->assertEquals( 'post_status_change', $result[0] );
 		$this->assertEquals( 'new_comment', $result[1] );
+	}
+
+	/**
+	 * Test PinchDrop source allowlist sanitization.
+	 */
+	public function test_pinchdrop_allowed_sources_sanitization(): void {
+		Settings::register_settings();
+		$registered = get_registered_settings();
+
+		$sanitize = $registered['wp_pinch_pinchdrop_allowed_sources']['sanitize_callback'];
+		$result   = call_user_func( $sanitize, 'Slack, telegram, bad source, @@whatsapp!!' );
+
+		$this->assertEquals( 'slack,telegram,badsource,whatsapp', $result );
 	}
 
 	// =========================================================================

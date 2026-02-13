@@ -45,6 +45,10 @@ Five background tasks patrol your site on autopilot: content freshness, SEO heal
 
 Post published? Comment posted? WooCommerce order shipped? WP Pinch fires events to OpenClaw the moment they happen. HMAC-SHA256 signed. Retry with exponential backoff. Circuit breaker for when the gateway goes down. Two-way: OpenClaw can push ability requests *back* to your site.
 
+### 5. PinchDrop (Capture Anywhere)
+
+Send rough ideas from any OpenClaw-connected channel and auto-generate a Draft Pack in WordPress. `POST /wp-pinch/v1/pinchdrop/capture` accepts signed inbound captures, runs the `pinchdrop_generate` ability, and can save draft posts with full trace metadata (`source`, `request_id`, timestamp, generator tag).
+
 ---
 
 ## Get started in 60 seconds
@@ -117,6 +121,7 @@ Everything lives in the [GitHub Wiki](https://github.com/RegionallyFamous/wp-pin
 - [Hooks & Filters](https://github.com/RegionallyFamous/wp-pinch/wiki/Hooks-and-Filters) -- 12+ filters, 6+ actions
 - [Security](https://github.com/RegionallyFamous/wp-pinch/wiki/Security) -- The full security model
 - [Configuration](https://github.com/RegionallyFamous/wp-pinch/wiki/Configuration) -- Installation, OpenClaw setup, admin settings
+- [PinchDrop](https://github.com/RegionallyFamous/wp-pinch/wiki/PinchDrop) -- Capture-anywhere payload contract and draft-pack workflow
 - [WP-CLI](https://github.com/RegionallyFamous/wp-pinch/wiki/WP-CLI) -- Command reference
 - [Developer Guide](https://github.com/RegionallyFamous/wp-pinch/wiki/Developer-Guide) -- Contributing, testing, quality system
 - [FAQ](https://github.com/RegionallyFamous/wp-pinch/wiki/FAQ) -- Common questions answered

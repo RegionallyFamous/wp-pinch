@@ -54,6 +54,11 @@ class Test_Rest_Controller extends WP_UnitTestCase {
 		delete_transient( 'wp_pinch_rest_rate_' . $this->admin_id );
 		delete_transient( 'wp_pinch_rest_rate_' . $this->editor_id );
 		delete_transient( 'wp_pinch_rest_rate_' . $this->subscriber_id );
+		delete_option( 'wp_pinch_feature_flags' );
+		delete_option( 'wp_pinch_pinchdrop_enabled' );
+		delete_option( 'wp_pinch_pinchdrop_allowed_sources' );
+		delete_option( 'wp_pinch_pinchdrop_auto_save_drafts' );
+		delete_option( 'wp_pinch_pinchdrop_default_outputs' );
 
 		parent::tear_down();
 	}
@@ -204,5 +209,50 @@ class Test_Rest_Controller extends WP_UnitTestCase {
 
 		$this->assertArrayHasKey( '/wp-pinch/v1/chat', $routes, 'Chat route should be registered.' );
 		$this->assertArrayHasKey( '/wp-pinch/v1/status', $routes, 'Status route should be registered.' );
+		$this->assertArrayHasKey( '/wp-pinch/v1/pinchdrop/capture', $routes, 'PinchDrop route should be registered.' );
+	}
+
+	/**
+	 * Test PinchDrop capture is disabled by default.
+	 */
+	public function test_pinchdrop_capture_disabled_by_default(): void {
+		wp_set_current_user( $this->admin_id );
+		$request = new WP_REST_Request( 'POST', '/wp-pinch/v1/pinchdrop/capture' );
+		$request->set_param( 'text', 'Idea text' );
+		$request->set_param( 'source', 'slack' );
+
+		$result = Rest_Controller::handle_pinchdrop_capture( $request );
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertEquals( 'pinchdrop_disabled', $result->get_error_code() );
+	}
+
+	/**
+	 * Test PinchDrop idempotency deduplicates repeated request IDs.
+	 */
+	public function test_pinchdrop_capture_idempotency(): void {
+		if ( ! function_exists( 'wp_execute_ability' ) ) {
+			$this->markTestSkipped( 'Abilities API unavailable in this test environment.' );
+		}
+
+		wp_set_current_user( $this->admin_id );
+		update_option( 'wp_pinch_feature_flags', array( 'pinchdrop_engine' => true ) );
+		update_option( 'wp_pinch_pinchdrop_enabled', true );
+		update_option( 'wp_pinch_pinchdrop_auto_save_drafts', false );
+
+		$request = new WP_REST_Request( 'POST', '/wp-pinch/v1/pinchdrop/capture' );
+		$request->set_param( 'text', "Ship notes\n- Better speed\n- Cleaner UX" );
+		$request->set_param( 'source', 'slack' );
+		$request->set_param( 'request_id', 'req-pin-001' );
+		$request->set_param( 'options', array( 'output_types' => array( 'post' ) ) );
+
+		$first = Rest_Controller::handle_pinchdrop_capture( $request );
+		$this->assertInstanceOf( WP_REST_Response::class, $first );
+		$this->assertEquals( 200, $first->get_status() );
+		$this->assertFalse( $first->get_data()['deduplicated'] );
+
+		$second = Rest_Controller::handle_pinchdrop_capture( $request );
+		$this->assertInstanceOf( WP_REST_Response::class, $second );
+		$this->assertEquals( 200, $second->get_status() );
+		$this->assertTrue( $second->get_data()['deduplicated'] );
 	}
 }
