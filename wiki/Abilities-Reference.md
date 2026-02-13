@@ -23,7 +23,7 @@ Core abilities cover content, media, users, comments, settings, plugins/themes, 
 
 ---
 
-## Tools (PinchDrop & Ghost Writer)
+## Tools (PinchDrop, Ghost Writer, Molt)
 
 Tools are WP Pinch–specific workflows that combine abilities, REST endpoints, and (where applicable) slash commands or governance tasks.
 
@@ -38,6 +38,10 @@ Capture rough ideas from any OpenClaw-connected channel and auto-generate a Draf
 The AI that writes like *you*. Ghost Writer learns each author's writing voice from their published posts and can complete abandoned drafts in that voice. Three abilities: **`analyze-voice`** (build or refresh a per-author style profile), **`list-abandoned-drafts`** (rank drafts by resurrection potential), **`ghostwrite`** (return AI-completed content for a draft). The **`/wp-pinch/v1/ghostwrite`** REST endpoint powers the **`/ghostwrite`** slash command in chat (list drafts or resurrect by ID). A weekly Draft Necromancer governance task surfaces drafts worth saving. Gated by the `ghost_writer` feature flag.
 
 **[Ghost Writer (full guide) →](Ghost-Writer)**
+
+### Molt (Content Repackager)
+
+*Lobsters molt to grow; your post sheds one form and emerges in many.* Molt repackages a single post into multiple output formats: social (Twitter 280, LinkedIn), email snippet, FAQ block, thread (array of tweets), summary, meta description (155 chars), pull quote, key takeaways, and CTA variants. Use the **`wp-pinch/molt`** ability or the **`/molt 123`** slash command in chat. REST endpoint: `POST /wp-pinch/v1/molt` with `post_id` and optional `output_types` array. Gated by the `molt` feature flag (disabled by default).
 
 ### Context & discovery (Memory Bait, Echo Net, Weave)
 

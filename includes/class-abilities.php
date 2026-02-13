@@ -1,6 +1,6 @@
 <?php
 /**
- * WordPress Abilities registration — 12 categories, 34 core abilities (+2 WooCommerce).
+ * WordPress Abilities registration — 12 categories, 38+ core abilities, 10 WooCommerce when active.
  *
  * Every ability:
  * - Uses wp_register_ability() with typed JSON schema input/output.
@@ -1843,6 +1843,11 @@ class Abilities {
 			return array( 'error' => __( 'Only HTTP and HTTPS URLs are allowed.', 'wp-pinch' ) );
 		}
 
+		// Reject internal/private URLs to prevent SSRF.
+		if ( ! wp_http_validate_url( $url ) ) {
+			return array( 'error' => __( 'URL failed security validation. Use a public HTTP or HTTPS URL.', 'wp-pinch' ) );
+		}
+
 		$tmp = download_url( $url );
 		if ( is_wp_error( $tmp ) ) {
 			return array( 'error' => $tmp->get_error_message() );
@@ -1890,6 +1895,10 @@ class Abilities {
 
 		if ( ! get_post( $id ) || 'attachment' !== get_post_type( $id ) ) {
 			return array( 'error' => __( 'Media attachment not found.', 'wp-pinch' ) );
+		}
+
+		if ( ! current_user_can( 'delete_post', $id ) ) {
+			return array( 'error' => __( 'You do not have permission to delete this attachment.', 'wp-pinch' ) );
 		}
 
 		$force  = ! empty( $input['force'] );
@@ -3470,6 +3479,10 @@ class Abilities {
 			return array( 'error' => __( 'Post not found.', 'wp-pinch' ) );
 		}
 
+		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+			return array( 'error' => __( 'You do not have permission to view revisions for this post.', 'wp-pinch' ) );
+		}
+
 		if ( ! wp_revisions_enabled( $post ) ) {
 			return array( 'error' => __( 'Revisions are not enabled for this post type.', 'wp-pinch' ) );
 		}
@@ -3530,6 +3543,11 @@ class Abilities {
 
 		if ( ! $revision ) {
 			return array( 'error' => __( 'Revision not found.', 'wp-pinch' ) );
+		}
+
+		$parent_id = (int) $revision->post_parent;
+		if ( ! current_user_can( 'edit_post', $parent_id ) ) {
+			return array( 'error' => __( 'You do not have permission to restore revisions for this post.', 'wp-pinch' ) );
 		}
 
 		$post_id = wp_restore_post_revision( $revision_id );

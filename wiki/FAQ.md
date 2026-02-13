@@ -57,6 +57,12 @@ Yes, via Public Chat Mode. Enable the `public_chat` feature flag in **WP Pinch >
 
 ---
 
+## What is Molt and how do I enable it?
+
+Molt repackages a single post into multiple formats: social (Twitter, LinkedIn), email snippet, FAQ block, thread, summary, meta description, pull quote, key takeaways, and CTA variants. Use `/molt 123` in chat or the `wp-pinch/molt` ability. Molt is behind the `molt` feature flag — enable it in **WP Pinch > Features** to unlock.
+
+---
+
 ## Can different pages have different AI agents?
 
 Yes. Each Pinch Chat block has an **Agent ID** setting in the editor sidebar. Set it to override the global default agent for that specific block. You can have a sales assistant on your pricing page and a support agent on your docs page.

@@ -256,6 +256,15 @@ class Webhook_Dispatcher {
 		$payload = apply_filters( 'wp_pinch_webhook_payload', $payload, $event, $data );
 
 		$webhook_url = trailingslashit( $gateway_url ) . 'hooks/agent';
+		if ( ! wp_http_validate_url( $webhook_url ) ) {
+			Audit_Table::insert(
+				'webhook_rejected',
+				'webhook',
+				sprintf( 'Webhook "%s" skipped — gateway URL failed security validation (no internal/private URLs).', $event ),
+				array( 'event' => $event )
+			);
+			return false;
+		}
 
 		$is_blocking = ( $attempt > 0 );
 		$body_json   = wp_json_encode( $payload );

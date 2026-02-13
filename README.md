@@ -1,6 +1,6 @@
 # WP Pinch
 
-**Your WordPress site. Your Slack. One very helpful lobster.**
+**Manage your WordPress site from the chat app you never close.**
 
 **[wp-pinch.com](https://wp-pinch.com)** · [Wiki](https://github.com/RegionallyFamous/wp-pinch/wiki) · [Releases](https://github.com/RegionallyFamous/wp-pinch/releases)
 
@@ -9,7 +9,7 @@
 [![License: GPL v2+](https://img.shields.io/badge/License-GPL%20v2%2B-green.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
 [![CI](https://github.com/RegionallyFamous/wp-pinch/actions/workflows/ci.yml/badge.svg)](https://github.com/RegionallyFamous/wp-pinch/actions/workflows/ci.yml)
 
-You're already in WhatsApp. Or Slack. Or Telegram. The last thing you want is another tab, another login, another "where did I put that draft?" WP Pinch gives your site a set of claws and connects it to the chat apps you actually use. Your AI can publish posts, upload media, tweak settings, and run your WooCommerce—from wherever you are. Self-hosted. No SaaS middlemen. Just you, your WordPress, and a lobster who actually does the work.
+You're already in WhatsApp. Slack. Telegram. The last thing you want is another tab, another login, another "where did I put that draft?" WP Pinch gives your site claws and connects it to the chat apps you actually use. Publish a post by texting. Resurrect a draft from 2022. Turn one blog post into social snippets, FAQs, and a meta description in one slash command. Your AI runs your WordPress—from wherever you are. Self-hosted. No SaaS middlemen. Just you and a lobster who actually does the work.
 
 ---
 
@@ -36,6 +36,8 @@ Your AI doesn't just have "access"—it can *do* things. Publish and update post
 **PinchDrop** — Send a rough idea from any connected channel ("we're launching X next week, need a blog post and some social snippets"). Your site turns it into a draft pack: blog post, product update, changelog, social blurbs. Need just a quick note? Quick Drop: title and body, no fluff. The lobster takes dictation. [How it works →](https://github.com/RegionallyFamous/wp-pinch/wiki/PinchDrop)
 
 **Ghost Writer** — That draft you started in 2022? Ghost Writer learns each author's voice from their published posts and can finish abandoned drafts *in that voice*. List drafts, resurrect one by ID, or let the weekly Draft Necromancer task surface the ones worth saving. Even lobsters forget what they were writing. This one doesn't. [Ghost Writer guide →](https://github.com/RegionallyFamous/wp-pinch/wiki/Ghost-Writer)
+
+**Molt** — One post, nine formats. Type `/molt 123` and get social (Twitter, LinkedIn), email snippet, FAQ block, thread, summary, meta description, pull quote, key takeaways, and CTA variants. Lobsters molt to grow; your content sheds one form and emerges in many. [Abilities reference →](https://github.com/RegionallyFamous/wp-pinch/wiki/Abilities-Reference)
 
 **Memory Bait, Echo Net, Weave** — Give your agent a site digest for context. Find posts that link to a given post or share its topics. Search and get a payload ready for synthesis. [Abilities reference →](https://github.com/RegionallyFamous/wp-pinch/wiki/Abilities-Reference)
 
@@ -66,7 +68,7 @@ wp plugin install https://github.com/RegionallyFamous/wp-pinch/releases/latest/d
 3. Click **Test Connection**.
 4. Add a **Pinch Chat** block to any page.
 
-That's it. We said 60 seconds. The lobster is punctual.
+That's it. You can now manage your site from WhatsApp, Slack, or Telegram—or drop a chat widget on your site so visitors get answers without leaving the page.
 
 [Detailed setup →](https://github.com/RegionallyFamous/wp-pinch/wiki/Configuration)
 
@@ -108,17 +110,30 @@ Capability checks on every operation. Input sanitized, output escaped. Nonces, p
 
 ---
 
+## What you get
+
+| Without WP Pinch | With WP Pinch |
+|------------------|---------------|
+| Switch to WordPress admin to publish | Text "ship the Q3 recap" from Slack |
+| Manually turn a post into social + FAQ + meta | `/molt 123` → nine formats in one shot |
+| Hunt for abandoned drafts | Ghost Writer surfaces them; `/ghostwrite 123` resurrects |
+| Check SEO, links, comments manually | Governance runs on a schedule; you get a daily digest |
+| Another login, another tab | Your existing chat app is the interface |
+
+---
+
 ## The fine print (and the actually useful docs)
 
 Everything lives in the [GitHub Wiki](https://github.com/RegionallyFamous/wp-pinch/wiki):
 
-- [Abilities Reference](https://github.com/RegionallyFamous/wp-pinch/wiki/Abilities-Reference) — What the lobster can do, in detail
+- [Abilities Reference](https://github.com/RegionallyFamous/wp-pinch/wiki/Abilities-Reference) — 38 abilities, PinchDrop, Ghost Writer, Molt, Memory Bait, Echo Net, Weave
 - [Chat Block](https://github.com/RegionallyFamous/wp-pinch/wiki/Chat-Block) — Streaming, slash commands, public mode
 - [Architecture](https://github.com/RegionallyFamous/wp-pinch/wiki/Architecture) — How the pieces fit together
 - [Hooks & Filters](https://github.com/RegionallyFamous/wp-pinch/wiki/Hooks-and-Filters) — Make the lobster do your bidding
 - [Security](https://github.com/RegionallyFamous/wp-pinch/wiki/Security) — The full model
 - [Configuration](https://github.com/RegionallyFamous/wp-pinch/wiki/Configuration) — Installation and OpenClaw setup
 - [PinchDrop](https://github.com/RegionallyFamous/wp-pinch/wiki/PinchDrop) — Capture-anywhere workflow
+- [Molt](https://github.com/RegionallyFamous/wp-pinch/wiki/Molt) — One post → nine formats
 - [WP-CLI](https://github.com/RegionallyFamous/wp-pinch/wiki/WP-CLI) — Command reference
 - [Developer Guide](https://github.com/RegionallyFamous/wp-pinch/wiki/Developer-Guide) — Contributing and testing
 - [FAQ](https://github.com/RegionallyFamous/wp-pinch/wiki/FAQ) — Common questions

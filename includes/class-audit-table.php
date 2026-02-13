@@ -20,6 +20,11 @@ class Audit_Table {
 	const RETENTION_DAYS = 90;
 
 	/**
+	 * Maximum rows in CSV export (DoS mitigation).
+	 */
+	const EXPORT_MAX_ROWS = 5000;
+
+	/**
 	 * Wire hooks — registers the cleanup callback so Action Scheduler can fire it.
 	 */
 	public static function init(): void {
@@ -226,8 +231,8 @@ class Audit_Table {
 	 * @return string CSV content.
 	 */
 	public static function export_csv( array $args = array() ): string {
-		// Override per_page to get all matching entries (capped at 10,000).
-		$args['per_page'] = 10000;
+		// Cap export size to limit memory and DoS risk.
+		$args['per_page'] = self::EXPORT_MAX_ROWS;
 		$args['page']     = 1;
 
 		$result = self::query( $args );

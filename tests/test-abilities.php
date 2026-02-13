@@ -971,11 +971,40 @@ class Test_Abilities extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test list-revisions denies access when user cannot edit the post.
+	 */
+	public function test_list_revisions_requires_edit_post(): void {
+		$post_id = $this->factory->post->create( array( 'post_author' => $this->admin_id ) );
+		$sub_id  = $this->factory->user->create( array( 'role' => 'subscriber' ) );
+		wp_set_current_user( $sub_id );
+		$result = Abilities::execute_list_revisions( array( 'post_id' => $post_id ) );
+		$this->assertArrayHasKey( 'error', $result );
+		$this->assertStringContainsString( 'permission', strtolower( $result['error'] ) );
+	}
+
+	/**
 	 * Test restore-revision with non-existent revision returns error.
 	 */
 	public function test_restore_revision_not_found(): void {
 		$result = Abilities::execute_restore_revision( array( 'revision_id' => 99999 ) );
 		$this->assertArrayHasKey( 'error', $result );
+	}
+
+	/**
+	 * Test restore-revision denies access when user cannot edit the parent post.
+	 */
+	public function test_restore_revision_requires_edit_post(): void {
+		$post_id = $this->factory->post->create( array( 'post_author' => $this->admin_id ) );
+		wp_update_post( array( 'ID' => $post_id, 'post_content' => 'Updated once.' ) );
+		wp_update_post( array( 'ID' => $post_id, 'post_content' => 'Updated twice.' ) );
+		$revisions = wp_get_post_revisions( $post_id );
+		$rev_id    = ! empty( $revisions ) ? (int) array_key_first( $revisions ) : 0;
+		$this->assertGreaterThan( 0, $rev_id, 'Revision should exist.' );
+		$sub_id = $this->factory->user->create( array( 'role' => 'subscriber' ) );
+		wp_set_current_user( $sub_id );
+		$result = Abilities::execute_restore_revision( array( 'revision_id' => $rev_id ) );
+		$this->assertArrayHasKey( 'error', $result );
+		$this->assertStringContainsString( 'permission', strtolower( $result['error'] ) );
 	}
 
 	// =========================================================================

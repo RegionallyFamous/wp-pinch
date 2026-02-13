@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.1] - 2026-02-12
+
+### Added
+- **CodeQL workflow** — SAST (static application security testing) on PHP for every push and PR.
+- **Dependency review workflow** — PRs that add dependencies with known vulnerabilities are blocked.
+- **CONTRIBUTING** — E2E (Playwright) and load testing (k6) instructions; dependencies and license compliance note; CI pipeline list updated.
+
+### Changed
+- **Best practices** — `.editorconfig`, issue/PR templates, CODEOWNERS, PHPUnit coverage docs, `make test-coverage`; `class-abilities.php` docblock updated (38+ core, 10 WooCommerce); npm audit step in CI documented as non-blocking.
+- **Lint** — PHPCS Yoda condition and quote fixes in `class-rest-controller.php` and `class-settings.php`.
+
 ## [2.4.0] - 2026-02-11
 
 ### Added

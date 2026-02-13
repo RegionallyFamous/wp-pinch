@@ -8,19 +8,21 @@ WP Pinch bridges WordPress and [OpenClaw](https://github.com/nicepkg/openclaw), 
 
 ## Quick Links
 
-Core abilities (38+) cover standard WordPress operations; Tools cover PinchDrop, Ghost Writer, and context/discovery (site-digest, related-posts, synthesize). Seven governance tasks including Tide Report (daily digest).
+Core abilities (38+) cover standard WordPress operations; Tools cover PinchDrop, Ghost Writer, Molt (content repackager), and context/discovery (site-digest, related-posts, synthesize). Seven governance tasks including Tide Report (daily digest).
 
 | Page | What's Inside |
 |---|---|
-| [Abilities Reference](Abilities-Reference) | Core abilities by category and Tools (PinchDrop, Ghost Writer, Memory Bait, Echo Net, Weave) with parameters and examples |
+| [Abilities Reference](Abilities-Reference) | Core abilities by category and Tools (PinchDrop, Ghost Writer, Molt, Memory Bait, Echo Net, Weave) with parameters and examples |
 | [PinchDrop](PinchDrop) | Capture ideas from any OpenClaw channel and auto-create Draft Packs; Quick Drop for minimal notes |
 | [Ghost Writer](Ghost-Writer) | Voice profiles, abandoned-draft completion, slash command, Draft Necromancer |
+| [Molt](Molt) | Repackage one post into social, FAQ, summary, and more; `/molt` slash command |
 | [Chat Block](Chat-Block) | SSE streaming, slash commands, public mode, agent overrides, accessibility |
 | [Architecture](Architecture) | How the pieces fit together -- diagram and subsystem overview |
 | [Second Brain Vision](Second-Brain-Vision) | CODE/PARA mapping, Capture → Distill → Express, Memory Bait, Echo Net, Weave |
 | [Configuration](Configuration) | Installation, OpenClaw connection, admin settings, feature flags |
 | [Hooks & Filters](Hooks-and-Filters) | 12+ filters and 6+ actions with code examples |
 | [Security](Security) | The full security model -- 20+ defense layers |
+| [Iconick Best Practices Audit](Iconick-Best-Practices-Audit) | Comparison against Iconick WordPress resources |
 | [WP-CLI](WP-CLI) | Command reference with examples and output formats |
 | [Developer Guide](Developer-Guide) | Contributing, local setup, testing, quality system |
 | [FAQ](FAQ) | Common questions answered |

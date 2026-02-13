@@ -182,6 +182,26 @@ class Test_Rest_Controller extends WP_UnitTestCase {
 		$this->assertEquals( 'not_configured', $result->get_error_code() );
 	}
 
+	/**
+	 * Test chat endpoint rejects session_key longer than MAX_SESSION_KEY_LENGTH.
+	 */
+	public function test_handle_chat_session_key_too_long(): void {
+		wp_set_current_user( $this->admin_id );
+		update_option( 'wp_pinch_gateway_url', 'https://gateway.example.com' );
+		update_option( 'wp_pinch_api_token', 'test-token' );
+
+		$request = new WP_REST_Request( 'POST', '/wp-pinch/v1/chat' );
+		$request->set_param( 'message', 'Hello' );
+		$request->set_param( 'session_key', str_repeat( 'a', 200 ) );
+
+		$response = rest_do_request( $request );
+
+		$this->assertSame( 400, $response->get_status() );
+		$data = $response->get_data();
+		$this->assertArrayHasKey( 'code', $data );
+		$this->assertSame( 'rest_invalid_param', $data['code'] );
+	}
+
 	// =========================================================================
 	// Rate limiting
 	// =========================================================================

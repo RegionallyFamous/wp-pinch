@@ -13,4 +13,15 @@
 	<php>
 		<const name="WP_TESTS_MULTISITE" value="0" />
 	</php>
+
+	<coverage>
+		<include>
+			<directory suffix=".php">./includes</directory>
+			<file>./wp-pinch.php</file>
+		</include>
+		<report>
+			<html outputDirectory="build/coverage"/>
+			<text outputFile="php://stdout" showUncoveredFiles="false"/>
+		</report>
+	</coverage>
 </phpunit>

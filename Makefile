@@ -71,6 +71,12 @@ phpstan: vendor ## Run PHPStan static analysis
 test: ## Run PHPUnit tests (requires WP test suite)
 	vendor/bin/phpunit
 
+.PHONY: test-coverage
+test-coverage: ## Run PHPUnit with HTML coverage report (requires PCOV or Xdebug)
+	@mkdir -p build
+	vendor/bin/phpunit --coverage-html build/coverage
+	@echo "Coverage report: build/coverage/index.html"
+
 .PHONY: check
 check: lint phpstan ## Run ALL checks (lint + static analysis). Same as CI.
 	@echo ""

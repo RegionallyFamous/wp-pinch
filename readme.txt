@@ -4,7 +4,7 @@ Tags: ai, agent, openclaw, mcp, automation
 Requires at least: 6.9
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 2.4.0
+Stable tag: 2.4.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -18,7 +18,7 @@ WP Pinch bridges WordPress and [OpenClaw](https://github.com/nicepkg/openclaw) �
 
 = 38 AI Abilities =
 
-Your AI agent gets full access to your WordPress site — posts, pages, media, users, comments, settings, plugins, themes, menus, revisions, cron, and WooCommerce. Every ability is locked down with capability checks, input sanitization, and audit logging. Core abilities cover content, media, users, and more; unique tools include PinchDrop, Ghost Writer, and context/discovery abilities (site-digest, related-posts, synthesize). 10 categories. 10 bonus WooCommerce abilities when your shop is active.
+Your AI agent gets full access to your WordPress site — posts, pages, media, users, comments, settings, plugins, themes, menus, revisions, cron, and WooCommerce. Every ability is locked down with capability checks, input sanitization, and audit logging. Core abilities cover content, media, users, and more; unique tools include PinchDrop, Ghost Writer, Molt, and context/discovery abilities (site-digest, related-posts, synthesize). 10 categories. 10 bonus WooCommerce abilities when your shop is active.
 
 = Live Chat Block =
 
@@ -35,6 +35,10 @@ Post published? Comment posted? WooCommerce order shipped? Events fire to OpenCl
 = PinchDrop (Capture Anywhere) =
 
 Drop rough ideas from any OpenClaw channel and WP Pinch turns them into a Draft Pack automatically. Signed captures hit `/wp-pinch/v1/pinchdrop/capture`, then `pinchdrop_generate` produces blog-post, product-update, changelog, and social drafts with request-level traceability.
+
+= Molt (Content Repackager) =
+
+One post, nine formats. Molt repackages a single post into social (Twitter, LinkedIn), email snippet, FAQ block, thread, summary, meta description, pull quote, key takeaways, and CTA variants. Use `/molt 123` in chat or the `wp-pinch/molt` ability. Enable via the `molt` feature flag.
 
 = Built for Developers =
 

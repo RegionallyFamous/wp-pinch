@@ -179,8 +179,17 @@ class Molt {
 			$payload['agentId'] = sanitize_text_field( $agent_id );
 		}
 
+		$hooks_url = trailingslashit( $gateway_url ) . 'hooks/agent';
+		if ( ! wp_http_validate_url( $hooks_url ) ) {
+			return new \WP_Error(
+				'invalid_gateway',
+				__( 'Gateway URL failed security validation.', 'wp-pinch' ),
+				array( 'status' => 502 )
+			);
+		}
+
 		$response = wp_safe_remote_post(
-			trailingslashit( $gateway_url ) . 'hooks/agent',
+			$hooks_url,
 			array(
 				'timeout' => 90,
 				'headers' => array(

@@ -506,8 +506,13 @@ class Settings {
 			wp_send_json_error( __( 'Gateway URL is not configured.', 'wp-pinch' ) );
 		}
 
+		$status_url = trailingslashit( $url ) . 'api/v1/status';
+		if ( ! wp_http_validate_url( $status_url ) ) {
+			wp_send_json_error( __( 'Gateway URL failed security validation. Use a public HTTP or HTTPS URL.', 'wp-pinch' ) );
+		}
+
 		$response = wp_safe_remote_get(
-			trailingslashit( $url ) . 'api/v1/status',
+			$status_url,
 			array(
 				'timeout' => 10,
 				'headers' => array(
@@ -1542,12 +1547,16 @@ class Settings {
 
 		$csv      = Audit_Table::export_csv( $args );
 		$filename = 'wp-pinch-audit-' . gmdate( 'Y-m-d' ) . '.csv';
+		// Strip any control chars to prevent CRLF injection in header.
+		$filename = str_replace( array( "\r", "\n", '"' ), '', $filename );
 
 		header( 'Content-Type: text/csv; charset=utf-8' );
 		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
+		header( 'Cache-Control: no-store, no-cache, must-revalidate, private' );
 		header( 'Pragma: no-cache' );
 		header( 'Expires: 0' );
 		header( 'X-Content-Type-Options: nosniff' );
+		header( "Content-Security-Policy: default-src 'none'" );
 
 		echo $csv; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSV export to file download.
 		exit;

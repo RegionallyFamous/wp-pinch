@@ -115,17 +115,58 @@ Or run individual tools:
 | `make lint` | PHPCS + ESLint + Stylelint |
 | `make phpstan` | PHPStan level 6 static analysis |
 | `make test` | PHPUnit test suite (requires WP test environment) |
+| `make test-coverage` | PHPUnit with HTML coverage report (requires PCOV or Xdebug; report in `build/coverage/index.html`) |
 | `make check` | All of the above at once |
 | `make lint-fix` | Auto-fix PHPCS violations |
 
+### Test coverage
+
+To generate a local coverage report, install [PCOV](https://github.com/pcov/pcov) or Xdebug, then run:
+
+```bash
+make test-coverage
+```
+
+Open `build/coverage/index.html` in a browser. CI does not run coverage (to keep job time down); use this to find untested code before submitting a PR.
+
+### E2E tests (Playwright)
+
+End-to-end tests run against a real WordPress instance (admin and chat block flows). They are not run in CI. Before submitting a PR that touches the Pinch Chat block or WP Pinch admin UI, run them locally:
+
+```bash
+npx wp-env start
+npm run test:e2e
+```
+
+Specs live in `tests/e2e/`. Use the same `admin` / `password` credentials as the local site.
+
+### Load testing (k6)
+
+A [k6](https://k6.io/) script exercises the REST API (chat, status, health) under load. Run it manually when you change performance-critical paths or before a major release.
+
+**Prerequisites:** Install [k6](https://k6.io/docs/get-started/installation/). Have a running WordPress site with WP Pinch configured and a user that can authenticate (e.g. application password or basic auth).
+
+**Example (after starting wp-env):**
+
+```bash
+k6 run --env BASE_URL=http://localhost:8888 \
+       --env WP_USER=admin \
+       --env WP_PASS=password \
+       tests/load/k6-chat.js
+```
+
+For basic auth with a token, set `WP_AUTH_TOKEN` to the base64-encoded `user:password` and ensure the script uses it (see `tests/load/k6-chat.js`). Thresholds (e.g. p95 latency, error rate) are defined in the script.
+
 ### CI Pipeline
 
-Every push and PR runs four parallel jobs. All must pass to merge:
+Every push and PR runs several checks. All must pass to merge:
 
 1. **PHPCS + PHPStan** — WordPress coding standards, security sniffs, and level 6 static analysis (PHP 8.1/8.2/8.3)
 2. **PHPUnit** — 160+ tests across PHP 8.1/8.2/8.3 + WP latest and WP 6.9
 3. **JS / CSS lint + build** — ESLint, Stylelint, asset compilation, and JS unit tests
 4. **Dependency audit** — Composer and npm security audits
+5. **CodeQL** — Static application security testing (SAST) on PHP
+6. **Dependency review** (PRs only) — Fails if the PR adds a dependency with a known vulnerability
 
 ### Performance Profiling
 
@@ -223,6 +264,10 @@ Releases are managed by project maintainers. The general process is:
 5. Tag the release and publish. Attach the generated zip (e.g. `wp-pinch-1.0.1.zip`) to the GitHub release. For "latest" download compatibility, consider also attaching a copy named `wp-pinch.zip`.
 
 Contributors do not need to worry about versioning or releases — simply target the `main` branch with your pull requests.
+
+## Dependencies and licenses
+
+WP Pinch is GPL-2.0-or-later. All Composer dependencies (Action Scheduler, Jetpack Autoloader, PHPUnit, WPCS, PHPStan, etc.) are used in a way that is compatible with that license. npm dependencies are predominantly MIT/BSD/Apache-2.0/ISC and are compatible with the plugin’s distribution. We do not ship proprietary or GPL-incompatible code. If you add a new dependency, ensure its license is compatible with GPL-2.0-or-later before submitting a PR.
 
 ## License
 

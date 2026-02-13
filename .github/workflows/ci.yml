@@ -172,5 +172,7 @@ jobs:
       - name: Composer audit
         run: composer audit
 
+      # Non-blocking: many high-severity findings are in transitive deps (e.g. @wordpress/scripts).
+      # Fix when upstream releases patches; run `npm audit` locally to review.
       - name: npm audit
         run: npm audit --audit-level=high || true

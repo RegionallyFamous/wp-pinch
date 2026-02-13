@@ -31,6 +31,16 @@ class Rest_Controller {
 	const MAX_MESSAGE_LENGTH = 4000;
 
 	/**
+	 * Maximum session_key length (prevents transient/cache key abuse).
+	 */
+	const MAX_SESSION_KEY_LENGTH = 128;
+
+	/**
+	 * Maximum keys per level in params (webhook/pinchdrop) to limit DoS.
+	 */
+	const MAX_PARAMS_KEYS_PER_LEVEL = 100;
+
+	/**
 	 * Wire hooks.
 	 */
 	public static function init(): void {
@@ -77,6 +87,16 @@ class Rest_Controller {
 							'type'              => 'string',
 							'default'           => '',
 							'sanitize_callback' => 'sanitize_key',
+							'validate_callback' => function ( $value ) {
+								if ( is_string( $value ) && mb_strlen( $value ) > self::MAX_SESSION_KEY_LENGTH ) {
+									return new \WP_Error(
+										'rest_invalid_param',
+										__( 'Session key is too long.', 'wp-pinch' ),
+										array( 'status' => 400 )
+									);
+								}
+								return true;
+							},
 						),
 						'model'       => array(
 							'type'              => 'string',
@@ -117,6 +137,7 @@ class Rest_Controller {
 					'callback'            => array( __CLASS__, 'handle_health' ),
 					'permission_callback' => '__return_true',
 				),
+				'schema' => array( __CLASS__, 'get_health_schema' ),
 			)
 		);
 
@@ -179,6 +200,17 @@ class Rest_Controller {
 								'required'          => true,
 								'type'              => 'integer',
 								'sanitize_callback' => 'absint',
+								'validate_callback' => function ( $value ) {
+									$v = absint( $value );
+									if ( $v < 1 ) {
+										return new \WP_Error(
+											'rest_invalid_param',
+											__( 'Post ID must be a positive integer.', 'wp-pinch' ),
+											array( 'status' => 400 )
+										);
+									}
+									return true;
+								},
 							),
 							'output_types' => array(
 								'type'              => 'array',
@@ -296,6 +328,16 @@ class Rest_Controller {
 								'type'              => 'string',
 								'default'           => '',
 								'sanitize_callback' => 'sanitize_key',
+								'validate_callback' => function ( $value ) {
+									if ( is_string( $value ) && mb_strlen( $value ) > self::MAX_SESSION_KEY_LENGTH ) {
+										return new \WP_Error(
+											'rest_invalid_param',
+											__( 'Session key is too long.', 'wp-pinch' ),
+											array( 'status' => 400 )
+										);
+									}
+									return true;
+								},
 							),
 							'model'       => array(
 								'type'              => 'string',
@@ -350,6 +392,16 @@ class Rest_Controller {
 								'type'              => 'string',
 								'default'           => '',
 								'sanitize_callback' => 'sanitize_key',
+								'validate_callback' => function ( $value ) {
+									if ( is_string( $value ) && mb_strlen( $value ) > self::MAX_SESSION_KEY_LENGTH ) {
+										return new \WP_Error(
+											'rest_invalid_param',
+											__( 'Session key is too long.', 'wp-pinch' ),
+											array( 'status' => 400 )
+										);
+									}
+									return true;
+								},
 							),
 							'model'       => array(
 								'type'              => 'string',
@@ -439,6 +491,13 @@ class Rest_Controller {
 		$response->header( 'Referrer-Policy', 'strict-origin-when-cross-origin' );
 		$response->header( 'Permissions-Policy', 'camera=(), microphone=(), geolocation=()' );
 		$response->header( 'Cache-Control', 'no-store, no-cache, must-revalidate, private' );
+		$response->header( 'Cross-Origin-Opener-Policy', 'same-origin' );
+		$response->header( 'Cross-Origin-Resource-Policy', 'same-origin' );
+		$response->header( 'Content-Security-Policy', "frame-ancestors 'none'" );
+
+		if ( is_ssl() ) {
+			$response->header( 'Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload' );
+		}
 
 		// Rate limit headers — let clients self-throttle.
 		if ( is_user_logged_in() ) {
@@ -536,6 +595,51 @@ class Rest_Controller {
 							'type' => 'integer',
 						),
 					),
+				),
+			),
+		);
+	}
+
+	/**
+	 * Schema for the /health endpoint.
+	 *
+	 * @return array JSON Schema.
+	 */
+	public static function get_health_schema(): array {
+		return array(
+			'$schema'    => 'http://json-schema.org/draft-04/schema#',
+			'title'      => 'wp-pinch-health',
+			'type'       => 'object',
+			'properties' => array(
+				'status'     => array(
+					'description' => __( 'Health status (ok).', 'wp-pinch' ),
+					'type'        => 'string',
+					'readonly'    => true,
+				),
+				'version'    => array(
+					'description' => __( 'Plugin version.', 'wp-pinch' ),
+					'type'        => 'string',
+					'readonly'    => true,
+				),
+				'configured' => array(
+					'description' => __( 'Whether gateway URL and token are configured.', 'wp-pinch' ),
+					'type'        => 'boolean',
+					'readonly'    => true,
+				),
+				'circuit'    => array(
+					'description' => __( 'Circuit breaker state.', 'wp-pinch' ),
+					'type'        => 'object',
+					'readonly'    => true,
+					'properties'  => array(
+						'state'       => array( 'type' => 'string' ),
+						'retry_after' => array( 'type' => 'integer' ),
+					),
+				),
+				'timestamp'  => array(
+					'description' => __( 'ISO 8601 timestamp.', 'wp-pinch' ),
+					'type'        => 'string',
+					'format'      => 'date-time',
+					'readonly'    => true,
 				),
 			),
 		);
@@ -922,8 +1026,17 @@ class Rest_Controller {
 		 */
 		$payload = apply_filters( 'wp_pinch_chat_payload', $payload, $request );
 
+		$chat_url = trailingslashit( $gateway_url ) . 'hooks/agent';
+		if ( ! wp_http_validate_url( $chat_url ) ) {
+			return new \WP_Error(
+				'invalid_gateway',
+				__( 'Gateway URL failed security validation.', 'wp-pinch' ),
+				array( 'status' => 502 )
+			);
+		}
+
 		$response = wp_safe_remote_post(
-			trailingslashit( $gateway_url ) . 'hooks/agent',
+			$chat_url,
 			array(
 				'timeout' => max( 15, $chat_timeout ),
 				'headers' => array(
@@ -1108,8 +1221,17 @@ class Rest_Controller {
 		/** This filter is documented in class-rest-controller.php */
 		$payload = apply_filters( 'wp_pinch_chat_payload', $payload, $request );
 
+		$public_chat_url = trailingslashit( $gateway_url ) . 'hooks/agent';
+		if ( ! wp_http_validate_url( $public_chat_url ) ) {
+			return new \WP_Error(
+				'invalid_gateway',
+				__( 'Gateway URL failed security validation.', 'wp-pinch' ),
+				array( 'status' => 502 )
+			);
+		}
+
 		$response = wp_safe_remote_post(
-			trailingslashit( $gateway_url ) . 'hooks/agent',
+			$public_chat_url,
 			array(
 				'timeout' => max( 15, $chat_timeout ),
 				'headers' => array(
@@ -1386,7 +1508,11 @@ class Rest_Controller {
 		}
 
 		$sanitized = array();
+		$count     = 0;
 		foreach ( $params as $key => $value ) {
+			if ( $count >= self::MAX_PARAMS_KEYS_PER_LEVEL ) {
+				break;
+			}
 			$key = sanitize_key( $key );
 			if ( is_string( $value ) ) {
 				$sanitized[ $key ] = sanitize_text_field( $value );
@@ -1396,8 +1522,46 @@ class Rest_Controller {
 				$sanitized[ $key ] = self::sanitize_params_recursive( $value, $depth + 1 );
 			}
 			// Silently drop objects and other non-scalar types.
+			++$count;
 		}
 		return $sanitized;
+	}
+
+	/**
+	 * Process SSE stream buffer: sanitize gateway "reply" in data lines and return safe output.
+	 *
+	 * Splits buffer into lines; for each "data: " line that is JSON with a "reply" key,
+	 * sanitizes the reply with wp_kses_post() and re-encodes. Returns output to send
+	 * and the remaining (incomplete) buffer for the next chunk.
+	 *
+	 * @param string $buffer Accumulated SSE stream text (after control-char strip).
+	 * @return array{0: string, 1: string} [ output to echo, remaining buffer ].
+	 */
+	private static function process_sse_buffer( string $buffer ): array {
+		$buffer = str_replace( "\r\n", "\n", $buffer );
+		$parts  = explode( "\n", $buffer );
+		// Last segment may be incomplete (no trailing newline); keep for next chunk.
+		$carry  = array_pop( $parts );
+		$output = array();
+
+		foreach ( $parts as $line ) {
+			if ( str_starts_with( $line, 'data:' ) ) {
+				$payload = trim( substr( $line, 5 ) );
+				if ( '' !== $payload && '{}' !== $payload ) {
+					$decoded = json_decode( $payload, true );
+					if ( is_array( $decoded ) && array_key_exists( 'reply', $decoded ) && is_string( $decoded['reply'] ) ) {
+						$decoded['reply'] = wp_kses_post( $decoded['reply'] );
+						$payload          = wp_json_encode( $decoded );
+					}
+				}
+				$output[] = 'data: ' . $payload;
+			} else {
+				$output[] = $line;
+			}
+		}
+
+		$out = implode( "\n", $output );
+		return array( '' !== $out ? $out . "\n" : '', $carry ?? '' );
 	}
 
 	/**
@@ -1459,15 +1623,20 @@ class Rest_Controller {
 		}
 
 		if ( $result['configured'] ) {
-			$response = wp_safe_remote_get(
-				trailingslashit( $gateway_url ) . 'api/v1/status',
-				array(
-					'timeout' => 5,
-					'headers' => array(
-						'Authorization' => 'Bearer ' . $api_token,
-					),
-				)
-			);
+			$status_url = trailingslashit( $gateway_url ) . 'api/v1/status';
+			if ( wp_http_validate_url( $status_url ) ) {
+				$response = wp_safe_remote_get(
+					$status_url,
+					array(
+						'timeout' => 5,
+						'headers' => array(
+							'Authorization' => 'Bearer ' . $api_token,
+						),
+					)
+				);
+			} else {
+				$response = new \WP_Error( 'invalid_gateway', __( 'Gateway URL failed security validation.', 'wp-pinch' ) );
+			}
 
 			if ( ! is_wp_error( $response ) ) {
 				$code                           = wp_remote_retrieve_response_code( $response );
@@ -1707,9 +1876,10 @@ class Rest_Controller {
 
 		Circuit_Breaker::record_success();
 
-		// Read the response in chunks and forward to the client.
+		// Read the response in chunks; buffer by line, sanitize "reply" in data lines, then forward.
 		$full_response    = '';
 		$forwarded_events = false;
+		$sse_buffer       = '';
 
 		while ( ! feof( $stream ) ) {
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fread
@@ -1719,18 +1889,29 @@ class Rest_Controller {
 			}
 			$full_response .= $chunk;
 
-			// If the gateway is sending SSE events, forward them after stripping
-			// any characters that could break the SSE framing or inject headers.
-			// SSE protocol data is text-only — strip NUL bytes and limit to valid SSE lines.
-			if ( str_contains( $chunk, 'event:' ) || str_contains( $chunk, 'data:' ) ) {
-				// Remove NUL bytes and non-printable control chars (except \n, \r, \t).
-				$safe_chunk = preg_replace( '/[\x00-\x08\x0B\x0C\x0E-\x1F]/', '', $chunk );
-				echo $safe_chunk; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- SSE text protocol passthrough; control chars stripped above.
+			// Strip NUL and control chars, then process line-by-line and sanitize reply in data payloads.
+			$clean                    = preg_replace( '/[\x00-\x08\x0B\x0C\x0E-\x1F]/', '', $chunk );
+			$sse_buffer              .= $clean;
+			list( $out, $sse_buffer ) = self::process_sse_buffer( $sse_buffer );
+			if ( '' !== $out ) {
+				echo $out; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- SSE text; reply sanitized in process_sse_buffer.
 				$forwarded_events = true;
 				if ( ob_get_level() ) {
 					ob_flush();
 				}
 				flush();
+			}
+		}
+
+		// Process remaining buffer (treat as final line so any complete "data: " line gets sanitized).
+		if ( '' !== $sse_buffer ) {
+			list( $out, $_ ) = self::process_sse_buffer( $sse_buffer . "\n" );
+			if ( '' !== $out ) {
+				echo $out; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- reply sanitized in process_sse_buffer.
+				$forwarded_events = true;
+			} else {
+				echo $sse_buffer; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- partial line; control chars already stripped.
+				$forwarded_events = true;
 			}
 		}
 

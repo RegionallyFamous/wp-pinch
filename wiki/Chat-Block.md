@@ -31,8 +31,11 @@ Power-user commands typed directly in the chat input:
 | `/new` or `/reset` | Reset the conversation session |
 | `/status` | Show plugin version, gateway status, circuit breaker state |
 | `/compact` | Send a compaction request to the gateway |
+| `/ghostwrite` | List abandoned drafts (Ghost Writer). Requires `ghost_writer` feature flag |
+| `/ghostwrite 123` | Resurrect draft #123 in the author's voice |
+| `/molt 123` | Repackage post #123 into social, FAQ, summary, and more formats. Requires `molt` feature flag |
 
-Enable via **WP Pinch > Features > Slash Commands**.
+Enable via **WP Pinch > Features > Slash Commands**. Ghost Writer and Molt require their respective feature flags.
 
 ### Message Feedback
 

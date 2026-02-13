@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentation (Wiki)
+    url: https://github.com/RegionallyFamous/wp-pinch/wiki
+    about: Setup, abilities, configuration, and more
+  - name: Security vulnerability
+    url: https://github.com/RegionallyFamous/wp-pinch/security/advisories/new
+    about: Report a security issue privately
