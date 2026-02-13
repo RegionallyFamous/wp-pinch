@@ -2717,7 +2717,7 @@ class Abilities {
 		$url_variants = array(
 			$permalink,
 			home_url( '/?p=' . $post_id ),
-			wp_shortlink( $post_id ),
+			wp_get_shortlink( $post_id ),
 		);
 		$url_variants = array_filter( array_unique( $url_variants ) );
 
