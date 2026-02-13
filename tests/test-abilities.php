@@ -753,6 +753,58 @@ class Test_Abilities extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test Echo Net (related-posts) returns post_id, backlinks, by_taxonomy.
+	 */
+	public function test_related_posts_returns_structure(): void {
+		$post_id = $this->factory->post->create( array( 'post_status' => 'publish' ) );
+		$result  = Abilities::execute_related_posts( array( 'post_id' => $post_id ) );
+		$this->assertArrayNotHasKey( 'error', $result );
+		$this->assertArrayHasKey( 'post_id', $result );
+		$this->assertArrayHasKey( 'backlinks', $result );
+		$this->assertArrayHasKey( 'by_taxonomy', $result );
+		$this->assertEquals( $post_id, $result['post_id'] );
+		$this->assertIsArray( $result['backlinks'] );
+		$this->assertIsArray( $result['by_taxonomy'] );
+	}
+
+	/**
+	 * Test Echo Net (related-posts) with invalid post returns error.
+	 */
+	public function test_related_posts_invalid_post_returns_error(): void {
+		$result = Abilities::execute_related_posts( array( 'post_id' => 0 ) );
+		$this->assertArrayHasKey( 'error', $result );
+	}
+
+	/**
+	 * Test Weave (synthesize) returns query, posts, total.
+	 */
+	public function test_synthesize_returns_payload(): void {
+		$this->factory->post->create(
+			array(
+				'post_title'   => 'Synthesis test post',
+				'post_content' => 'Content about synthesis and weaving.',
+				'post_status'  => 'publish',
+			)
+		);
+		$result = Abilities::execute_synthesize( array( 'query' => 'synthesis' ) );
+		$this->assertArrayNotHasKey( 'error', $result );
+		$this->assertArrayHasKey( 'query', $result );
+		$this->assertArrayHasKey( 'posts', $result );
+		$this->assertArrayHasKey( 'total', $result );
+		$this->assertEquals( 'synthesis', $result['query'] );
+		$this->assertIsArray( $result['posts'] );
+		$this->assertGreaterThanOrEqual( 0, $result['total'] );
+	}
+
+	/**
+	 * Test Weave (synthesize) with empty query returns error.
+	 */
+	public function test_synthesize_empty_query_returns_error(): void {
+		$result = Abilities::execute_synthesize( array( 'query' => '   ' ) );
+		$this->assertArrayHasKey( 'error', $result );
+	}
+
+	/**
 	 * Test PinchDrop generation returns draft pack and draft IDs.
 	 */
 	public function test_pinchdrop_generate_creates_drafts(): void {

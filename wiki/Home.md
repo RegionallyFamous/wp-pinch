@@ -17,6 +17,7 @@ Core abilities (38+) cover standard WordPress operations; Tools cover PinchDrop,
 | [Ghost Writer](Ghost-Writer) | Voice profiles, abandoned-draft completion, slash command, Draft Necromancer |
 | [Chat Block](Chat-Block) | SSE streaming, slash commands, public mode, agent overrides, accessibility |
 | [Architecture](Architecture) | How the pieces fit together -- diagram and subsystem overview |
+| [Second Brain Vision](Second-Brain-Vision) | CODE/PARA mapping, Capture → Distill → Express, Memory Bait, Echo Net, Weave |
 | [Configuration](Configuration) | Installation, OpenClaw connection, admin settings, feature flags |
 | [Hooks & Filters](Hooks-and-Filters) | 12+ filters and 6+ actions with code examples |
 | [Security](Security) | The full security model -- 20+ defense layers |
