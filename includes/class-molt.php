@@ -82,8 +82,8 @@ class Molt {
 			);
 		}
 
-		$all_types   = self::get_default_output_types();
-		$requested   = empty( $output_types )
+		$all_types = self::get_default_output_types();
+		$requested = empty( $output_types )
 			? $all_types
 			: array_intersect( $output_types, $all_types );
 
@@ -114,7 +114,13 @@ class Molt {
 			array( 'post_id' => $post_id )
 		);
 
-		return array_merge( array( 'post_id' => $post_id, 'title' => $post->post_title ), $parsed );
+		return array_merge(
+			array(
+				'post_id' => $post_id,
+				'title'   => $post->post_title,
+			),
+			$parsed
+		);
 	}
 
 	/**
@@ -155,7 +161,7 @@ class Molt {
 			"TITLE: %s\n\n" .
 			"CONTENT:\n%s\n\n" .
 			"OUTPUT FORMATS (return a JSON object with these exact keys):\n%s\n\n" .
-			"Return ONLY the JSON object. No markdown fences, no explanation, no other text.",
+			'Return ONLY the JSON object. No markdown fences, no explanation, no other text.',
 			$post->post_title,
 			$content,
 			$format_spec
@@ -307,7 +313,10 @@ class Molt {
 		switch ( $key ) {
 			case 'social':
 				if ( ! is_array( $value ) ) {
-					return array( 'twitter' => '', 'linkedin' => '' );
+					return array(
+						'twitter'  => '',
+						'linkedin' => '',
+					);
 				}
 				return array(
 					'twitter'  => sanitize_text_field( $value['twitter'] ?? '' ),
@@ -392,16 +401,23 @@ class Molt {
 		}
 
 		if ( ! empty( $output['key_takeaways'] ) && is_array( $output['key_takeaways'] ) ) {
-			$bullets = array_map( function ( $t ) {
-				return '- ' . $t;
-			}, $output['key_takeaways'] );
+			$bullets = array_map(
+				function ( $t ) {
+					return '- ' . $t;
+				},
+				$output['key_takeaways']
+			);
 			$parts[] = '**Key takeaways:**' . "\n" . implode( "\n", $bullets );
 		}
 
 		if ( ! empty( $output['cta_variants'] ) && is_array( $output['cta_variants'] ) ) {
-			$parts[] = '**CTA variants:**' . "\n" . implode( "\n", array_map( function ( $c ) {
-				return '- ' . $c;
-			}, $output['cta_variants'] ) );
+			$cta_lines = array_map(
+				function ( $c ) {
+					return '- ' . $c;
+				},
+				$output['cta_variants']
+			);
+			$parts[]   = '**CTA variants:**' . "\n" . implode( "\n", $cta_lines );
 		}
 
 		if ( ! empty( $output['faq_block'] ) && is_array( $output['faq_block'] ) ) {

@@ -1814,7 +1814,7 @@ class Rest_Controller {
 			$user_id = get_current_user_id();
 
 			// Only show own drafts unless user can edit others.
-			$scope = current_user_can( 'edit_others_posts' ) ? 0 : $user_id;
+			$scope  = current_user_can( 'edit_others_posts' ) ? 0 : $user_id;
 			$drafts = Ghost_Writer::assess_drafts( $scope );
 
 			if ( empty( $drafts ) ) {
@@ -1846,8 +1846,9 @@ class Rest_Controller {
 			) . implode( "\n", $lines );
 
 			if ( count( $drafts ) > 10 ) {
-				$reply .= sprintf(
-					"\n\n" . __( '...and %d more. Use /ghostwrite [post_id] to resurrect one.', 'wp-pinch' ),
+				$reply .= "\n\n" . sprintf(
+					/* translators: %d: number of additional drafts not shown in the list */
+					__( '...and %d more. Use /ghostwrite [post_id] to resurrect one.', 'wp-pinch' ),
 					count( $drafts ) - 10
 				);
 			} else {
@@ -1909,7 +1910,8 @@ class Rest_Controller {
 		}
 
 		$post_id      = (int) $request->get_param( 'post_id' );
-		$output_types = $request->get_param( 'output_types' ) ?: array();
+		$output_types = $request->get_param( 'output_types' );
+		$output_types = is_array( $output_types ) ? $output_types : array();
 
 		if ( $post_id < 1 ) {
 			return new \WP_Error(

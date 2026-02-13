@@ -147,13 +147,13 @@ class Ghost_Writer {
 	 * @return array Metrics array.
 	 */
 	private static function compute_metrics( array $posts ): array {
-		$total_sentences   = 0;
-		$total_words       = 0;
-		$total_paragraphs  = 0;
-		$total_headings    = 0;
-		$total_lists       = 0;
-		$total_post_words  = 0;
-		$post_count        = count( $posts );
+		$total_sentences  = 0;
+		$total_words      = 0;
+		$total_paragraphs = 0;
+		$total_headings   = 0;
+		$total_lists      = 0;
+		$total_post_words = 0;
+		$post_count       = count( $posts );
 
 		foreach ( $posts as $post ) {
 			$content    = wp_strip_all_tags( $post->post_content );
@@ -171,8 +171,8 @@ class Ghost_Writer {
 			$total_paragraphs += is_array( $paragraphs ) ? count( $paragraphs ) : 0;
 
 			// Count headings (h1-h6 tags).
-			$heading_count    = preg_match_all( '/<h[1-6][^>]*>/i', $post->post_content );
-			$total_headings  += $heading_count ? $heading_count : 0;
+			$heading_count   = preg_match_all( '/<h[1-6][^>]*>/i', $post->post_content );
+			$total_headings += $heading_count ? $heading_count : 0;
 
 			// Count list items.
 			$list_count   = preg_match_all( '/<li[^>]*>/i', $post->post_content );
@@ -440,7 +440,7 @@ class Ghost_Writer {
 
 			$results[] = array(
 				'post_id'              => $draft->ID,
-				'title'                => $draft->post_title ?: __( '(Untitled)', 'wp-pinch' ),
+				'title'                => $draft->post_title ? $draft->post_title : __( '(Untitled)', 'wp-pinch' ),
 				'author'               => get_the_author_meta( 'display_name', (int) $draft->post_author ),
 				'author_id'            => (int) $draft->post_author,
 				'last_modified'        => $draft->post_modified,

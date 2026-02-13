@@ -3802,7 +3802,7 @@ class Abilities {
 		}
 
 		// Analyzing another user's voice requires edit_others_posts.
-		if ( $user_id !== get_current_user_id() && ! current_user_can( 'edit_others_posts' ) ) {
+		if ( get_current_user_id() !== $user_id && ! current_user_can( 'edit_others_posts' ) ) {
 			return array( 'error' => __( 'You do not have permission to analyze another author\'s voice.', 'wp-pinch' ) );
 		}
 
@@ -3830,7 +3830,7 @@ class Abilities {
 		$user_id = absint( $input['user_id'] ?? 0 );
 
 		// Listing other authors' drafts requires edit_others_posts.
-		if ( $user_id > 0 && $user_id !== get_current_user_id() && ! current_user_can( 'edit_others_posts' ) ) {
+		if ( $user_id > 0 && get_current_user_id() !== $user_id && ! current_user_can( 'edit_others_posts' ) ) {
 			return array( 'error' => __( 'You do not have permission to view another author\'s drafts.', 'wp-pinch' ) );
 		}
 
