@@ -1,5 +1,6 @@
 # CodeQL — static application security testing (SAST).
 # Runs on push to main and on pull requests. Free for public repos.
+# Note: CodeQL does not support PHP; we analyze JavaScript (block + admin). PHP is covered by PHPCS + PHPStan in CI.
 # https://docs.github.com/en/code-security/code-scanning
 
 name: CodeQL
@@ -25,9 +26,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
-          languages: php
+          languages: javascript
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4

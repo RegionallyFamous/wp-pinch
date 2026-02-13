@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - **Best practices** — `.editorconfig`, issue/PR templates, CODEOWNERS, PHPUnit coverage docs, `make test-coverage`; `class-abilities.php` docblock updated (38+ core, 10 WooCommerce); npm audit step in CI documented as non-blocking.
+- **Dependencies** — npm packages updated; PHPUnit 9 → 11, Composer platform PHP 8.2.
 - **Lint** — PHPCS Yoda condition and quote fixes in `class-rest-controller.php` and `class-settings.php`.
 
 ## [2.4.0] - 2026-02-11
