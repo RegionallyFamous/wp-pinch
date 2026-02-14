@@ -160,10 +160,16 @@ class Test_Governance extends WP_UnitTestCase {
 			$this->markTestSkipped( 'Action Scheduler not available.' );
 		}
 
+		// Set a known initial task list and clear hash so first call computes it.
+		$all_tasks = array_keys( Governance::DEFAULT_INTERVALS );
+		update_option( 'wp_pinch_governance_tasks', $all_tasks );
+		delete_option( 'wp_pinch_governance_schedule_hash' );
+
 		Governance::maybe_schedule_tasks();
 		$hash_before = get_option( 'wp_pinch_governance_schedule_hash' );
+		$this->assertNotEmpty( $hash_before );
 
-		// Change the enabled tasks.
+		// Change the enabled tasks to a different set.
 		update_option( 'wp_pinch_governance_tasks', array( 'seo_health' ) );
 
 		Governance::maybe_schedule_tasks();

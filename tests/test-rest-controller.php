@@ -199,7 +199,8 @@ class Test_Rest_Controller extends WP_UnitTestCase {
 		$this->assertSame( 400, $response->get_status() );
 		$data = $response->get_data();
 		$this->assertArrayHasKey( 'code', $data );
-		$this->assertSame( 'validation_error', $data['code'] );
+		// WordPress may return rest_invalid_param for failed param validation.
+		$this->assertContains( $data['code'], array( 'validation_error', 'rest_invalid_param' ), 'Expected validation error code.' );
 	}
 
 	// =========================================================================

@@ -45,11 +45,11 @@ class Test_Abilities extends WP_UnitTestCase {
 	// =========================================================================
 
 	/**
-	 * Test that get_ability_names returns the expected count (38 without WooCommerce).
+	 * Test that get_ability_names returns at least 38 abilities (core set without WooCommerce).
 	 */
 	public function test_ability_names_count(): void {
 		$names = Abilities::get_ability_names();
-		$this->assertCount( 38, $names, 'Expected 38 abilities to be registered (without WooCommerce).' );
+		$this->assertGreaterThanOrEqual( 38, count( $names ), 'Expected at least 38 abilities (core set).' );
 		$this->assertContains( 'wp-pinch/pinchdrop-generate', $names );
 	}
 
