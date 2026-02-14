@@ -110,7 +110,7 @@ ci: lint lint-tests phpstan test ## Run full CI locally: lint + PHPCS tests + PH
 # ---------------------------------------------------------------------------
 
 .PHONY: i18n
-i18n: ## Generate POT file for translations
+i18n: ## Generate POT file for translations (uses wp-env if wp not in PATH)
 	@mkdir -p languages
 	@if command -v wp >/dev/null 2>&1; then \
 		wp i18n make-pot . languages/wp-pinch.pot \
@@ -118,8 +118,14 @@ i18n: ## Generate POT file for translations
 			--domain=wp-pinch \
 			--exclude=node_modules,vendor,tests,dist,.git,.github; \
 		echo "Generated languages/wp-pinch.pot"; \
+	elif command -v npx >/dev/null 2>&1; then \
+		npx wp-env run cli --env-cwd=wp-content/plugins/wp-pinch wp i18n make-pot . languages/wp-pinch.pot \
+			--slug=wp-pinch \
+			--domain=wp-pinch \
+			--exclude=node_modules,vendor,tests,dist,.git,.github; \
+		echo "Generated languages/wp-pinch.pot (via wp-env)"; \
 	else \
-		echo "WP-CLI not found. Install it: https://wp-cli.org/#installing"; \
+		echo "WP-CLI or npx (wp-env) required. Install: https://wp-cli.org/ or npm"; \
 		exit 1; \
 	fi
 
