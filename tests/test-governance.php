@@ -30,10 +30,10 @@ class Test_Governance extends WP_UnitTestCase {
 	// =========================================================================
 
 	/**
-	 * Test DEFAULT_INTERVALS contains all governance tasks (currently 7).
+	 * Test DEFAULT_INTERVALS contains all governance tasks (currently 8).
 	 */
 	public function test_default_intervals_count(): void {
-		$this->assertCount( 7, Governance::DEFAULT_INTERVALS );
+		$this->assertCount( 8, Governance::DEFAULT_INTERVALS );
 	}
 
 	/**
@@ -47,6 +47,7 @@ class Test_Governance extends WP_UnitTestCase {
 			'broken_links',
 			'security_scan',
 			'draft_necromancer',
+			'spaced_resurfacing',
 			'tide_report',
 		);
 
