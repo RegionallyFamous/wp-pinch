@@ -104,10 +104,16 @@ This runs PHPCS and PHPStan on every commit automatically. You'll be stopped fro
 
 ### Running Checks
 
-Run everything (same as CI) with one command:
+**Quick checks** (no database; same as the PHP quality job in CI):
 
 ```bash
 make check
+```
+
+**Full CI locally** (lint + PHPStan + PHPUnit; requires [WP test environment](#phpunit-wordpress-test-library)):
+
+```bash
+make ci
 ```
 
 Or run individual tools:
@@ -117,9 +123,49 @@ Or run individual tools:
 | `make lint` | PHPCS + ESLint + Stylelint |
 | `make phpstan` | PHPStan level 6 static analysis |
 | `make test` | PHPUnit test suite (requires WP test environment) |
+| `make test-wp-env` | PHPUnit via wp-env/Docker (run `make wp-env-start` first) |
 | `make test-coverage` | PHPUnit with HTML coverage report (requires PCOV or Xdebug; report in `build/coverage/index.html`) |
-| `make check` | All of the above at once |
+| `make test-coverage-clover` | PHPUnit with Clover XML (for Codecov; use locally before uploading) |
+| `make check` | Lint + PHPCS (tests) + PHPStan (fast; no DB) |
+| `make ci` | Lint + PHPCS tests + PHPStan + PHPUnit (full CI parity) |
+| `make lint-tests` | PHPCS on `tests/` with relaxed rules |
+| `make mutation` | Infection mutation testing (requires PCOV/Xdebug + WP test env) |
 | `make lint-fix` | Auto-fix PHPCS violations |
+
+### PHPUnit (WordPress test library)
+
+PHPUnit tests require the WordPress test library and a test database. You have two options:
+
+#### Option A: wp-env (Docker) — recommended for local dev
+
+No MySQL setup needed. wp-env includes the WordPress test suite and database.
+
+```bash
+# One-time: start wp-env (Docker must be running)
+make wp-env-start
+
+# Run PHPUnit inside the Docker environment
+make test-wp-env
+```
+
+Or via npm: `npm run test:php` (requires wp-env to be running).
+
+#### Option B: install-wp-tests.sh (local MySQL)
+
+If you prefer a local MySQL database and the traditional test setup:
+
+```bash
+# From the project root. Use your DB user, password, and host.
+bin/install-wp-tests.sh wordpress_test root '' localhost latest
+```
+
+If you don’t have `bin/install-wp-tests.sh`, get it from [wp-cli/scaffold](https://github.com/wp-cli/scaffold-command/blob/main/templates/install-wp-tests.sh) or set `WP_TESTS_DIR` to an existing WordPress test install. Then run:
+
+```bash
+make test
+```
+
+CI runs the full suite on every push; locally you can run a single file with `vendor/bin/phpunit tests/test-abilities.php`.
 
 ### Test coverage
 
@@ -164,11 +210,14 @@ For basic auth with a token, set `WP_AUTH_TOKEN` to the base64-encoded `user:pas
 Every push and PR runs several checks. All must pass to merge:
 
 1. **PHPCS + PHPStan** — WordPress coding standards, security sniffs, and level 6 static analysis (PHP 8.1/8.2/8.3)
-2. **PHPUnit** — 160+ tests across PHP 8.1/8.2/8.3 + WP latest and WP 6.9
+2. **PHPUnit** — 293+ tests across PHP 8.1/8.2/8.3 + WP latest and WP 6.9 (Action Scheduler loaded in wp-env for governance tests)
 3. **JS / CSS lint + build** — ESLint, Stylelint, asset compilation, and JS unit tests
 4. **Dependency audit** — Composer and npm security audits
 5. **CodeQL** — Static application security testing (SAST) on PHP
 6. **Dependency review** (PRs only) — Fails if the PR adds a dependency with a known vulnerability
+7. **Coverage (Codecov)** — One job runs PHPUnit with PCOV and uploads Clover XML to [Codecov](https://codecov.io/). Public repos can use tokenless upload; for private repos add the `CODECOV_TOKEN` secret.
+8. **Mutation testing (Infection)** — One job runs [Infection](https://infection.github.io/) (PHP 8.2, WP latest) to mutate `includes/` and `wp-pinch.php` and verify tests kill the mutants. Run locally with `make mutation` (requires PCOV or Xdebug + WP test env).
+9. **PHPCS on tests** — The PHP quality job runs `composer lint:tests` (ruleset `phpcs-tests.xml.dist`) so test files are checked with relaxed rules. Run locally with `make lint-tests`.
 
 ### Performance Profiling
 
@@ -186,7 +235,7 @@ Every bug fix must follow this process. No exceptions.
 
 2. **Fix the code.** Make the smallest change that fixes the bug.
 
-3. **Run `make check`.** Confirm the test now passes and no other checks broke.
+3. **Run `make ci`.** Confirm the test now passes and no other checks (lint, PHPStan, tests) broke.
 
 4. **Commit both the test and the fix together.** The commit message should reference the issue number.
 

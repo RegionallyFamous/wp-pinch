@@ -43,6 +43,7 @@ WP Pinch returns stable, machine-readable error codes in REST and MCP responses 
 | `missing_post_id` | 400 | Ghostwrite or Molt requires a post ID | Send post_id (e.g. /ghostwrite 123, /molt 123) |
 | `invalid_action` | 400 | Ghostwrite/Molt action invalid (use list/write or valid action) | Fix action parameter |
 | `forbidden` | 403 | User cannot read the specified post (e.g. Molt on another author’s private post) | Do not retry; permission issue |
+| `daily_write_budget_exceeded` | 429 | Daily write cap is set and the site has reached it for today | Do not retry until the next day; or ask admin to raise the cap |
 
 ---
 

@@ -42,6 +42,8 @@ class Feature_Flags {
 		'pinchdrop_engine'   => false,
 		'ghost_writer'       => false,
 		'molt'               => false,
+		'prompt_sanitizer'   => true,
+		'approval_workflow'  => false,
 	);
 
 	/**

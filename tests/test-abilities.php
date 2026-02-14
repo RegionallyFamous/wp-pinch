@@ -51,6 +51,8 @@ class Test_Abilities extends WP_UnitTestCase {
 		$names = Abilities::get_ability_names();
 		$this->assertGreaterThanOrEqual( 38, count( $names ), 'Expected at least 38 abilities (core set).' );
 		$this->assertContains( 'wp-pinch/pinchdrop-generate', $names );
+		$this->assertContains( 'wp-pinch/content-health-report', $names );
+		$this->assertContains( 'wp-pinch/suggest-terms', $names );
 	}
 
 	/**
@@ -212,6 +214,58 @@ class Test_Abilities extends WP_UnitTestCase {
 	public function test_update_post_not_found(): void {
 		$result = Abilities::execute_update_post( array( 'id' => 99999, 'title' => 'X' ) );
 		$this->assertArrayHasKey( 'error', $result );
+	}
+
+	/**
+	 * Test update-post optimistic locking: rejects when post_modified has changed.
+	 */
+	public function test_update_post_optimistic_lock_rejects_when_modified_changed(): void {
+		$post_id = $this->factory->post->create( array( 'post_title' => 'Original' ) );
+		$post    = get_post( $post_id );
+		$this->assertNotNull( $post );
+		$original_modified = $post->post_modified;
+
+		// WordPress uses second precision for post_modified; wait so the update gets a different timestamp.
+		sleep( 2 );
+		// Simulate another user/process updating the post (changes post_modified).
+		wp_update_post( array( 'ID' => $post_id, 'post_title' => 'Changed by someone else' ) );
+
+		$result = Abilities::execute_update_post(
+			array(
+				'id'            => $post_id,
+				'title'         => 'My update',
+				'post_modified' => $original_modified,
+			)
+		);
+
+		$this->assertArrayHasKey( 'error', $result );
+		$this->assertArrayHasKey( 'conflict', $result );
+		$this->assertTrue( $result['conflict'] );
+		$this->assertArrayHasKey( 'post_modified', $result );
+		// Title should be unchanged (our update was rejected).
+		$this->assertEquals( 'Changed by someone else', get_post( $post_id )->post_title );
+	}
+
+	/**
+	 * Test update-post optimistic locking: succeeds when post_modified matches.
+	 */
+	public function test_update_post_optimistic_lock_succeeds_with_correct_modified(): void {
+		$post_id = $this->factory->post->create( array( 'post_title' => 'Original' ) );
+		$post    = get_post( $post_id );
+		$this->assertNotNull( $post );
+		$current_modified = $post->post_modified;
+
+		$result = Abilities::execute_update_post(
+			array(
+				'id'            => $post_id,
+				'title'         => 'Updated with lock',
+				'post_modified' => $current_modified,
+			)
+		);
+
+		$this->assertArrayHasKey( 'updated', $result );
+		$this->assertTrue( $result['updated'] );
+		$this->assertEquals( 'Updated with lock', get_post( $post_id )->post_title );
 	}
 
 	/**
@@ -571,12 +625,15 @@ class Test_Abilities extends WP_UnitTestCase {
 
 	/**
 	 * Test update-option with disallowed key returns error.
+	 *
+	 * Uses a key not in the write allowlist (triggers "Option key not in allowlist").
+	 * admin_email would hit the denylist and return a different message.
 	 */
 	public function test_update_option_disallowed(): void {
 		$result = Abilities::execute_update_option(
 			array(
-				'key'   => 'admin_email',
-				'value' => 'hacker@evil.com',
+				'key'   => 'random_disallowed_option_xyz',
+				'value' => 'nope',
 			)
 		);
 
@@ -612,6 +669,35 @@ class Test_Abilities extends WP_UnitTestCase {
 	 */
 	public function test_get_option_disallowed(): void {
 		$result = Abilities::execute_get_option( array( 'key' => 'wp_pinch_api_token' ) );
+		$this->assertArrayHasKey( 'error', $result );
+	}
+
+	/**
+	 * Test get-option with denylisted siteurl returns error.
+	 */
+	public function test_get_option_denylist_siteurl(): void {
+		$result = Abilities::execute_get_option( array( 'key' => 'siteurl' ) );
+		$this->assertArrayHasKey( 'error', $result );
+	}
+
+	/**
+	 * Test get-option with denylisted home returns error.
+	 */
+	public function test_get_option_denylist_home(): void {
+		$result = Abilities::execute_get_option( array( 'key' => 'home' ) );
+		$this->assertArrayHasKey( 'error', $result );
+	}
+
+	/**
+	 * Test update-option with denylisted siteurl returns error.
+	 */
+	public function test_update_option_denylist_siteurl(): void {
+		$result = Abilities::execute_update_option(
+			array(
+				'key'   => 'siteurl',
+				'value' => 'http://evil.com',
+			)
+		);
 		$this->assertArrayHasKey( 'error', $result );
 	}
 
@@ -1005,6 +1091,227 @@ class Test_Abilities extends WP_UnitTestCase {
 		$result = Abilities::execute_restore_revision( array( 'revision_id' => $rev_id ) );
 		$this->assertArrayHasKey( 'error', $result );
 		$this->assertStringContainsString( 'permission', strtolower( $result['error'] ) );
+	}
+
+	// =========================================================================
+	// Draft-first (preview_url, ai_generated)
+	// =========================================================================
+
+	/**
+	 * Test create-post sets _wp_pinch_ai_generated meta and returns preview_url and ai_generated.
+	 */
+	public function test_create_post_returns_preview_url_and_ai_generated(): void {
+		$result = Abilities::execute_create_post(
+			array(
+				'title'   => 'Draft for preview',
+				'content' => 'Body',
+				'status'  => 'draft',
+			)
+		);
+
+		$this->assertArrayHasKey( 'id', $result );
+		$this->assertArrayHasKey( 'preview_url', $result );
+		$this->assertArrayHasKey( 'ai_generated', $result );
+		$this->assertTrue( $result['ai_generated'] );
+		$this->assertNotEmpty( $result['preview_url'] );
+
+		$meta = get_post_meta( $result['id'], '_wp_pinch_ai_generated', true );
+		$this->assertNotEmpty( $meta, 'AI generated meta should be set.' );
+	}
+
+	/**
+	 * Test update-post returns preview_url and url.
+	 */
+	public function test_update_post_returns_preview_url(): void {
+		$post_id = $this->factory->post->create( array( 'post_title' => 'Original', 'post_status' => 'draft' ) );
+
+		$result = Abilities::execute_update_post(
+			array(
+				'id'      => $post_id,
+				'title'  => 'Updated',
+			)
+		);
+
+		$this->assertArrayHasKey( 'preview_url', $result );
+		$this->assertArrayHasKey( 'url', $result );
+		$this->assertNotEmpty( $result['preview_url'] );
+	}
+
+	/**
+	 * Test update-post logs audit entry with diff in context (audit enhancements).
+	 */
+	public function test_update_post_audit_includes_diff(): void {
+		$post_id = $this->factory->post->create(
+			array(
+				'post_title'   => 'Short',
+				'post_content' => 'A bit of content.',
+				'post_status'  => 'publish',
+			)
+		);
+
+		Abilities::execute_update_post(
+			array(
+				'id'      => $post_id,
+				'title'   => 'Updated title here',
+				'content' => 'More content after update.',
+			)
+		);
+
+		$result = Audit_Table::query( array( 'event_type' => 'post_updated' ) );
+		$this->assertGreaterThanOrEqual( 1, $result['total'] );
+
+		$with_diff = null;
+		foreach ( $result['items'] as $item ) {
+			$ctx = $item['context'] ?? array();
+			if ( isset( $ctx['post_id'] ) && (int) $ctx['post_id'] === $post_id && ! empty( $ctx['diff'] ) ) {
+				$with_diff = $ctx;
+				break;
+			}
+		}
+		$this->assertNotNull( $with_diff, 'Audit entry for post_updated should include diff in context.' );
+		$this->assertArrayHasKey( 'title_length_before', $with_diff['diff'] );
+		$this->assertArrayHasKey( 'title_length_after', $with_diff['diff'] );
+		$this->assertArrayHasKey( 'content_length_before', $with_diff['diff'] );
+		$this->assertArrayHasKey( 'content_length_after', $with_diff['diff'] );
+	}
+
+	// =========================================================================
+	// Block JSON (create-post / update-post)
+	// =========================================================================
+
+	/**
+	 * Test create-post with blocks array produces block markup when serialize_blocks exists.
+	 */
+	public function test_create_post_with_blocks(): void {
+		if ( ! function_exists( 'serialize_blocks' ) ) {
+			$this->markTestSkipped( 'serialize_blocks not available.' );
+		}
+
+		$result = Abilities::execute_create_post(
+			array(
+				'title'  => 'Block post',
+				'blocks' => array(
+					array(
+						'blockName'     => 'core/paragraph',
+						'attrs'         => array(),
+						'innerContent'  => array( 'Hello from block.' ),
+					),
+				),
+			)
+		);
+
+		$this->assertArrayHasKey( 'id', $result );
+		$this->assertArrayNotHasKey( 'error', $result );
+
+		$post = get_post( $result['id'] );
+		$this->assertStringContainsString( 'Hello from block', $post->post_content );
+		$this->assertStringContainsString( 'wp:paragraph', $post->post_content );
+	}
+
+	/**
+	 * Test create-post with invalid blocks (no valid blockName) returns error.
+	 */
+	public function test_create_post_with_invalid_blocks_returns_error(): void {
+		if ( ! function_exists( 'serialize_blocks' ) ) {
+			$this->markTestSkipped( 'serialize_blocks not available.' );
+		}
+
+		$result = Abilities::execute_create_post(
+			array(
+				'title'  => 'Bad blocks',
+				'blocks' => array(
+					array( 'innerContent' => array( 'No blockName' ) ),
+				),
+			)
+		);
+
+		$this->assertArrayHasKey( 'error', $result );
+		$this->assertStringContainsString( 'valid blocks', $result['error'] );
+	}
+
+	// =========================================================================
+	// Content health report
+	// =========================================================================
+
+	/**
+	 * Test content-health-report returns all four report keys.
+	 */
+	public function test_execute_content_health_report_returns_structure(): void {
+		$result = Abilities::execute_content_health_report(
+			array( 'limit' => 5, 'min_words' => 100 )
+		);
+
+		$this->assertArrayHasKey( 'missing_alt', $result );
+		$this->assertArrayHasKey( 'broken_internal_links', $result );
+		$this->assertArrayHasKey( 'thin_content', $result );
+		$this->assertArrayHasKey( 'orphaned_media', $result );
+		$this->assertIsArray( $result['missing_alt'] );
+		$this->assertIsArray( $result['broken_internal_links'] );
+		$this->assertIsArray( $result['thin_content'] );
+		$this->assertIsArray( $result['orphaned_media'] );
+	}
+
+	// =========================================================================
+	// Suggest terms
+	// =========================================================================
+
+	/**
+	 * Test suggest-terms with content returns suggested_categories and suggested_tags.
+	 */
+	public function test_execute_suggest_terms_with_content(): void {
+		$this->factory->post->create(
+			array(
+				'post_title'   => 'Gardening tips',
+				'post_content' => 'How to grow tomatoes.',
+				'post_status'  => 'publish',
+			)
+		);
+		wp_set_post_terms(
+			$this->factory->post->create( array( 'post_status' => 'publish' ) ),
+			array( 'Gardening' ),
+			'category'
+		);
+
+		$result = Abilities::execute_suggest_terms(
+			array(
+				'content' => 'Gardening and tomatoes and plants',
+				'limit'   => 10,
+			)
+		);
+
+		$this->assertArrayNotHasKey( 'error', $result );
+		$this->assertArrayHasKey( 'suggested_categories', $result );
+		$this->assertArrayHasKey( 'suggested_tags', $result );
+		$this->assertIsArray( $result['suggested_categories'] );
+		$this->assertIsArray( $result['suggested_tags'] );
+	}
+
+	/**
+	 * Test suggest-terms with post_id uses that post content.
+	 */
+	public function test_execute_suggest_terms_with_post_id(): void {
+		$post_id = $this->factory->post->create(
+			array(
+				'post_title'   => 'Test draft',
+				'post_content' => 'Some content for term suggestion.',
+				'post_status'  => 'draft',
+			)
+		);
+
+		$result = Abilities::execute_suggest_terms( array( 'post_id' => $post_id, 'limit' => 5 ) );
+
+		$this->assertArrayNotHasKey( 'error', $result );
+		$this->assertArrayHasKey( 'suggested_categories', $result );
+		$this->assertArrayHasKey( 'suggested_tags', $result );
+	}
+
+	/**
+	 * Test suggest-terms without post_id or content returns error.
+	 */
+	public function test_execute_suggest_terms_requires_post_id_or_content(): void {
+		$result = Abilities::execute_suggest_terms( array( 'limit' => 5 ) );
+		$this->assertArrayHasKey( 'error', $result );
+		$this->assertStringContainsString( 'post_id or content', $result['error'] );
 	}
 
 	// =========================================================================

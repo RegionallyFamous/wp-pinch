@@ -13,7 +13,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$placeholder = esc_attr( $attributes['placeholder'] ?? __( 'Ask your AI assistant anything about this site...', 'wp-pinch' ) );
+$placeholder = esc_attr( $attributes['placeholder'] ?? __( 'Pinch in a question — what do you want to know about this site?', 'wp-pinch' ) );
 $show_header = $attributes['showHeader'] ?? true;
 // Validate max-height as a safe CSS dimension (number + unit only).
 $raw_max_height = $attributes['maxHeight'] ?? '400px';

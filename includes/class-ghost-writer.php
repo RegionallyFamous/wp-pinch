@@ -374,11 +374,15 @@ class Ghost_Writer {
 		$parts = array();
 
 		foreach ( $samples as $i => $sample ) {
+			$content = $sample['content'] ?? '';
+			if ( Feature_Flags::is_enabled( 'prompt_sanitizer' ) && Prompt_Sanitizer::is_enabled() ) {
+				$content = Prompt_Sanitizer::sanitize( $content );
+			}
 			$parts[] = sprintf(
 				"--- Post %d: \"%s\" ---\n%s",
 				$i + 1,
-				$sample['title'],
-				$sample['content']
+				$sample['title'] ?? '',
+				$content
 			);
 		}
 
@@ -601,6 +605,10 @@ class Ghost_Writer {
 		}
 
 		$voice_description = self::format_voice_for_prompt( $profile );
+		$draft_content     = $post->post_content;
+		if ( Feature_Flags::is_enabled( 'prompt_sanitizer' ) && Prompt_Sanitizer::is_enabled() ) {
+			$draft_content = Prompt_Sanitizer::sanitize( $draft_content );
+		}
 
 		$prompt = sprintf(
 			"You are a ghost writer. Complete the following WordPress draft post.\n\n" .
@@ -618,7 +626,7 @@ class Ghost_Writer {
 			'Return ONLY the HTML content, no markdown fences or explanation.',
 			$voice_description,
 			$post->post_title,
-			$post->post_content
+			$draft_content
 		);
 
 		$payload = array(

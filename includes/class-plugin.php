@@ -107,6 +107,34 @@ final class Plugin {
 	}
 
 	/**
+	 * Whether the WP Pinch API is disabled (kill switch).
+	 *
+	 * Checks WP_PINCH_DISABLED constant first, then wp_pinch_api_disabled option.
+	 *
+	 * @return bool
+	 */
+	public static function is_api_disabled(): bool {
+		if ( defined( 'WP_PINCH_DISABLED' ) && WP_PINCH_DISABLED ) {
+			return true;
+		}
+		return (bool) get_option( 'wp_pinch_api_disabled', false );
+	}
+
+	/**
+	 * Whether read-only mode is active (blocks all write abilities).
+	 *
+	 * Checks WP_PINCH_READ_ONLY constant first, then wp_pinch_read_only_mode option.
+	 *
+	 * @return bool
+	 */
+	public static function is_read_only_mode(): bool {
+		if ( defined( 'WP_PINCH_READ_ONLY' ) && WP_PINCH_READ_ONLY ) {
+			return true;
+		}
+		return (bool) get_option( 'wp_pinch_read_only_mode', false );
+	}
+
+	/**
 	 * Boot the plugin after all plugins are loaded.
 	 *
 	 * Checks dependencies, then initialises each subsystem.
@@ -124,6 +152,7 @@ final class Plugin {
 
 		// Initialize subsystems.
 		Audit_Table::init();
+		OpenClaw_Role::init();
 		MCP_Server::init();
 		Abilities::init();
 		Webhook_Dispatcher::init();
@@ -134,6 +163,9 @@ final class Plugin {
 
 		if ( is_admin() ) {
 			Settings::init();
+			Approval_Queue::init();
+			Rest_Availability::init();
+			Dashboard_Widget::init();
 			add_action( 'admin_notices', array( $this, 'configuration_notices' ) );
 			add_action( 'admin_notices', array( $this, 'circuit_breaker_notice' ) );
 		}
@@ -241,6 +273,9 @@ final class Plugin {
 		// Version-specific migrations — add new entries below for each release.
 		$migrations = array(
 			'1.1.0' => array( $this, 'migrate_1_1_0' ),
+			'2.5.0' => array( $this, 'migrate_2_5_0' ),
+			'2.6.0' => array( $this, 'migrate_2_6_0' ),
+			'2.7.0' => array( $this, 'migrate_2_7_0' ),
 		);
 
 		foreach ( $migrations as $version => $callback ) {
@@ -277,6 +312,84 @@ final class Plugin {
 				$wpdb->esc_like( '_transient_wp_pinch_' ) . '%'
 			)
 		);
+	}
+
+	/**
+	 * Migration for v2.5.0.
+	 *
+	 * - Creates OpenClaw agent role if it does not exist.
+	 */
+	private function migrate_2_5_0(): void {
+		OpenClaw_Role::ensure_role_exists();
+	}
+
+	/**
+	 * Migration for v2.6.0.
+	 *
+	 * - Ensures OpenClaw role exists for sites upgrading from 2.5.0.
+	 */
+	private function migrate_2_6_0(): void {
+		OpenClaw_Role::ensure_role_exists();
+	}
+
+	/**
+	 * Migration for v2.7.0.
+	 *
+	 * - Sets autoload=no on all WP Pinch options to avoid options table bloat.
+	 */
+	private function migrate_2_7_0(): void {
+		global $wpdb;
+
+		$options = array(
+			'wp_pinch_gateway_url',
+			'wp_pinch_api_token',
+			'wp_pinch_api_disabled',
+			'wp_pinch_read_only_mode',
+			'wp_pinch_agent_id',
+			'wp_pinch_rate_limit',
+			'wp_pinch_version',
+			'wp_pinch_wizard_completed',
+			'wp_pinch_webhook_events',
+			'wp_pinch_webhook_channel',
+			'wp_pinch_webhook_to',
+			'wp_pinch_webhook_deliver',
+			'wp_pinch_webhook_model',
+			'wp_pinch_webhook_thinking',
+			'wp_pinch_webhook_timeout',
+			'wp_pinch_webhook_wake_modes',
+			'wp_pinch_webhook_endpoint_types',
+			'wp_pinch_chat_model',
+			'wp_pinch_chat_thinking',
+			'wp_pinch_chat_timeout',
+			'wp_pinch_chat_placeholder',
+			'wp_pinch_session_idle_minutes',
+			'wp_pinch_governance_tasks',
+			'wp_pinch_governance_mode',
+			'wp_pinch_governance_schedule_hash',
+			'wp_pinch_feature_flags',
+			'wp_pinch_disabled_abilities',
+			'wp_pinch_circuit_last_opened_at',
+			'wp_pinch_ghost_writer_threshold',
+			'wp_pinch_openclaw_user_id',
+			'wp_pinch_openclaw_capability_groups',
+			'wp_pinch_approval_queue',
+			'wp_pinch_pinchdrop_enabled',
+			'wp_pinch_pinchdrop_default_outputs',
+			'wp_pinch_pinchdrop_auto_save_drafts',
+			'wp_pinch_pinchdrop_allowed_sources',
+			'wp_pinch_capture_token',
+			'wp_pinch_activation_redirect',
+		);
+
+		foreach ( $options as $option ) {
+			$wpdb->update(
+				$wpdb->options,
+				array( 'autoload' => 'no' ),
+				array( 'option_name' => $option ),
+				array( '%s' ),
+				array( '%s' )
+			);
+		}
 	}
 
 	// =========================================================================
@@ -327,9 +440,9 @@ final class Plugin {
 			printf(
 				'<strong>%s</strong> %s <a href="%s">%s</a>',
 				esc_html__( 'WP Pinch:', 'wp-pinch' ),
-				esc_html__( 'The gateway URL and API token are not configured. AI chat, webhooks, and governance features will not work.', 'wp-pinch' ),
+				esc_html__( 'The gateway URL and API token aren\'t configured yet. No claws, no pinch — chat, webhooks, and governance won\'t work until you connect.', 'wp-pinch' ),
 				esc_url( $settings_url ),
-				esc_html__( 'Configure now &rarr;', 'wp-pinch' )
+				esc_html__( 'Let\'s get pinching &rarr;', 'wp-pinch' )
 			);
 			echo '</p></div>';
 		}
@@ -368,7 +481,7 @@ final class Plugin {
 		if ( Circuit_Breaker::STATE_OPEN === $state ) {
 			printf(
 				/* translators: 1: seconds until retry, 2: URL to features tab */
-				esc_html__( 'The AI gateway is unreachable. Chat requests are failing fast to protect performance. The circuit will probe again in %1$d seconds. %2$s', 'wp-pinch' ),
+				esc_html__( 'Claws are up — the AI gateway is unreachable. Chat requests are failing fast to protect your site. We\'ll probe again in %1$d seconds. %2$s', 'wp-pinch' ),
 				absint( $retry_after ),
 				sprintf(
 					'<a href="%s">%s</a>',
@@ -379,7 +492,7 @@ final class Plugin {
 		} else {
 			printf(
 				/* translators: %s: URL to features tab */
-				esc_html__( 'The AI gateway is being probed after an outage. The next request will determine if the connection has recovered. %s', 'wp-pinch' ),
+				esc_html__( 'We\'re poking a claw out to test the waters. The next request will tell us if the gateway has recovered. %s', 'wp-pinch' ),
 				sprintf(
 					'<a href="%s">%s</a>',
 					esc_url( $features_url ),

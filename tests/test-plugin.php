@@ -172,6 +172,29 @@ class Test_Plugin extends WP_UnitTestCase {
 		);
 	}
 
+	/**
+	 * Test 2.7.0 migration sets autoload=no on WP Pinch options.
+	 */
+	public function test_migration_2_7_0_sets_autoload_no(): void {
+		global $wpdb;
+
+		update_option( 'wp_pinch_version', '2.6.0' );
+		update_option( 'wp_pinch_rate_limit', 30 );
+
+		Plugin::instance()->boot();
+
+		$this->assertSame( '2.7.0', get_option( 'wp_pinch_version' ), 'Version should be updated to 2.7.0.' );
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$autoload = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT autoload FROM {$wpdb->options} WHERE option_name = %s",
+				'wp_pinch_rate_limit'
+			)
+		);
+		$this->assertSame( 'no', $autoload, 'WP Pinch options should have autoload=no after 2.7.0 migration.' );
+	}
+
 	// =========================================================================
 	// Textdomain
 	// =========================================================================
@@ -192,12 +215,58 @@ class Test_Plugin extends WP_UnitTestCase {
 	 * Test block registration does not produce errors.
 	 */
 	public function test_register_blocks(): void {
+		// Block may already be registered from init; unregister to avoid "already registered" notice.
+		$registry = WP_Block_Type_Registry::get_instance();
+		if ( $registry->is_registered( 'wp-pinch/chat' ) ) {
+			$registry->unregister( 'wp-pinch/chat' );
+		}
+
 		Plugin::instance()->register_blocks();
 
-		// Check if block type is registered (build dir may not exist in test env).
-		$registry = WP_Block_Type_Registry::get_instance();
 		// We can only verify it doesn't fatal — the block.json may not exist in test env.
 		$this->assertTrue( true );
+	}
+
+	// =========================================================================
+	// Global helper function
+	// =========================================================================
+
+	// =========================================================================
+	// Kill switch and read-only
+	// =========================================================================
+
+	/**
+	 * SECURITY: Test is_api_disabled returns true when option is set.
+	 */
+	public function test_is_api_disabled_option(): void {
+		update_option( 'wp_pinch_api_disabled', true );
+		$this->assertTrue( Plugin::is_api_disabled() );
+		delete_option( 'wp_pinch_api_disabled' );
+	}
+
+	/**
+	 * SECURITY: Test is_api_disabled returns false when option is not set.
+	 */
+	public function test_is_api_disabled_false_when_not_set(): void {
+		delete_option( 'wp_pinch_api_disabled' );
+		$this->assertFalse( Plugin::is_api_disabled() );
+	}
+
+	/**
+	 * SECURITY: Test is_read_only_mode returns true when option is set.
+	 */
+	public function test_is_read_only_mode_option(): void {
+		update_option( 'wp_pinch_read_only_mode', true );
+		$this->assertTrue( Plugin::is_read_only_mode() );
+		delete_option( 'wp_pinch_read_only_mode' );
+	}
+
+	/**
+	 * SECURITY: Test is_read_only_mode returns false when option is not set.
+	 */
+	public function test_is_read_only_mode_false_when_not_set(): void {
+		delete_option( 'wp_pinch_read_only_mode' );
+		$this->assertFalse( Plugin::is_read_only_mode() );
 	}
 
 	// =========================================================================

@@ -10,16 +10,81 @@ Core abilities cover content, media, users, comments, settings, plugins/themes, 
 
 | Category | What It Does | Abilities |
 |---|---|---|
-| **Content** | Full CRUD on posts & pages | `list-posts`, `get-post`, `create-post`, `update-post`, `delete-post` |
+| **Content** | Full CRUD on posts & pages | `list-posts`, `get-post`, `create-post`, `update-post`, `delete-post` (optional **Block JSON**, **draft-first**, **featured image** — see below) |
 | **Media** | Library management | `list-media`, `upload-media`, `delete-media` |
 | **Taxonomies** | Terms and taxonomies | `list-taxonomies`, `manage-terms` |
 | **Users** | User management with safety guards | `list-users`, `get-user`, `update-user-role` |
 | **Comments** | Moderation and cleanup | `list-comments`, `moderate-comment` |
 | **Settings** | Read and update options (allowlisted) | `get-option`, `update-option` |
 | **Plugins & Themes** | Extension management | `list-plugins`, `toggle-plugin`, `list-themes`, `switch-theme` |
-| **Analytics** | Site health, data export, context & discovery | `site-health`, `recent-activity`, `search-content`, `export-data`, `site-digest`, `related-posts`, `synthesize` |
+| **Analytics** | Site health, data export, context & discovery | `site-health`, `recent-activity`, `search-content`, `export-data`, `site-digest`, `related-posts`, `synthesize`, `content-health-report`, `suggest-terms` |
 | **Advanced** | Menus, meta, revisions, bulk ops, cron | `list-menus`, `manage-menu-item`, `get-post-meta`, `update-post-meta`, `list-revisions`, `restore-revision`, `bulk-edit-posts`, `list-cron-events`, `manage-cron` |
 | **WooCommerce** | Shop abilities (when WooCommerce is active) | `woo-list-products`, `woo-manage-order` |
+
+### Block JSON (create-post / update-post)
+
+You can send native block editor content by passing a **`blocks`** array instead of (or in addition to) `content`. Each block must have `blockName` (e.g. `core/paragraph`, `core/heading`), and optionally `attrs`, `innerContent` (array of strings), and `innerBlocks` (nested blocks). When `blocks` is provided, it takes precedence over `content`.
+
+**Example — two paragraphs:**
+
+```json
+{
+  "title": "My post",
+  "blocks": [
+    {
+      "blockName": "core/paragraph",
+      "attrs": {},
+      "innerContent": ["Hello, this is the first paragraph."]
+    },
+    {
+      "blockName": "core/paragraph",
+      "attrs": {},
+      "innerContent": ["And this is the second."]
+    }
+  ]
+}
+```
+
+**Example — heading + paragraph:**
+
+```json
+{
+  "title": "Getting started",
+  "blocks": [
+    {
+      "blockName": "core/heading",
+      "attrs": { "level": 2 },
+      "innerContent": ["Getting started"]
+    },
+    {
+      "blockName": "core/paragraph",
+      "attrs": {},
+      "innerContent": ["Follow these steps…"]
+    }
+  ]
+}
+```
+
+Block names must match `namespace/name` (e.g. `core/list`, `core/image`). The plugin uses WordPress `serialize_blocks()` to convert the array into `post_content`.
+
+### Draft-first and preview
+
+When the AI creates or updates a post via `create-post` or `update-post`, the post is saved as **draft** and the response includes:
+
+- **`preview_url`** — URL to view the draft (preview link). Use this so the user can review before publishing.
+- **`ai_generated`** — `true`; the post is marked with `_wp_pinch_ai_generated` meta for audit and workflow.
+
+To publish a draft after review, call **`POST /wp-json/wp-pinch/v1/preview-approve`** with JSON body `{ "post_id": 123 }`. The endpoint requires the same auth as other WP Pinch REST (e.g. application password). The user must have `edit_post` on that post. On success the post status becomes `publish` and the response includes the post URL.
+
+### Featured image (create-post)
+
+You can set the post’s featured image in one call:
+
+- **`featured_image_url`** — URL of an image to download and set as featured image (HTTP/HTTPS only; validated to prevent SSRF).
+- **`featured_image_base64`** — Base64-encoded image data (alternative to URL). Use one of these, not both.
+- **`featured_image_alt`** — Alt text for the image (optional).
+
+On success the response may include `featured_image_id` and `featured_image_url` (attachment URL).
 
 ---
 
@@ -41,13 +106,18 @@ The AI that writes like *you*. Ghost Writer learns each author's writing voice f
 
 ### Molt (Content Repackager)
 
-*Lobsters molt to grow; your post sheds one form and emerges in many.* Molt repackages a single post into multiple output formats: social (Twitter 280, LinkedIn), email snippet, FAQ block, thread (array of tweets), summary, meta description (155 chars), pull quote, key takeaways, and CTA variants. Use the **`wp-pinch/molt`** ability or the **`/molt 123`** slash command in chat. REST endpoint: `POST /wp-pinch/v1/molt` with `post_id` and optional `output_types` array. Gated by the `molt` feature flag (disabled by default).
+*Lobsters molt to grow; your post sheds one form and emerges in many.* Molt repackages a single post into multiple output formats: social (Twitter 280, LinkedIn), email snippet, FAQ block (array), **faq_blocks** (Gutenberg block markup for FAQs), thread (array of tweets), summary, meta description (155 chars), pull quote, key takeaways, and CTA variants. Use **`faq_blocks`** for block-editor-native output. Use the **`wp-pinch/molt`** ability or the **`/molt 123`** slash command in chat. REST endpoint: `POST /wp-pinch/v1/molt` with `post_id` and optional `output_types` array. Gated by the `molt` feature flag (disabled by default).
 
 ### Context & discovery (Memory Bait, Echo Net, Weave)
 
 - **`site-digest` (Memory Bait)** — Compact export of recent posts (title, excerpt, taxonomy terms, optional `tldr` when set) for agent memory-core or system prompt.
 - **`related-posts` (Echo Net)** — Given a post ID, returns posts that link to it (backlinks) or share taxonomy terms.
 - **`synthesize` (Weave)** — Given a query, search posts and return a payload (title, excerpt, content snippet) for LLM synthesis; first draft, human refines.
+
+### Content health and term suggestions
+
+- **`content-health-report`** — Returns a content health report: missing alt text on images, broken internal links, thin content (below word threshold), and orphaned media. Input: `limit` (max items per category, 1–100, default 50), `min_words` (minimum word count to not flag as thin, default 300). Output: `missing_alt`, `broken_internal_links`, `thin_content`, `orphaned_media` (each an array of items with post_id / url / details as applicable).
+- **`suggest-terms`** — Given a draft post ID or raw content, returns suggested categories and tags (by content similarity and term match). Input: `post_id` (optional) or `content` (when post_id not provided), optional `limit` (default 15). Output: `suggested_categories`, `suggested_tags` (arrays of term names or objects).
 
 ### Quick-win tools (TL;DR, Link Suggester, Quote Bank)
 
@@ -130,6 +200,19 @@ Connect OpenClaw:
 ```bash
 npx openclaw connect --mcp-url https://your-site.com/wp-json/wp-pinch/v1/mcp
 ```
+
+### List abilities and site manifest (GET /abilities)
+
+**`GET /wp-json/wp-pinch/v1/abilities`** (authenticated) returns:
+
+- **`abilities`** — Array of `{ "name": "wp-pinch/..." }` for every enabled ability (respects admin toggles and filters).
+- **`site`** — Capability manifest for agent discovery: **`post_types`** (public post type names), **`taxonomies`** (public taxonomy names), **`plugins`** (active plugin slugs, no versions), **`features`** (feature flag key → boolean).
+
+Use this so clients know what content types and taxonomies exist and which features are on. Filter the manifest with **`wp_pinch_manifest`** (see [Hooks & Filters](Hooks-and-Filters)).
+
+### Daily write budget
+
+When a **daily write cap** is set in **WP Pinch → Connection** (e.g. 50 operations per day), every write ability (create-post, update-post, delete-post, upload-media, update-option, etc.) counts toward that cap. When the count exceeds the cap, the request returns **HTTP 429** with `code: "daily_write_budget_exceeded"`. The counter resets at midnight (site time). Optional: set an **alert email** and **threshold %** to receive a warning when usage reaches that percentage of the cap. Which abilities count is filterable via **`wp_pinch_write_abilities`** (see [Hooks & Filters](Hooks-and-Filters)).
 
 ---
 

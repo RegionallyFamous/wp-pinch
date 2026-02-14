@@ -107,7 +107,7 @@ export default function Edit( { attributes, setAttributes } ) {
 				>
 					<div className="wp-pinch-chat__message wp-pinch-chat__message--system">
 						{ __(
-							'Chat preview — messages will appear here on the frontend.',
+							'Chat preview — pinch in a message and it will appear here on the frontend.',
 							'wp-pinch'
 						) }
 					</div>

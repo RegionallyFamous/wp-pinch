@@ -107,6 +107,7 @@ WP Pinch exposes filters and actions for extensibility. See `wiki/Hooks-and-Filt
 - **Input:** Sanitize + validate; REST args use `sanitize_callback` and `validate_callback`
 - **URLs:** `wp_http_validate_url()` before outbound requests (SSRF prevention)
 - **Options:** Use allowlists; sensitive options (API token, etc.) are denylisted
+- **Token logging:** Never log full API/capture tokens. Use `Utils::mask_token( $token )` for debug/audit context.
 
 See `wiki/Security.md` for full details.
 
@@ -118,9 +119,11 @@ Before proposing changes, ensure:
 
 - `composer phpstan` — 0 errors
 - `composer lint` — 0 violations
+- `composer lint:tests` — 0 violations (or `make lint-tests`)
 - `npm run lint:js` — 0 errors
 - `make check` — all pass
 - PHPUnit tests for new abilities or governance tasks
+- Optionally `make mutation` (Infection) for critical paths
 
 Run `make setup-hooks` to install pre-commit checks.
 

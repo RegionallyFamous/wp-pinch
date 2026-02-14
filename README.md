@@ -46,7 +46,7 @@ No extra logins. No "I'll do it at my desk." You talk; your assistant has the ke
 
 | You want to… | How it works |
 |--------------|--------------|
-| Publish or update a post from chat | Your assistant calls `create-post` / `update-post`. You say "ship the recap" — it ships. |
+| Publish or update a post from chat | Your assistant calls `create-post` / `update-post`. Draft-first: posts are saved as draft with a **preview URL**; use **preview-approve** to publish after review. |
 | Turn one post into social + FAQ + meta | Use Molt: one ability call or `/molt 123` in chat. Nine output formats. |
 | Capture an idea from WhatsApp/Slack without opening WP | PinchDrop: send the idea to your assistant; it hits the PinchDrop capture endpoint and creates a draft pack (or Quick Drop for a minimal note). |
 | Save a webpage snippet to WordPress from the browser | Web Clipper: token-protected REST endpoint. Bookmarklet or extension calls it; post is created as draft. |

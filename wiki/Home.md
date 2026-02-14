@@ -43,6 +43,7 @@ One plugin. Connect [OpenClaw](https://github.com/openclaw/openclaw) (or any MCP
 | [Webhook Payload](Webhook-Payload) | Event types and JSON shape (WordPress → OpenClaw) |
 | [Session and Identity](Session-And-Identity) | How gateway/token/session map to WordPress users |
 | [Error Codes](Error-Codes) | REST/MCP error codes and how to handle them |
+| [Troubleshooting](Troubleshooting) | REST API blocked, WAF, security plugins, caching, managed hosting |
 | [Limits](Limits) | Rate limits, pagination, and max sizes |
 | [Hooks & Filters](Hooks-and-Filters) | Extend and customize |
 | [WP-CLI](WP-CLI) | Commands and output formats |

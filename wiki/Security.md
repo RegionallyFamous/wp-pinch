@@ -25,12 +25,21 @@ WP Pinch takes security seriously — more seriously than a lobster takes its te
 - **Nested array rejection** in post meta values
 - **CSS injection prevention** on block attributes via regex validation
 - **Option allowlists** prevent reading/writing sensitive options (`auth_key`, `auth_salt`, `active_plugins`, `users_can_register`, `default_role`, API token)
-- **Option denylist** is hardcoded and runs *before* any filter — cannot be bypassed
+- **Option denylist** is hardcoded and runs *before* any filter — cannot be bypassed. Includes `siteurl`, `home`, `admin_email` (site breakage / account takeover risk), auth salts, `active_plugins`, tokens.
+
+### Prompt Injection Defense
+
+When the `prompt_sanitizer` feature flag is enabled (default: on), WordPress content is sanitized before being sent to the AI gateway. Lines matching instruction-injection patterns (e.g. "ignore previous instructions", "disregard prior instructions") are replaced with `[redacted]`.
+
+**Coverage:** Molt (post content), Ghost Writer (draft + voice samples), synthesize/what-do-i-know (content, titles, excerpts), site-digest (titles, excerpts, tldr, taxonomy term names), related-posts (titles), project-assembly (titles and content), quote-bank (extracted quotes). **Governance findings** (content freshness, SEO health, draft necromancer, broken links, Tide Report) and **all webhook payloads** (post titles, comment content, author names, etc.) are recursively sanitized before delivery. Short strings (titles, slugs, names) use `TITLE_PATTERNS` (e.g. `SYSTEM:`, `[INST]`); longer content uses line-based patterns.
+
+**Filters:** `wp_pinch_prompt_sanitizer_patterns` (multi-line content), `wp_pinch_prompt_sanitizer_title_patterns` (short strings), `wp_pinch_prompt_sanitizer_enabled`. Webhook payloads are sanitized before `wp_pinch_webhook_payload` runs. Governance findings pass through `wp_pinch_governance_findings` first; the data sent to the webhook is sanitized in dispatch.
 
 ### Output Security
 
 - **Output escaping** with `esc_html()`, `esc_attr()`, `esc_url()` on all rendered content
 - **Gateway reply XSS sanitization** via `wp_kses_post()` (non-streaming chat, fallback, and **SSE streaming** — each streamed `data:` line with a `reply` field is sanitized before forwarding)
+- **Strict gateway reply sanitization** (optional, **WP Pinch → Connection**): when enabled, chat replies are stripped of HTML comments and instruction-like text, then sanitized with an allowlist that excludes iframe, object, embed, and form to reduce prompt-injection and XSS risk in gateway-returned content
 - **Chat markdown** — frontend escapes HTML first; links restricted to `http:`/`https:` only
 - **Comment author emails stripped** from all ability responses
 - **User emails removed** from ability responses (list-users, get-user, export-data, WooCommerce)
@@ -49,6 +58,16 @@ WP Pinch takes security seriously — more seriously than a lobster takes its te
 ### Web Clipper (token-protected capture)
 
 - **Capture token** is stored in the option `wp_pinch_capture_token` (not exposed in REST). It should be a **long-lived secret**; treat it like a password. The **bookmarklet URL may contain the token** in the query string — do not share the URL. Use a strong random value (e.g. 32+ characters). Rate limit: 30 requests per minute per IP. All captures are audit-logged.
+
+### Kill Switch and Read-Only Mode
+
+- **Disable API access:** Set option `wp_pinch_api_disabled` or define `WP_PINCH_DISABLED` in wp-config.php. All REST endpoints (chat, status, hook, molt, ghostwrite, pinchdrop, capture) return 503. Use during incidents or maintenance.
+- **Read-only mode:** Set option `wp_pinch_read_only_mode` or define `WP_PINCH_READ_ONLY`. All write abilities are blocked; read abilities and status remain available. Safe for exploring the API against production.
+- **Emergency mu-plugin:** Copy `mu-plugin-examples/wp-pinch-emergency-disable.php` to `wp-content/mu-plugins/` for instant disable. Delete the file to re-enable.
+
+### Webhook Loop Detection
+
+When the incoming hook endpoint executes abilities (`execute_ability` or `execute_batch`), a request-scoped flag is set so that outbound webhooks triggered by those ability runs are suppressed. This prevents infinite loops: post publish → webhook → OpenClaw → update-post → post change → webhook.
 
 ### Network & API
 
@@ -72,6 +91,17 @@ WP Pinch takes security seriously — more seriously than a lobster takes its te
 - **Multisite cleanup** on uninstall
 - **Constant redefinition guards**
 - **GDPR-ready** — full integration with WordPress privacy export and erasure
+
+### Token Logging Hygiene
+
+Never log full API or capture tokens. Use `Utils::mask_token( $token )` for debugging — returns `****` + last 4 chars. The Site Health debug info uses masked tokens. Audit log context must never include raw tokens.
+
+### Credential Management
+
+- **Application passwords over full admin** — When OpenClaw or MCP clients connect to WordPress, use application passwords (Users → Profile → Application Passwords) scoped to the minimum capabilities needed. Never pass the main admin password.
+- **Secret reference pattern** — Store API tokens and application passwords in environment variables or a secret manager. Config files should reference `WP_APP_PASSWORD`, `WP_PINCH_API_TOKEN`, etc., not contain plaintext secrets.
+- **Rotation** — Rotate the WP Pinch API token and any application passwords on a schedule (e.g. every 90 days). Revoke old application passwords after rotation.
+- **Least privilege** — Create a dedicated WordPress user (or use the OpenClaw role) with only the capabilities the agent needs. See [Configuration](Configuration#credentials--security) for setup guidance.
 
 ### OpenClaw integration (one-pager)
 

@@ -4,7 +4,7 @@ Tags: ai, agent, openclaw, mcp, automation
 Requires at least: 6.9
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 2.5.0
+Stable tag: 2.7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -126,6 +126,15 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 5. Audit log showing recent ability executions, webhooks, and chat messages.
 
 == Changelog ==
+
+= 2.7.0 =
+* New: Autoload audit — migration sets autoload=no on all WP Pinch options.
+* New: REST API disabled detection — admin notice when REST API is blocked; Site Health test for WP Pinch REST availability.
+* New: Activity feed dashboard widget — last 10 audit entries on the main dashboard with link to full audit log.
+* New: Optimistic locking for update-post — pass post_modified from get-post; updates rejected when post changed since last read.
+* New: Troubleshooting wiki page — REST API, WAF, security plugins, managed hosting, page cache exclusions.
+* New: Classic Editor detection — filter wp_pinch_preferred_content_format; Molt faq_blocks returns HTML when Classic Editor is default.
+* Changed: Memory-conscious governance — no_found_rows on all governance get_posts() calls.
 
 = 2.5.0 =
 * New: Block Bindings API for Pinch Chat (agentId and placeholder bound to post meta or site options). Requires WordPress 6.5+.

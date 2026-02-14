@@ -21,6 +21,15 @@ class Test_Webhook_Dispatcher extends WP_UnitTestCase {
 		// Don't configure gateway so webhooks don't actually fire.
 		delete_option( 'wp_pinch_gateway_url' );
 		delete_option( 'wp_pinch_api_token' );
+		Webhook_Dispatcher::set_skip_webhooks_this_request( false );
+	}
+
+	/**
+	 * Tear down — reset webhook skip flag.
+	 */
+	public function tear_down(): void {
+		Webhook_Dispatcher::set_skip_webhooks_this_request( false );
+		parent::tear_down();
 	}
 
 	/**
@@ -81,6 +90,42 @@ class Test_Webhook_Dispatcher extends WP_UnitTestCase {
 		$this->assertArrayHasKey( 'message', $filtered_payload );
 		$this->assertArrayHasKey( 'metadata', $filtered_payload );
 		$this->assertEquals( 'test', $filtered_payload['metadata']['event'] );
+	}
+
+	/**
+	 * Test webhook loop detection: when skip flag is set, dispatch returns false without firing.
+	 */
+	public function test_loop_detection_skips_dispatch_when_flag_set(): void {
+		update_option( 'wp_pinch_gateway_url', 'http://localhost:3000' );
+		update_option( 'wp_pinch_api_token', 'test-token' );
+
+		$before_webhook_fired = false;
+		add_action( 'wp_pinch_before_webhook', function () use ( &$before_webhook_fired ) {
+			$before_webhook_fired = true;
+		} );
+
+		Webhook_Dispatcher::set_skip_webhooks_this_request( true );
+
+		$result = Webhook_Dispatcher::dispatch( 'test', 'Loop test' );
+
+		$this->assertFalse( $result, 'Dispatch should return false when skip flag is set.' );
+		$this->assertFalse( $before_webhook_fired, 'wp_pinch_before_webhook should NOT fire when skip flag is set.' );
+
+		Webhook_Dispatcher::set_skip_webhooks_this_request( false );
+	}
+
+	/**
+	 * Test should_skip_webhooks reflects flag state.
+	 */
+	public function test_should_skip_webhooks_reflects_flag(): void {
+		Webhook_Dispatcher::set_skip_webhooks_this_request( false );
+		$this->assertFalse( Webhook_Dispatcher::should_skip_webhooks() );
+
+		Webhook_Dispatcher::set_skip_webhooks_this_request( true );
+		$this->assertTrue( Webhook_Dispatcher::should_skip_webhooks() );
+
+		Webhook_Dispatcher::set_skip_webhooks_this_request( false );
+		$this->assertFalse( Webhook_Dispatcher::should_skip_webhooks() );
 	}
 
 	/**

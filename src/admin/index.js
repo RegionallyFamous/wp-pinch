@@ -67,7 +67,7 @@ import './admin.css';
 					.then( () => {
 						if ( feedbackEl ) {
 							feedbackEl.textContent =
-								strings.copied || 'Copied!';
+								strings.copied || 'Snatched!';
 							feedbackEl.classList.add( 'is-visible' );
 							setTimeout( () => {
 								feedbackEl.classList.remove( 'is-visible' );
@@ -124,7 +124,7 @@ import './admin.css';
 					.then( ( r ) => {
 						if ( r.ok ) {
 							resultEl.textContent =
-								strings.connected || 'Connected!';
+								strings.connected || 'Claws at the ready!';
 							resultEl.className =
 								'wp-pinch-wizard-test-result is-success';
 						} else {

@@ -58,6 +58,28 @@ For step-by-step workflows (publish from chat, Molt, PinchDrop, etc.), see [Reci
 
 ---
 
+## Credentials & Security
+
+**Use application passwords, not full admin credentials.** When OpenClaw or other MCP clients authenticate to WordPress:
+
+- **Create a dedicated user** for the AI agent with the minimum capabilities it needs (or use the [OpenClaw role](#openclaw-role) when available).
+- **Generate an application password** (Users → Profile → Application Passwords) instead of sharing your main password. Application passwords can be revoked individually.
+- **Never store credentials in config files.** Use environment variables or a secret manager and reference them (e.g. `WP_APP_PASSWORD`, `WP_PINCH_API_TOKEN`). The OpenClaw config should point to secrets, not contain them.
+- **Rotate tokens on a schedule.** API tokens and application passwords should be rotated periodically (e.g. every 90 days). Revoke old application passwords after rotation.
+- **WP Pinch API token** (Connection tab) is used for outbound webhooks and incoming webhook verification. Treat it like a password — it is masked in the admin UI and should never be committed to version control.
+
+See [Security](Security) for the full defense-in-depth overview.
+
+### OpenClaw role
+
+WP Pinch provides a dedicated **OpenClaw Agent** role for least-privilege webhook execution. In **WP Pinch > Connection**, under **Agent identity**:
+
+- **Webhook execution user** — Choose "Use first administrator" (default) or a user with the OpenClaw Agent role.
+- **Create OpenClaw agent user** — Creates a new user `openclaw-agent` with the OpenClaw Agent role and sets them as the execution user. Then create an application password for that user in Users → Profile.
+- **Capability groups** — Control what the OpenClaw Agent role can do: Content, Media, Taxonomies, Users, Comments, Settings, Plugins, Themes, Menus, Cron. Default: Content, Media, Taxonomies, Users, Comments. Enable Settings, Plugins, or Themes only if the agent needs those abilities.
+
+---
+
 ## Admin Settings
 
 ### Connection Tab
@@ -66,7 +88,9 @@ For step-by-step workflows (publish from chat, Molt, PinchDrop, etc.), see [Reci
 |---|---|
 | **Gateway URL** | Your OpenClaw gateway endpoint |
 | **API Token** | Authentication token for the gateway |
+| **Safety controls** | **Disable API access** — when checked, all REST endpoints return 503. **Read-only mode** — when checked, write abilities are blocked. **Strict gateway reply sanitization** — when checked, chat replies are stripped of HTML comments and instruction-like text, and iframe/object/embed/form are removed to reduce prompt-injection and XSS risk. See [Security](Security). |
 | **Rate Limit** | Maximum requests per minute for outbound webhooks (default: 30). REST uses a lower default (10/min per user) when unset. See [Limits](Limits) for full details. |
+| **Daily write budget** | Max write operations per day (0 = no limit). When exceeded, write abilities return 429 until the next day. Optional: **Alert email when usage reaches** a percentage (e.g. 80%) and an **Email** address to receive the alert. Which operations count is filterable via `wp_pinch_write_abilities`. See [Limits](Limits) and [Error Codes](Error-Codes). |
 | **Agent ID** | Default agent to route messages to |
 
 ### Webhook Settings
@@ -114,6 +138,8 @@ Toggle features on/off without code changes:
 | `health_endpoint` | Off | Public health check endpoint |
 | `public_chat` | Off | Allow unauthenticated visitors to chat |
 | `slash_commands` | Off | Enable /new, /status, /compact in chat |
+| `prompt_sanitizer` | On | Mitigate instruction injection in content sent to LLMs (Molt, Ghost Writer, synthesize) |
+| `approval_workflow` | Off | Queue destructive abilities (delete-post, toggle-plugin, etc.) for admin approval before execution |
 | `token_display` | Off | Show token usage in chat footer |
 | `pinchdrop_engine` | Off | Enable PinchDrop capture-anywhere pipeline |
 
@@ -161,6 +187,10 @@ Configure which governance tasks run and on what schedule:
 ### Abilities Tab
 
 When the `ability_toggle` feature flag is enabled, you can enable/disable individual abilities from the admin UI without writing code.
+
+### Audit Tab
+
+When the `audit_search` feature flag is enabled, the Audit tab shows **search** (text filter) and **Event** (dropdown filter by event type). Each row includes a **Details** column with context (e.g. ability name, post ID, diff) when available. Export remains capped; see [Limits](Limits).
 
 ---
 

@@ -87,7 +87,7 @@ class Audit_Table {
 	 * @param string $event_type Short event identifier (e.g. "webhook_sent", "governance_finding").
 	 * @param string $source     Origin subsystem (e.g. "webhook", "governance", "ability").
 	 * @param string $message    Human-readable description.
-	 * @param array  $context    Optional structured data stored as JSON.
+	 * @param array  $context    Optional structured data stored as JSON. Never include API/capture tokens; use Utils::mask_token() if needed.
 	 * @return int|false Inserted row ID or false on failure.
 	 */
 	public static function insert( string $event_type, string $source, string $message, array $context = array() ) {

@@ -13,6 +13,7 @@ Stable limits so OpenClaw and other clients can rely on predictable behavior. Al
 | **Web Clipper capture** | 30 requests/min per IP | No | Per `handle_web_clipper_capture` |
 | **PinchDrop capture** | Endpoint-specific limit by source + IP | No | Lightweight per-endpoint throttle |
 | **Outbound webhooks** (WordPress → OpenClaw) | 30/min (site-wide) | Yes — **WP Pinch → Connection → Rate Limit** (same option can affect UI label; webhook code uses `wp_pinch_rate_limit` for max per minute) | Actually webhook uses `get_option( 'wp_pinch_rate_limit', 30 )` in `check_rate_limit`; see class-webhook-dispatcher. So default 30/min. |
+| **Daily write budget** | Per-day cap (0 = no limit) | Yes — **WP Pinch → Connection → Daily write budget** (`wp_pinch_daily_write_cap`) | When set &gt; 0, create/update/delete posts, media, options, etc. count toward the cap. When exceeded, requests return 429 (`daily_write_budget_exceeded`) until midnight (site time). Optional alert email at a threshold %. See [Error Codes](Error-Codes). |
 
 Response headers when rate limit applies: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`, and `Retry-After` on 429.
 

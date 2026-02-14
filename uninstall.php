@@ -23,8 +23,14 @@ function wp_pinch_cleanup_site() {
 		// Core connection.
 		'wp_pinch_gateway_url',
 		'wp_pinch_api_token',
+		'wp_pinch_api_disabled',
+		'wp_pinch_read_only_mode',
+		'wp_pinch_gateway_reply_strict_sanitize',
 		'wp_pinch_agent_id',
 		'wp_pinch_rate_limit',
+		'wp_pinch_daily_write_cap',
+		'wp_pinch_daily_write_alert_email',
+		'wp_pinch_daily_write_alert_threshold',
 		'wp_pinch_version',
 		'wp_pinch_wizard_completed',
 
@@ -60,6 +66,13 @@ function wp_pinch_cleanup_site() {
 
 		// Ghost Writer.
 		'wp_pinch_ghost_writer_threshold',
+
+		// OpenClaw role.
+		'wp_pinch_openclaw_user_id',
+		'wp_pinch_openclaw_capability_groups',
+
+		// Approval queue.
+		'wp_pinch_approval_queue',
 	);
 
 	foreach ( $wp_pinch_options as $wp_pinch_option ) {
@@ -94,6 +107,9 @@ function wp_pinch_cleanup_site() {
 	// Clean up user meta (dismissible notice state + voice profiles).
 	delete_metadata( 'user', 0, 'wp_pinch_dismissed_config_notice', '', true );
 	delete_metadata( 'user', 0, 'wp_pinch_voice_profile', '', true );
+
+	// Remove the OpenClaw agent role.
+	remove_role( 'openclaw_agent' );
 
 	// Clean up any remaining Action Scheduler jobs.
 	if ( function_exists( 'as_unschedule_all_actions' ) ) {

@@ -63,7 +63,7 @@ class Site_Health {
 				'api_token'            => array(
 					'label'   => __( 'API token', 'wp-pinch' ),
 					'value'   => $api_token ? __( 'Configured', 'wp-pinch' ) : __( 'Not configured', 'wp-pinch' ),
-					'debug'   => $api_token ? 'set' : 'not set',
+					'debug'   => $api_token ? Utils::mask_token( $api_token ) : 'not set',
 					'private' => true,
 				),
 				'abilities_api'        => array(
@@ -166,6 +166,11 @@ class Site_Health {
 		$tests['direct']['wp_pinch_configuration'] = array(
 			'label' => __( 'WP Pinch configuration', 'wp-pinch' ),
 			'test'  => array( __CLASS__, 'test_configuration' ),
+		);
+
+		$tests['direct']['wp_pinch_rest_api'] = array(
+			'label' => __( 'WP Pinch REST API availability', 'wp-pinch' ),
+			'test'  => array( __CLASS__, 'test_rest_api_availability' ),
 		);
 
 		return $tests;
@@ -301,6 +306,42 @@ class Site_Health {
 			$result['description']    = '<p>' . implode( '</p><p>', array_map( 'esc_html', $issues ) ) . '</p>';
 			$result['badge']['color'] = 'orange';
 		}
+
+		return $result;
+	}
+
+	/**
+	 * Test: REST API reachable (WP Pinch routes).
+	 *
+	 * @return array Site Health test result.
+	 */
+	public static function test_rest_api_availability(): array {
+		$available = Rest_Availability::check();
+
+		$result = array(
+			'label'       => $available
+				? __( 'WP Pinch REST API is reachable', 'wp-pinch' )
+				: __( 'WP Pinch REST API appears blocked', 'wp-pinch' ),
+			'status'      => $available ? 'good' : 'critical',
+			'badge'       => array(
+				'label' => __( 'WP Pinch', 'wp-pinch' ),
+				'color' => $available ? 'blue' : 'red',
+			),
+			'description' => $available
+				? sprintf( '<p>%s</p>', __( 'The WP Pinch REST API is reachable. Chat, MCP, webhooks, and abilities can function.', 'wp-pinch' ) )
+				: sprintf(
+					'<p>%s</p>',
+					__( 'The WordPress REST API appears disabled or blocked. WP Pinch requires the REST API for MCP, chat, webhooks, and ability execution. Check for plugins that disable the REST API, security plugins that block /wp-json/ requests, WAF rules, or page cache. See the Troubleshooting wiki for details.', 'wp-pinch' )
+				),
+			'actions'     => sprintf(
+				'<a href="%s">%s</a> | <a href="%s">%s</a>',
+				esc_url( admin_url( 'admin.php?page=wp-pinch' ) ),
+				__( 'WP Pinch Settings', 'wp-pinch' ),
+				esc_url( 'https://github.com/RegionallyFamous/wp-pinch/wiki/Troubleshooting' ),
+				__( 'Troubleshooting', 'wp-pinch' )
+			),
+			'test'        => 'wp_pinch_rest_api',
+		);
 
 		return $result;
 	}

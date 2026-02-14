@@ -173,6 +173,22 @@ class Test_Site_Health extends WP_UnitTestCase {
 
 		$this->assertArrayHasKey( 'wp_pinch_gateway', $tests['direct'] );
 		$this->assertArrayHasKey( 'wp_pinch_configuration', $tests['direct'] );
+		$this->assertArrayHasKey( 'wp_pinch_rest_api', $tests['direct'] );
+	}
+
+	/**
+	 * Test REST API availability test structure and status.
+	 */
+	public function test_rest_api_availability_test(): void {
+		$result = Site_Health::test_rest_api_availability();
+
+		$this->assertArrayHasKey( 'label', $result );
+		$this->assertArrayHasKey( 'status', $result );
+		$this->assertArrayHasKey( 'badge', $result );
+		$this->assertArrayHasKey( 'description', $result );
+		$this->assertArrayHasKey( 'actions', $result );
+		$this->assertSame( 'wp_pinch_rest_api', $result['test'] );
+		$this->assertContains( $result['status'], array( 'good', 'critical' ), 'REST API test status should be good or critical.' );
 	}
 
 	/**

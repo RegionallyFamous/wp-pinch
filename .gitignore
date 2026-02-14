@@ -30,6 +30,9 @@ Thumbs.db
 npm-debug.log*
 debug.log
 
+# PHPUnit
+.phpunit.result.cache
+
 # Environment
 .env
 .env.*

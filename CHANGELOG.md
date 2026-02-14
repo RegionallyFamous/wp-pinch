@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Security hardening (Tier 1)** — Prompt sanitization extended to governance findings and webhook payloads; recursive sanitization for titles, excerpts, taxonomy terms. Webhook loop detection prevents infinite post-update loops. Kill switch (`wp_pinch_api_disabled`) and read-only mode (`wp_pinch_read_only_mode`); constants `WP_PINCH_DISABLED` and `WP_PINCH_READ_ONLY` in wp-config. Emergency mu-plugin drop-in example. Token logging hygiene: `Utils::mask_token()` for safe debug output. Option denylist expanded: `siteurl`, `home`, `admin_email` now blocked from get/update-option abilities.
+- **Credential guidance** — Configuration and Security docs now recommend application passwords, secret reference pattern, and rotation. No full admin credentials.
+- **SKILL.md v5** — Ability count, groupings, and examples refreshed; 38+ core abilities; governance tasks (8); best practices and "what not to do" sections.
+- **OpenClaw role** — Dedicated `openclaw_agent` role with capability group picker. Create OpenClaw agent user; webhook execution uses designated user or first admin. Least-privilege by default.
+- **Prompt sanitizer** — Feature flag `prompt_sanitizer` (default on) mitigates instruction injection in content sent to LLMs. Applied to Molt, Ghost Writer, synthesize. Filters: `wp_pinch_prompt_sanitizer_patterns`, `wp_pinch_prompt_sanitizer_enabled`.
+- **Approval workflow** — Feature flag `approval_workflow` (default off). Destructive abilities (delete-post, toggle-plugin, switch-theme, etc.) queued for admin approval in WP Pinch → Approvals.
+- **Block-native Molt** — New `faq_blocks` output type returns Gutenberg block markup for FAQs. create-post content schema documents block markup support.
+
+### Changed
+- **Incoming webhook** — Execution user is OpenClaw agent (if set) or first administrator. Migration 2.6.0 ensures role exists on upgrade.
+
+## [2.8.0] - 2026-02-11
+
+### Added
+- **OpenClaw Gateway Vision (Phase A)** — Capability manifest on GET `/abilities` (post types, taxonomies, plugins, features; filter `wp_pinch_manifest`). Audit enhancements: request/result summary and optional diff in audit context; audit UI event filter dropdown and Details column. Daily write budget: optional cap and email alert at threshold (Connection tab). Draft-first: `_wp_pinch_ai_generated` meta, `preview_url` in create/update-post responses, `POST /preview-approve` to publish from preview. Media in create-post: `featured_image_url`, `featured_image_base64`, `featured_image_alt`. Health/diagnostics in status (for admins): plugin/theme update counts, PHP version, DB size, disk, cron, error log tail.
+- **OpenClaw Gateway Vision (Phase B)** — Content health report ability (`content-health-report`: missing alt, broken internal links, thin content, orphaned media). Suggest terms ability (`suggest-terms`: categories/tags for draft by content similarity). Block JSON in create/update-post: optional `blocks` array (blockName, attrs, innerContent, innerBlocks). Strict gateway reply sanitization option: strip HTML comments and instruction-like lines, disallow iframe/object/embed/form in chat replies.
+- **Tests** — PHPUnit coverage for Phase A/B: manifest, daily write 429, preview-approve, sanitize_gateway_reply, content-health-report, suggest-terms, create/update preview_url and blocks, audit diff/context, governance content health helpers.
+
+## [2.7.0] - 2026-02-11
+
+### Added
+- **Autoload audit** — Migration 2.7.0 sets `autoload=no` on all WP Pinch options to reduce options table bloat.
+- **REST API disabled detection** — Rest_Availability class checks if the REST API is reachable (WP Pinch health endpoint); caches result for 5 minutes; shows admin notice when blocked. Added to Site Health status tests.
+- **Activity feed dashboard widget** — WP Pinch Activity widget on the main dashboard shows the last 10 audit entries with a link to the full audit log.
+- **Optimistic locking for update-post** — Ability accepts optional `post_modified` from get-post; rejects updates when the post has changed since last read. Returns `conflict: true` with current values for agent retry.
+- **WAF/hosting troubleshooting doc** — New wiki page [Troubleshooting](wiki/Troubleshooting.md) covering REST API disabled, security plugins (Wordfence, Sucuri, iThemes), managed hosts, page cache exclusions, WAF whitelisting.
+- **Classic Editor detection** — Filter `wp_pinch_preferred_content_format` returns `'blocks'` or `'html'`. Defaults to `'html'` when Classic Editor plugin is active and set to replace the block editor. Molt `faq_blocks` uses this so Classic Editor sites get HTML output.
+- **Abilities API registration** — Registers `wp-pinch` category on `wp_abilities_api_categories_init` per [WordPress Abilities API](https://developer.wordpress.org/apis/abilities-api/). Polyfill for `wp_execute_ability` when WP 6.9 provides `wp_get_ability` but not `wp_execute_ability`.
+
+### Changed
+- **Memory-conscious governance** — All governance `get_posts()` calls now use `no_found_rows => true` (broken links, spaced resurfacing, content freshness, SEO health) to reduce memory usage on large sites.
+- **Testing** — wp-env includes Action Scheduler; full suite (293 tests) runs without skips. New tests for Rest_Availability, Dashboard_Widget, Molt, OpenClaw_Role.
+
 ## [2.5.0] - 2026-02-14
 
 ### Added

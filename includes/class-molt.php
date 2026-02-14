@@ -45,6 +45,7 @@ class Molt {
 			'social',
 			'email_snippet',
 			'faq_block',
+			'faq_blocks',
 			'thread',
 			'summary',
 			'meta_description',
@@ -154,6 +155,9 @@ class Molt {
 		if ( mb_strlen( $content ) > self::MAX_CONTENT_CHARS ) {
 			$content = mb_substr( $content, 0, self::MAX_CONTENT_CHARS ) . '...';
 		}
+		if ( Feature_Flags::is_enabled( 'prompt_sanitizer' ) && Prompt_Sanitizer::is_enabled() ) {
+			$content = Prompt_Sanitizer::sanitize( $content );
+		}
 
 		$format_spec = self::build_format_spec( $output_types );
 		$prompt      = sprintf(
@@ -250,10 +254,16 @@ class Molt {
 	private static function build_format_spec( array $output_types ): string {
 		$specs = array();
 
+		$preferred       = Utils::get_preferred_content_format();
+		$faq_blocks_spec = 'blocks' === $preferred
+			? 'String - Gutenberg block markup for FAQs. Use <!-- wp:heading {"level":4} --><h4>Q</h4><!-- /wp:heading --> and <!-- wp:paragraph --><p>A</p><!-- /wp:paragraph --> for each Q&A. Output valid block markup only.'
+			: 'String - HTML for FAQs. Use <h4>Q</h4> and <p>A</p> for each Q&A. Output valid HTML only (no block comments).';
+
 		$definitions = array(
 			'social'           => 'Object with "twitter" (max ' . self::TWITTER_MAX_CHARS . ' chars) and "linkedin" (up to ~3000 chars) - platform-optimized social posts.',
 			'email_snippet'    => 'String - 2-3 paragraph email-friendly excerpt.',
 			'faq_block'        => 'Array of objects with "question" and "answer" - extract FAQs from the content.',
+			'faq_blocks'       => $faq_blocks_spec,
 			'thread'           => 'Array of strings - Twitter thread (each tweet max ' . self::TWITTER_MAX_CHARS . ' chars).',
 			'summary'          => 'String - 2-3 sentence summary.',
 			'meta_description' => 'String - SEO meta description, max ' . self::META_MAX_CHARS . ' chars.',
@@ -312,13 +322,36 @@ class Molt {
 	}
 
 	/**
+	 * Sanitize Gutenberg block markup for safe storage.
+	 *
+	 * Parses blocks and re-serializes to validate structure; falls back to
+	 * wp_kses_post if parsing fails.
+	 *
+	 * @param string $markup Raw block markup.
+	 * @return string Sanitized markup.
+	 */
+	private static function sanitize_block_markup( string $markup ): string {
+		$markup = trim( $markup );
+		if ( '' === $markup ) {
+			return '';
+		}
+		if ( function_exists( 'parse_blocks' ) ) {
+			$blocks = parse_blocks( $markup );
+			if ( ! empty( $blocks ) ) {
+				return serialize_blocks( $blocks );
+			}
+		}
+		return wp_kses_post( $markup );
+	}
+
+	/**
 	 * Sanitize a single Molt output value by format type.
 	 *
 	 * @param string $key   Format key.
 	 * @param mixed  $value Raw value.
-	 * @return mixed Sanitized value.
+	 * @return mixed Sanitized value (array, string, or scalar).
 	 */
-	private static function sanitize_molt_value( string $key, $value ) {
+	private static function sanitize_molt_value( string $key, mixed $value ): mixed {
 		switch ( $key ) {
 			case 'social':
 				if ( ! is_array( $value ) ) {
@@ -355,6 +388,12 @@ class Molt {
 					}
 				}
 				return $faq;
+
+			case 'faq_blocks':
+				if ( ! is_string( $value ) ) {
+					return '';
+				}
+				return self::sanitize_block_markup( $value );
 
 			case 'thread':
 			case 'key_takeaways':
@@ -436,6 +475,10 @@ class Molt {
 				$faq_lines[] = '   **A:** ' . ( $faq['answer'] ?? '' );
 			}
 			$parts[] = implode( "\n", $faq_lines );
+		}
+
+		if ( ! empty( $output['faq_blocks'] ) && is_string( $output['faq_blocks'] ) ) {
+			$parts[] = '**FAQ (Gutenberg blocks):** ' . wp_strip_all_tags( $output['faq_blocks'] );
 		}
 
 		if ( ! empty( $output['thread'] ) && is_array( $output['thread'] ) ) {

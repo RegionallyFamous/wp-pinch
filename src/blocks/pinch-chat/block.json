@@ -2,7 +2,7 @@
     "$schema": "https://schemas.wp.org/trunk/block.json",
     "apiVersion": 3,
     "name": "wp-pinch/chat",
-    "version": "2.5.0",
+    "version": "2.6.0",
     "title": "Pinch Chat",
     "category": "widgets",
     "icon": "admin-comments",
@@ -31,7 +31,7 @@
     "attributes": {
         "placeholder": {
             "type": "string",
-            "default": "Ask your AI assistant anything about this site..."
+            "default": "Pinch in a question — what do you want to know about this site?"
         },
         "showHeader": {
             "type": "boolean",

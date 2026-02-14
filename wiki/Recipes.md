@@ -21,6 +21,21 @@ You want to *do* something with your site from chat or from OpenClaw — not jus
 
 **Abilities:** `create-post`. Optional: `update-post` if you want to revise, then publish.
 
+### 1b. Draft-first and preview-approve
+
+**Outcome:** The AI creates or updates a post as a **draft**; you get a preview link to review, then you (or the assistant) approve to publish.
+
+**Flow:**
+
+1. Assistant calls `create-post` or `update-post`. WP Pinch saves the post as draft and returns **`preview_url`** and **`ai_generated: true`**.
+2. You open `preview_url` in a browser to review the draft.
+3. When ready, call **`POST /wp-json/wp-pinch/v1/preview-approve`** with body `{ "post_id": 123 }` (same auth as other REST). The post becomes published and the response includes the live URL.
+
+**Example (what you say):**  
+*"Draft a post titled 'Launch update' with this body. Send me the preview link; I'll tell you when to publish."*
+
+**Abilities / endpoint:** `create-post` or `update-post` (draft); then `POST /wp-pinch/v1/preview-approve` with `post_id`. See [Abilities Reference](Abilities-Reference#draft-first-and-preview).
+
 ---
 
 ## 2. Turn one post into social + FAQ + meta (Molt)

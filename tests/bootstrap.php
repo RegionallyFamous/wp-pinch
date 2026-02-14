@@ -28,6 +28,23 @@ if ( ! file_exists( "{$_tests_dir}/includes/functions.php" ) ) {
 require_once "{$_tests_dir}/includes/functions.php";
 
 /**
+ * Load Action Scheduler before the plugin (Governance tests need as_has_scheduled_action).
+ */
+function _manually_load_action_scheduler() {
+	$paths = array(
+		WP_CONTENT_DIR . '/plugins/action-scheduler/action-scheduler.php',
+		WP_CONTENT_DIR . '/plugins/action-scheduler.latest-stable/action-scheduler.php',
+	);
+	foreach ( $paths as $path ) {
+		if ( file_exists( $path ) ) {
+			require_once $path;
+			return;
+		}
+	}
+}
+tests_add_filter( 'muplugins_loaded', '_manually_load_action_scheduler', 5 );
+
+/**
  * Manually load the plugin being tested.
  */
 function _manually_load_plugin() {

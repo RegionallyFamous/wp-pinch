@@ -282,4 +282,89 @@ class Test_Governance extends WP_UnitTestCase {
 		remove_filter( 'wp_pinch_governance_findings', '__return_false' );
 		$this->assertTrue( true );
 	}
+
+	// =========================================================================
+	// Content health helpers (for content-health-report ability)
+	// =========================================================================
+
+	/**
+	 * Test get_missing_alt_findings returns posts with img without alt.
+	 */
+	public function test_get_missing_alt_findings(): void {
+		$this->factory->post->create(
+			array(
+				'post_title'   => 'Has image no alt',
+				'post_content' => '<img src="https://example.com/1.jpg" />',
+				'post_status'  => 'publish',
+			)
+		);
+
+		$findings = Governance::get_missing_alt_findings( 50 );
+		$this->assertIsArray( $findings );
+		$this->assertGreaterThanOrEqual( 1, count( $findings ) );
+		$this->assertArrayHasKey( 'post_id', $findings[0] );
+		$this->assertArrayHasKey( 'title', $findings[0] );
+		$this->assertArrayHasKey( 'url', $findings[0] );
+	}
+
+	/**
+	 * Test get_broken_internal_links_findings flags link to non-existent path.
+	 */
+	public function test_get_broken_internal_links_findings(): void {
+		$this->factory->post->create(
+			array(
+				'post_title'   => 'Links to missing',
+				'post_content' => '<a href="' . home_url( '/no-such-page-xyz-123/' ) . '">Broken</a>',
+				'post_status'  => 'publish',
+			)
+		);
+
+		$findings = Governance::get_broken_internal_links_findings( 50 );
+		$this->assertIsArray( $findings );
+		$this->assertGreaterThanOrEqual( 1, count( $findings ) );
+		$this->assertArrayHasKey( 'post_id', $findings[0] );
+		$this->assertArrayHasKey( 'link_url', $findings[0] );
+		$this->assertArrayHasKey( 'reason', $findings[0] );
+	}
+
+	/**
+	 * Test get_thin_content_findings returns posts below word threshold.
+	 */
+	public function test_get_thin_content_findings(): void {
+		$this->factory->post->create(
+			array(
+				'post_title'   => 'Thin',
+				'post_content' => 'One two three four five.',
+				'post_status'  => 'publish',
+			)
+		);
+
+		$findings = Governance::get_thin_content_findings( 300, 50 );
+		$this->assertIsArray( $findings );
+		$this->assertGreaterThanOrEqual( 1, count( $findings ) );
+		$this->assertArrayHasKey( 'post_id', $findings[0] );
+		$this->assertArrayHasKey( 'word_count', $findings[0] );
+		$this->assertLessThan( 300, $findings[0]['word_count'] );
+	}
+
+	/**
+	 * Test get_orphaned_media_findings returns attachments with post_parent 0.
+	 */
+	public function test_get_orphaned_media_findings(): void {
+		$attachment_id = $this->factory->post->create(
+			array(
+				'post_type'   => 'attachment',
+				'post_status' => 'inherit',
+				'post_parent' => 0,
+				'post_title'  => 'Orphan attachment',
+			)
+		);
+
+		$findings = Governance::get_orphaned_media_findings( 50 );
+		$this->assertIsArray( $findings );
+		$ids = array_column( $findings, 'attachment_id' );
+		$this->assertContains( $attachment_id, $ids );
+		$this->assertArrayHasKey( 'url', $findings[0] );
+		$this->assertArrayHasKey( 'title', $findings[0] );
+	}
 }

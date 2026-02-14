@@ -74,4 +74,42 @@ class Test_Audit_Table extends WP_UnitTestCase {
 	public function test_retention_days(): void {
 		$this->assertEquals( 90, Audit_Table::RETENTION_DAYS );
 	}
+
+	/**
+	 * Test context is stored as JSON and returned decoded (audit enhancements: diff, request_summary).
+	 */
+	public function test_insert_and_query_context(): void {
+		$context = array(
+			'post_id'         => 42,
+			'diff'            => array(
+				'title_length_before'   => 10,
+				'title_length_after'    => 15,
+				'content_length_before' => 100,
+				'content_length_after'  => 200,
+			),
+			'request_summary' => array( 'title' => 'Test' ),
+			'result_summary'   => array( 'post_id' => 42 ),
+		);
+
+		$id = Audit_Table::insert( 'post_updated', 'ability', 'Post 42 updated.', $context );
+		$this->assertGreaterThan( 0, $id );
+
+		$result = Audit_Table::query( array( 'event_type' => 'post_updated' ) );
+		$this->assertGreaterThanOrEqual( 1, $result['total'] );
+
+		$found = null;
+		foreach ( $result['items'] as $item ) {
+			if ( (int) $item['id'] === $id ) {
+				$found = $item;
+				break;
+			}
+		}
+		$this->assertNotNull( $found );
+		$this->assertIsArray( $found['context'] );
+		$this->assertArrayHasKey( 'diff', $found['context'] );
+		$this->assertArrayHasKey( 'title_length_before', $found['context']['diff'] );
+		$this->assertEquals( 10, $found['context']['diff']['title_length_before'] );
+		$this->assertArrayHasKey( 'request_summary', $found['context'] );
+		$this->assertEquals( array( 'title' => 'Test' ), $found['context']['request_summary'] );
+	}
 }

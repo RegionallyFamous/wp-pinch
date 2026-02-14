@@ -59,6 +59,10 @@ lint-css: node_modules ## Lint CSS
 lint-php: vendor ## Lint PHP with PHPCS
 	composer lint
 
+.PHONY: lint-tests
+lint-tests: vendor ## Lint test files (relaxed PHPCS rules)
+	composer lint:tests
+
 .PHONY: lint-fix
 lint-fix: vendor ## Auto-fix PHPCS violations
 	composer lint:fix
@@ -67,9 +71,18 @@ lint-fix: vendor ## Auto-fix PHPCS violations
 phpstan: vendor ## Run PHPStan static analysis
 	composer phpstan
 
+.PHONY: mutation
+mutation: vendor ## Run Infection mutation testing (requires PCOV/Xdebug + WP test env)
+	composer infection
+
 .PHONY: test
 test: ## Run PHPUnit tests (requires WP test suite)
 	vendor/bin/phpunit
+
+.PHONY: test-wp-env
+test-wp-env: node_modules vendor ## Run PHPUnit inside wp-env (Docker). Run 'make wp-env-start' first.
+	@echo "Running PHPUnit via wp-env..."
+	npx wp-env run cli --env-cwd=wp-content/plugins/wp-pinch vendor/bin/phpunit --testdox
 
 .PHONY: test-coverage
 test-coverage: ## Run PHPUnit with HTML coverage report (requires PCOV or Xdebug)
@@ -77,10 +90,20 @@ test-coverage: ## Run PHPUnit with HTML coverage report (requires PCOV or Xdebug
 	vendor/bin/phpunit --coverage-html build/coverage
 	@echo "Coverage report: build/coverage/index.html"
 
+.PHONY: test-coverage-clover
+test-coverage-clover: ## Run PHPUnit with Clover XML (for Codecov upload)
+	@mkdir -p build/coverage
+	vendor/bin/phpunit --coverage-clover build/coverage/clover.xml
+
 .PHONY: check
-check: lint phpstan ## Run ALL checks (lint + static analysis). Same as CI.
+check: lint lint-tests phpstan ## Run lint + PHPCS (tests) + PHPStan (no DB). Use 'make ci' for full CI parity including tests.
 	@echo ""
-	@echo "✓ All checks passed. Safe to commit."
+	@echo "✓ Lint and PHPStan passed."
+
+.PHONY: ci
+ci: lint lint-tests phpstan test ## Run full CI locally: lint + PHPCS tests + PHPStan + PHPUnit (requires WP test env).
+	@echo ""
+	@echo "✓ All CI checks passed."
 
 # ---------------------------------------------------------------------------
 # i18n — POT file generation
@@ -142,6 +165,7 @@ zip-dist: build vendor ## Create distributable plugin ZIP (skips i18n when WP-CL
 		--exclude='SKILL.md' \
 		--exclude='.DS_Store' \
 		--exclude='*.log' \
+		--exclude='.phpunit.result.cache' \
 		--exclude='.gitignore' \
 		--exclude='.cursor' \
 		--exclude='.cursorrules' \

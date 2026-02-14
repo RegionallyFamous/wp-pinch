@@ -1,0 +1,36 @@
+{
+	"$schema": "https://raw.githubusercontent.com/infection/infection/master/resources/schema.json",
+	"source": {
+		"directories": ["."],
+		"excludes": [
+			"tests",
+			"vendor",
+			"build",
+			"node_modules",
+			"src",
+			"dist",
+			"bin",
+			"wiki",
+			"plans",
+			"languages",
+			".github",
+			"uninstall.php"
+		]
+	},
+	"timeout": 15,
+	"threads": "max",
+	"testFramework": "phpunit",
+	"phpUnit": {
+		"configDir": "."
+	},
+	"logs": {
+		"text": "build/infection.log",
+		"summary": "build/infection-summary.log",
+		"github": true
+	},
+	"mutators": {
+		"@default": true
+	},
+	"minMsi": 50,
+	"minCoveredMsi": 50
+}

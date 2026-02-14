@@ -45,6 +45,37 @@ class Webhook_Dispatcher {
 	const SIGNATURE_ALGO = 'sha256';
 
 	/**
+	 * Request-scoped flag: when true, skip dispatching webhooks to prevent loops.
+	 *
+	 * Set when processing incoming hook requests that execute abilities; cleared after.
+	 * Prevents: post publish → webhook → OpenClaw → update-post → post change → webhook (loop).
+	 *
+	 * @var bool
+	 */
+	private static $skip_webhooks_this_request = false;
+
+	/**
+	 * Mark that the current request originated from an incoming webhook executing abilities.
+	 *
+	 * Call this before running abilities from the hook endpoint; clear after.
+	 * Webhooks triggered by those ability runs will be suppressed.
+	 *
+	 * @param bool $skip Whether to skip webhooks for this request.
+	 */
+	public static function set_skip_webhooks_this_request( bool $skip ): void {
+		self::$skip_webhooks_this_request = $skip;
+	}
+
+	/**
+	 * Whether webhooks should be skipped this request (loop detection).
+	 *
+	 * @return bool
+	 */
+	public static function should_skip_webhooks(): bool {
+		return self::$skip_webhooks_this_request;
+	}
+
+	/**
 	 * Wire hooks.
 	 */
 	public static function init(): void {
@@ -207,6 +238,11 @@ class Webhook_Dispatcher {
 	 * @return bool
 	 */
 	public static function dispatch( string $event, string $message, array $data = array(), int $attempt = 0 ): bool {
+		// Loop detection: skip if this request is handling an incoming webhook that executed abilities.
+		if ( self::should_skip_webhooks() ) {
+			return false;
+		}
+
 		$gateway_url = get_option( 'wp_pinch_gateway_url', '' );
 		$api_token   = get_option( 'wp_pinch_api_token', '' );
 
@@ -218,6 +254,12 @@ class Webhook_Dispatcher {
 		if ( ! self::check_rate_limit() ) {
 			Audit_Table::insert( 'webhook_rate_limited', 'webhook', sprintf( 'Webhook "%s" dropped — rate limit exceeded.', $event ) );
 			return false;
+		}
+
+		// Prompt injection mitigation: sanitize user-controlled content before sending to AI gateway.
+		if ( Feature_Flags::is_enabled( 'prompt_sanitizer' ) && Prompt_Sanitizer::is_enabled() ) {
+			$message = Prompt_Sanitizer::sanitize( $message );
+			$data    = Prompt_Sanitizer::sanitize_recursive( $data );
 		}
 
 		/**

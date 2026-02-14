@@ -41,6 +41,35 @@ class Rest_Controller {
 	const MAX_PARAMS_KEYS_PER_LEVEL = 100;
 
 	/**
+	 * Ability names that count toward the daily write budget (create/update/delete/mutate).
+	 *
+	 * @var string[]
+	 */
+	private static $write_abilities = array(
+		'wp-pinch/create-post',
+		'wp-pinch/update-post',
+		'wp-pinch/delete-post',
+		'wp-pinch/manage-terms',
+		'wp-pinch/upload-media',
+		'wp-pinch/delete-media',
+		'wp-pinch/update-user-role',
+		'wp-pinch/moderate-comment',
+		'wp-pinch/update-option',
+		'wp-pinch/toggle-plugin',
+		'wp-pinch/switch-theme',
+		'wp-pinch/export-data',
+		'wp-pinch/pinchdrop-generate',
+		'wp-pinch/manage-menu-item',
+		'wp-pinch/update-post-meta',
+		'wp-pinch/restore-revision',
+		'wp-pinch/bulk-edit-posts',
+		'wp-pinch/manage-cron',
+		'wp-pinch/ghostwrite',
+		'wp-pinch/molt',
+		'wp-pinch/woo-manage-order',
+	);
+
+	/**
 	 * Trace ID for the current REST request (set in rest_request_before_callbacks).
 	 *
 	 * @var string|null
@@ -589,6 +618,36 @@ class Rest_Controller {
 				),
 			)
 		);
+
+		// Draft-first: approve and publish a post from preview (capability-gated).
+		register_rest_route(
+			'wp-pinch/v1',
+			'/preview-approve',
+			array(
+				array(
+					'methods'             => \WP_REST_Server::CREATABLE,
+					'callback'            => array( __CLASS__, 'handle_preview_approve' ),
+					'permission_callback' => array( __CLASS__, 'check_hook_token' ),
+					'args'                => array(
+						'post_id' => array(
+							'required'          => true,
+							'type'              => 'integer',
+							'sanitize_callback' => 'absint',
+							'validate_callback' => function ( $value ) {
+								if ( absint( $value ) < 1 ) {
+									return new \WP_Error(
+										'validation_error',
+										__( 'post_id must be a positive integer.', 'wp-pinch' ),
+										array( 'status' => 400 )
+									);
+								}
+								return true;
+							},
+						),
+					),
+				),
+			)
+		);
 	}
 
 	// =========================================================================
@@ -923,6 +982,16 @@ class Rest_Controller {
 	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public static function handle_incoming_hook( \WP_REST_Request $request ) {
+		if ( Plugin::is_api_disabled() ) {
+			return new \WP_REST_Response(
+				array(
+					'code'    => 'api_disabled',
+					'message' => __( 'API access is currently disabled.', 'wp-pinch' ),
+				),
+				503
+			);
+		}
+
 		$action = $request->get_param( 'action' );
 
 		$trace_id = self::get_trace_id();
@@ -984,6 +1053,46 @@ class Rest_Controller {
 					);
 				}
 
+				// When approval workflow is on, queue destructive abilities instead of executing.
+				if ( Approval_Queue::requires_approval( $ability_name ) ) {
+					$item_id = Approval_Queue::queue(
+						$ability_name,
+						is_array( $params ) ? $params : array(),
+						$trace_id
+					);
+					Audit_Table::insert(
+						'ability_queued',
+						'incoming_hook',
+						sprintf( 'Ability "%s" queued for approval (id: %s).', $ability_name, $item_id ),
+						array(
+							'ability'  => $ability_name,
+							'queue_id' => $item_id,
+						)
+					);
+					return new \WP_REST_Response(
+						array(
+							'status'   => 'queued',
+							'message'  => __( 'Ability queued for approval. An administrator must approve it in WP Pinch → Approvals.', 'wp-pinch' ),
+							'queue_id' => $item_id,
+						),
+						202
+					);
+				}
+
+				// Daily write budget: reject write abilities if cap exceeded.
+				if ( self::is_write_ability( $ability_name ) ) {
+					$budget_error = self::check_daily_write_budget();
+					if ( $budget_error instanceof \WP_Error ) {
+						return new \WP_REST_Response(
+							array(
+								'code'    => $budget_error->get_error_code(),
+								'message' => $budget_error->get_error_message(),
+							),
+							429
+						);
+					}
+				}
+
 				// Execute the ability via the WordPress Abilities API.
 				if ( ! function_exists( 'wp_execute_ability' ) ) {
 					return new \WP_Error(
@@ -995,28 +1104,27 @@ class Rest_Controller {
 
 				// Incoming hooks are authenticated via Bearer token / HMAC,
 				// but wp_execute_ability checks WordPress capabilities which
-				// require a user context. Temporarily elevate to the first admin
-				// so abilities can pass their capability checks.
-				$previous_user = get_current_user_id();
-				$admins        = get_users(
-					array(
-						'role'   => 'administrator',
-						'number' => 1,
-						'fields' => 'ID',
-					)
-				);
+				// require a user context. Use the designated OpenClaw agent
+				// user or fall back to the first administrator.
+				$previous_user  = get_current_user_id();
+				$execution_user = OpenClaw_Role::get_execution_user_id();
 
-				if ( empty( $admins ) ) {
+				if ( 0 === $execution_user ) {
 					return new \WP_Error(
-						'no_admin',
-						__( 'No administrator account found to execute the ability.', 'wp-pinch' ),
+						'no_execution_user',
+						__( 'No user found to execute the ability. Create an OpenClaw agent user or ensure an administrator exists.', 'wp-pinch' ),
 						array( 'status' => 500 )
 					);
 				}
 
-				wp_set_current_user( (int) $admins[0] );
+				wp_set_current_user( $execution_user );
+				Webhook_Dispatcher::set_skip_webhooks_this_request( true );
 
-				$result = wp_execute_ability( $ability_name, is_array( $params ) ? $params : array() );
+				try {
+					$result = wp_execute_ability( $ability_name, is_array( $params ) ? $params : array() );
+				} finally {
+					Webhook_Dispatcher::set_skip_webhooks_this_request( false );
+				}
 
 				// Restore previous user context.
 				wp_set_current_user( $previous_user );
@@ -1029,13 +1137,24 @@ class Rest_Controller {
 					);
 				}
 
-				$trace_id = self::get_trace_id();
+				if ( self::is_write_ability( $ability_name ) ) {
+					self::increment_daily_write_count();
+					self::maybe_send_daily_write_alert();
+				}
+
+				$trace_id        = self::get_trace_id();
+				$request_summary = self::sanitize_audit_params( $params );
+				$result_summary  = self::sanitize_audit_result( $result );
 				Audit_Table::insert(
 					'ability_executed',
 					'incoming_hook',
 					sprintf( 'Ability "%s" executed via incoming hook.', $ability_name ),
 					array_merge(
-						array( 'ability' => $ability_name ),
+						array(
+							'ability'         => $ability_name,
+							'request_summary' => $request_summary,
+							'result_summary'  => $result_summary,
+						),
 						array_filter( array( 'trace_id' => $trace_id ) )
 					)
 				);
@@ -1058,59 +1177,76 @@ class Rest_Controller {
 					);
 				}
 
-				$admins = get_users(
-					array(
-						'role'   => 'administrator',
-						'number' => 1,
-						'fields' => 'ID',
-					)
-				);
-				if ( empty( $admins ) ) {
+				$execution_user = OpenClaw_Role::get_execution_user_id();
+				if ( 0 === $execution_user ) {
 					return new \WP_Error(
-						'no_admin',
-						__( 'No administrator found to run abilities.', 'wp-pinch' ),
+						'no_execution_user',
+						__( 'No user found to run abilities. Create an OpenClaw agent user or ensure an administrator exists.', 'wp-pinch' ),
 						array( 'status' => 503 )
 					);
 				}
 
 				$previous_user = get_current_user_id();
-				wp_set_current_user( (int) $admins[0] );
+				wp_set_current_user( $execution_user );
+				Webhook_Dispatcher::set_skip_webhooks_this_request( true );
 
 				$results = array();
-				foreach ( $batch as $item ) {
-					$ability_name = isset( $item['ability'] ) ? trim( (string) $item['ability'] ) : '';
-					$params       = isset( $item['params'] ) && is_array( $item['params'] ) ? $item['params'] : array();
+				try {
+					foreach ( $batch as $item ) {
+						$ability_name = isset( $item['ability'] ) ? trim( (string) $item['ability'] ) : '';
+						$params       = isset( $item['params'] ) && is_array( $item['params'] ) ? $item['params'] : array();
 
-					if ( '' === $ability_name ) {
-						$results[] = array(
-							'success' => false,
-							'error'   => __( 'Missing ability name.', 'wp-pinch' ),
-						);
-						continue;
+						if ( '' === $ability_name ) {
+							$results[] = array(
+								'success' => false,
+								'error'   => __( 'Missing ability name.', 'wp-pinch' ),
+							);
+							continue;
+						}
+
+						if ( ! function_exists( 'wp_execute_ability' ) ) {
+							$results[] = array(
+								'success' => false,
+								'error'   => __( 'Abilities API not available.', 'wp-pinch' ),
+							);
+							break;
+						}
+
+						if ( self::is_write_ability( $ability_name ) ) {
+							$budget_error = self::check_daily_write_budget();
+							if ( $budget_error instanceof \WP_Error ) {
+								return new \WP_REST_Response(
+									array(
+										'code'    => $budget_error->get_error_code(),
+										'message' => $budget_error->get_error_message(),
+										'partial' => $results,
+									),
+									429
+								);
+							}
+						}
+
+						$result = wp_execute_ability( $ability_name, $params );
+
+						if ( is_wp_error( $result ) ) {
+							$results[] = array(
+								'success' => false,
+								'error'   => $result->get_error_message(),
+								'code'    => $result->get_error_code(),
+							);
+						} else {
+							if ( self::is_write_ability( $ability_name ) ) {
+								self::increment_daily_write_count();
+								self::maybe_send_daily_write_alert();
+							}
+							$results[] = array(
+								'success' => true,
+								'result'  => $result,
+							);
+						}
 					}
-
-					if ( ! function_exists( 'wp_execute_ability' ) ) {
-						$results[] = array(
-							'success' => false,
-							'error'   => __( 'Abilities API not available.', 'wp-pinch' ),
-						);
-						break;
-					}
-
-					$result = wp_execute_ability( $ability_name, $params );
-
-					if ( is_wp_error( $result ) ) {
-						$results[] = array(
-							'success' => false,
-							'error'   => $result->get_error_message(),
-							'code'    => $result->get_error_code(),
-						);
-					} else {
-						$results[] = array(
-							'success' => true,
-							'result'  => $result,
-						);
-					}
+				} finally {
+					Webhook_Dispatcher::set_skip_webhooks_this_request( false );
 				}
 
 				wp_set_current_user( $previous_user );
@@ -1202,12 +1338,126 @@ class Rest_Controller {
 	}
 
 	/**
+	 * Approve and publish a draft post from preview (draft-first workflow).
+	 *
+	 * Requires hook token auth and that the execution user can edit the post.
+	 *
+	 * @param \WP_REST_Request $request REST request with post_id.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public static function handle_preview_approve( \WP_REST_Request $request ) {
+		if ( Plugin::is_api_disabled() ) {
+			return new \WP_REST_Response(
+				array(
+					'code'    => 'api_disabled',
+					'message' => __( 'API access is currently disabled.', 'wp-pinch' ),
+				),
+				503
+			);
+		}
+
+		$post_id = absint( $request->get_param( 'post_id' ) );
+		$post    = $post_id ? get_post( $post_id ) : null;
+		if ( ! $post || wp_is_post_revision( $post ) ) {
+			return new \WP_REST_Response(
+				array(
+					'code'    => 'not_found',
+					'message' => __( 'Post not found.', 'wp-pinch' ),
+				),
+				404
+			);
+		}
+
+		$allowed_statuses = array( 'draft', 'pending', 'future', 'private' );
+		if ( ! in_array( $post->post_status, $allowed_statuses, true ) ) {
+			return new \WP_REST_Response(
+				array(
+					'code'    => 'invalid_status',
+					'message' => __( 'Post is already published or cannot be approved.', 'wp-pinch' ),
+				),
+				400
+			);
+		}
+
+		$execution_user = OpenClaw_Role::get_execution_user_id();
+		if ( 0 === $execution_user ) {
+			return new \WP_REST_Response(
+				array(
+					'code'    => 'no_execution_user',
+					'message' => __( 'No user found to perform the action.', 'wp-pinch' ),
+				),
+				503
+			);
+		}
+
+		$previous_user = get_current_user_id();
+		wp_set_current_user( $execution_user );
+
+		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+			wp_set_current_user( $previous_user );
+			return new \WP_REST_Response(
+				array(
+					'code'    => 'forbidden',
+					'message' => __( 'You do not have permission to publish this post.', 'wp-pinch' ),
+				),
+				403
+			);
+		}
+
+		$updated = wp_update_post(
+			array(
+				'ID'          => $post_id,
+				'post_status' => 'publish',
+			),
+			true
+		);
+		wp_set_current_user( $previous_user );
+
+		if ( is_wp_error( $updated ) ) {
+			return new \WP_REST_Response(
+				array(
+					'code'    => 'update_failed',
+					'message' => $updated->get_error_message(),
+				),
+				500
+			);
+		}
+
+		Audit_Table::insert(
+			'preview_approved',
+			'rest',
+			sprintf( 'Post #%d approved and published from preview.', $post_id ),
+			array( 'post_id' => $post_id )
+		);
+
+		return new \WP_REST_Response(
+			array(
+				'status'    => 'ok',
+				'post_id'   => $post_id,
+				'url'       => get_permalink( $post_id ),
+				'published' => true,
+			),
+			200
+		);
+	}
+
+	/**
 	 * Handle chat message — forward to OpenClaw.
 	 *
 	 * @param \WP_REST_Request $request Request object.
 	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public static function handle_chat( \WP_REST_Request $request ) {
+		if ( Plugin::is_api_disabled() ) {
+			return new \WP_REST_Response(
+				array(
+					'code'    => 'api_disabled',
+					'message' => __( 'API access is currently disabled.', 'wp-pinch' ),
+				),
+				503
+			);
+		}
+
 		if ( ! self::check_rate_limit() ) {
 			$response = new \WP_REST_Response(
 				array(
@@ -1364,7 +1614,7 @@ class Rest_Controller {
 		// Only return expected string responses; never forward raw gateway body.
 		$reply  = $data['response'] ?? $data['message'] ?? null;
 		$result = array(
-			'reply'       => is_string( $reply ) ? wp_kses_post( $reply ) : __( 'Received an unexpected response from the gateway.', 'wp-pinch' ),
+			'reply'       => is_string( $reply ) ? self::sanitize_gateway_reply( $reply ) : __( 'Received an unexpected response from the gateway.', 'wp-pinch' ),
 			'session_key' => $session_key,
 		);
 
@@ -1409,6 +1659,16 @@ class Rest_Controller {
 	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public static function handle_public_chat( \WP_REST_Request $request ) {
+		if ( Plugin::is_api_disabled() ) {
+			return new \WP_REST_Response(
+				array(
+					'code'    => 'api_disabled',
+					'message' => __( 'API access is currently disabled.', 'wp-pinch' ),
+				),
+				503
+			);
+		}
+
 		$gateway_url = get_option( 'wp_pinch_gateway_url', '' );
 		$api_token   = get_option( 'wp_pinch_api_token', '' );
 
@@ -1559,7 +1819,7 @@ class Rest_Controller {
 
 		$reply  = $data['response'] ?? $data['message'] ?? null;
 		$result = array(
-			'reply'       => is_string( $reply ) ? wp_kses_post( $reply ) : __( 'No response received.', 'wp-pinch' ),
+			'reply'       => is_string( $reply ) ? self::sanitize_gateway_reply( $reply ) : __( 'No response received.', 'wp-pinch' ),
 			'session_key' => $session_key,
 		);
 
@@ -1620,6 +1880,16 @@ class Rest_Controller {
 	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public static function handle_web_clipper_capture( \WP_REST_Request $request ) {
+		if ( Plugin::is_api_disabled() ) {
+			return new \WP_REST_Response(
+				array(
+					'code'    => 'api_disabled',
+					'message' => __( 'API access is currently disabled.', 'wp-pinch' ),
+				),
+				503
+			);
+		}
+
 		// Rate limit by IP.
 		$rate_key = 'wp_pinch_clipper_rate_' . substr( hash_hmac( 'sha256', self::get_client_ip(), wp_salt() ), 0, 16 );
 		$rate     = (int) get_transient( $rate_key );
@@ -1722,6 +1992,16 @@ class Rest_Controller {
 	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public static function handle_pinchdrop_capture( \WP_REST_Request $request ) {
+		if ( Plugin::is_api_disabled() ) {
+			return new \WP_REST_Response(
+				array(
+					'code'    => 'api_disabled',
+					'message' => __( 'API access is currently disabled.', 'wp-pinch' ),
+				),
+				503
+			);
+		}
+
 		$feature_enabled = Feature_Flags::is_enabled( 'pinchdrop_engine' );
 		$setting_enabled = (bool) get_option( 'wp_pinch_pinchdrop_enabled', false );
 		if ( ! $feature_enabled || ! $setting_enabled ) {
@@ -1859,24 +2139,18 @@ class Rest_Controller {
 			);
 		}
 
-		$previous_user = get_current_user_id();
-		$admins        = get_users(
-			array(
-				'role'   => 'administrator',
-				'number' => 1,
-				'fields' => 'ID',
-			)
-		);
+		$previous_user  = get_current_user_id();
+		$execution_user = OpenClaw_Role::get_execution_user_id();
 
-		if ( empty( $admins ) ) {
+		if ( 0 === $execution_user ) {
 			return new \WP_Error(
-				'no_admin',
-				__( 'No administrator account found to execute the ability.', 'wp-pinch' ),
+				'no_execution_user',
+				__( 'No user found to execute the ability. Create an OpenClaw agent user or ensure an administrator exists.', 'wp-pinch' ),
 				array( 'status' => 500 )
 			);
 		}
 
-		wp_set_current_user( (int) $admins[0] );
+		wp_set_current_user( $execution_user );
 		$result = wp_execute_ability( $ability_name, $params );
 		wp_set_current_user( $previous_user );
 
@@ -1950,7 +2224,7 @@ class Rest_Controller {
 				if ( '' !== $payload && '{}' !== $payload ) {
 					$decoded = json_decode( $payload, true );
 					if ( is_array( $decoded ) && array_key_exists( 'reply', $decoded ) && is_string( $decoded['reply'] ) ) {
-						$decoded['reply'] = wp_kses_post( $decoded['reply'] );
+						$decoded['reply'] = self::sanitize_gateway_reply( $decoded['reply'] );
 						$payload          = wp_json_encode( $decoded );
 					}
 				}
@@ -1993,6 +2267,16 @@ class Rest_Controller {
 	 * @return \WP_REST_Response
 	 */
 	public static function handle_status( \WP_REST_Request $request ): \WP_REST_Response {
+		if ( Plugin::is_api_disabled() ) {
+			return new \WP_REST_Response(
+				array(
+					'code'    => 'api_disabled',
+					'message' => __( 'API access is currently disabled.', 'wp-pinch' ),
+				),
+				503
+			);
+		}
+
 		if ( ! self::check_rate_limit() ) {
 			$response = new \WP_REST_Response(
 				array(
@@ -2025,9 +2309,10 @@ class Rest_Controller {
 			),
 		);
 
-		// Only expose the gateway URL to administrators.
+		// Only expose the gateway URL and diagnostics to administrators.
 		if ( current_user_can( 'manage_options' ) ) {
 			$result['gateway']['url'] = $gateway_url ? trailingslashit( $gateway_url ) : '';
+			$result['diagnostics']    = self::get_diagnostics();
 		}
 
 		if ( $result['configured'] ) {
@@ -2069,6 +2354,18 @@ class Rest_Controller {
 	 * @return \WP_REST_Response
 	 */
 	public static function handle_health(): \WP_REST_Response {
+		if ( Plugin::is_api_disabled() ) {
+			return new \WP_REST_Response(
+				array(
+					'status'  => 'disabled',
+					'code'    => 'api_disabled',
+					'message' => __( 'API access is currently disabled.', 'wp-pinch' ),
+					'version' => WP_PINCH_VERSION,
+				),
+				503
+			);
+		}
+
 		$configured = ! empty( get_option( 'wp_pinch_gateway_url', '' ) )
 			&& ! empty( get_option( 'wp_pinch_api_token', '' ) );
 
@@ -2097,9 +2394,161 @@ class Rest_Controller {
 	}
 
 	/**
+	 * WordPress-aware diagnostics (manage_options only).
+	 *
+	 * Includes PHP version, plugin/theme update counts (no version leak),
+	 * DB size estimate, disk space when safe, cron health, and error log tail.
+	 *
+	 * @return array<string, mixed>
+	 */
+	private static function get_diagnostics(): array {
+		$out = array(
+			'php_version' => PHP_VERSION,
+		);
+
+		// Plugin/theme update counts — names only, no version numbers.
+		if ( ! function_exists( 'get_plugin_updates' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/update.php';
+		}
+		if ( function_exists( 'wp_get_plugin_data' ) ) {
+			wp_clean_plugins_cache();
+		}
+		$plugin_updates              = function_exists( 'get_plugin_updates' ) ? get_plugin_updates() : array();
+		$theme_updates               = function_exists( 'wp_get_themes' ) ? get_theme_updates() : array();
+		$out['plugin_updates_count'] = is_array( $plugin_updates ) ? count( $plugin_updates ) : 0;
+		$out['theme_updates_count']  = is_array( $theme_updates ) ? count( $theme_updates ) : 0;
+
+		// Database size estimate.
+		global $wpdb;
+		if ( ! empty( $wpdb->dbname ) ) {
+			$size                 = $wpdb->get_var(
+				$wpdb->prepare(
+					'SELECT SUM(data_length + index_length) FROM information_schema.TABLES WHERE table_schema = %s',
+					$wpdb->dbname
+				)
+			);
+			$out['db_size_bytes'] = $size ? (int) $size : null;
+		}
+
+		// Disk space (only when ABSPATH is a normal path; avoid leaking mount points).
+		$abspath = defined( 'ABSPATH' ) ? ABSPATH : '';
+		if ( '' !== $abspath && function_exists( 'disk_free_space' ) && function_exists( 'disk_total_space' ) ) {
+			// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- disk_* can fail on NFS/remote mounts.
+			$free = @disk_free_space( $abspath );
+			// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- disk_* can fail on NFS/remote mounts.
+			$total = @disk_total_space( $abspath );
+			if ( false !== $free && false !== $total && $total > 0 ) {
+				$out['disk_free_bytes']  = $free;
+				$out['disk_total_bytes'] = $total;
+			}
+		}
+
+		// Cron health: next scheduled run or disabled.
+		if ( defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON ) {
+			$out['cron'] = array(
+				'status'  => 'disabled',
+				'message' => 'WP-Cron is disabled (DISABLE_WP_CRON).',
+			);
+		} else {
+			$crons = _get_cron_array();
+			$next  = null;
+			if ( is_array( $crons ) ) {
+				foreach ( $crons as $timestamp => $hooks ) {
+					if ( $timestamp > time() ) {
+						$next = $timestamp;
+						break;
+					}
+				}
+			}
+			$out['cron'] = array(
+				'status'       => 'active',
+				'next_run_gmt' => $next ? gmdate( 'c', $next ) : null,
+			);
+		}
+
+		// Error log tail: last N lines, truncated (only when WP_DEBUG_LOG and file readable).
+		$out['error_log_tail'] = array();
+		if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG && defined( 'WP_CONTENT_DIR' ) ) {
+			$log_file = WP_CONTENT_DIR . '/debug.log';
+			if ( is_readable( $log_file ) && is_file( $log_file ) ) {
+				$lines = array();
+				// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged, WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Reading debug.log; WP_Filesystem may require credentials.
+				$handle = @fopen( $log_file, 'r' );
+				if ( $handle ) {
+					// Read last ~20 lines by seeking near end and reading chunks.
+					$size  = fstat( $handle )['size'] ?? 0;
+					$chunk = min( 8192, max( 512, (int) $size ) );
+					if ( $size > $chunk ) {
+						fseek( $handle, -$chunk, SEEK_END );
+						fgets( $handle ); // Drop partial first line.
+					}
+					// phpcs:ignore Generic.CodeAnalysis.AssignmentInCondition.FoundInWhileCondition -- Standard pattern for reading file lines.
+					while ( ( $line = fgets( $handle ) ) !== false ) {
+						$lines[] = $line;
+					}
+					// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Paired with fopen above.
+					fclose( $handle );
+					$lines                 = array_slice( $lines, -20 );
+					$max_len               = 200;
+					$out['error_log_tail'] = array_map(
+						function ( $l ) use ( $max_len ) {
+							$l = trim( $l );
+							return mb_strlen( $l ) > $max_len ? mb_substr( $l, 0, $max_len ) . '…' : $l;
+						},
+						$lines
+					);
+				}
+			}
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Build the site capability manifest for agent discovery.
+	 *
+	 * Returns post types, taxonomies, active plugin slugs (no versions), and feature flags.
+	 * Filterable via wp_pinch_manifest.
+	 *
+	 * @return array{ post_types: string[], taxonomies: string[], plugins: string[], features: array<string, bool> }
+	 */
+	public static function get_site_manifest(): array {
+		$post_types = array_keys( get_post_types( array( 'public' => true ), 'names' ) );
+		$taxonomies = array_keys( get_taxonomies( array( 'public' => true ), 'names' ) );
+		$active     = get_option( 'active_plugins', array() );
+		$plugins    = array();
+		foreach ( $active as $path ) {
+			$slug = dirname( $path );
+			if ( '.' === $slug ) {
+				$slug = pathinfo( $path, PATHINFO_FILENAME );
+			}
+			$plugins[] = $slug;
+		}
+		$plugins  = array_values( array_unique( $plugins ) );
+		$features = Feature_Flags::get_all();
+
+		$manifest = array(
+			'post_types' => $post_types,
+			'taxonomies' => $taxonomies,
+			'plugins'    => $plugins,
+			'features'   => $features,
+		);
+
+		/**
+		 * Filter the site capability manifest (post types, taxonomies, plugins, features).
+		 *
+		 * Allows other plugins (e.g. WooCommerce) to add or modify manifest data
+		 * for agent discovery.
+		 *
+		 * @param array $manifest { post_types, taxonomies, plugins, features }
+		 */
+		return apply_filters( 'wp_pinch_manifest', $manifest );
+	}
+
+	/**
 	 * List WP Pinch abilities for discovery (non-MCP clients).
 	 *
-	 * Returns ability names. Full schema is available via MCP or core wp-abilities endpoint.
+	 * Returns ability names and site manifest. Full schema is available via MCP or core wp-abilities endpoint.
 	 *
 	 * @return \WP_REST_Response
 	 */
@@ -2111,7 +2560,12 @@ class Rest_Controller {
 			$list[] = array( 'name' => $name );
 		}
 
-		return new \WP_REST_Response( array( 'abilities' => $list ), 200 );
+		$body = array(
+			'abilities' => $list,
+			'site'      => self::get_site_manifest(),
+		);
+
+		return new \WP_REST_Response( $body, 200 );
 	}
 
 	// =========================================================================
@@ -2352,7 +2806,7 @@ class Rest_Controller {
 		if ( ! $forwarded_events ) {
 			$data  = json_decode( $full_response, true );
 			$reply = $data['response'] ?? $data['message'] ?? '';
-			$reply = is_string( $reply ) ? wp_kses_post( $reply ) : '';
+			$reply = is_string( $reply ) ? self::sanitize_gateway_reply( $reply ) : '';
 
 			echo "event: message\n";
 			echo 'data: ' . wp_json_encode(
@@ -2411,6 +2865,16 @@ class Rest_Controller {
 	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public static function handle_ghostwrite( \WP_REST_Request $request ) {
+		if ( Plugin::is_api_disabled() ) {
+			return new \WP_REST_Response(
+				array(
+					'code'    => 'api_disabled',
+					'message' => __( 'API access is currently disabled.', 'wp-pinch' ),
+				),
+				503
+			);
+		}
+
 		if ( ! self::check_rate_limit() ) {
 			$response = new \WP_REST_Response(
 				array(
@@ -2513,6 +2977,16 @@ class Rest_Controller {
 	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public static function handle_molt( \WP_REST_Request $request ) {
+		if ( Plugin::is_api_disabled() ) {
+			return new \WP_REST_Response(
+				array(
+					'code'    => 'api_disabled',
+					'message' => __( 'API access is currently disabled.', 'wp-pinch' ),
+				),
+				503
+			);
+		}
+
 		if ( ! self::check_rate_limit() ) {
 			$response = new \WP_REST_Response(
 				array(
@@ -2560,6 +3034,191 @@ class Rest_Controller {
 			),
 			200
 		);
+	}
+
+	/**
+	 * Build a sanitized summary of params for audit context (no sensitive or huge values).
+	 *
+	 * @param array $params Request params.
+	 * @return array<string, mixed> Keys and truncated scalars only.
+	 */
+	private static function sanitize_audit_params( array $params ): array {
+		$out = array();
+		$max = 5;
+		foreach ( $params as $k => $v ) {
+			if ( $max-- <= 0 ) {
+				break;
+			}
+			$key = sanitize_key( (string) $k );
+			if ( '' === $key ) {
+				continue;
+			}
+			if ( is_scalar( $v ) ) {
+				$s           = (string) $v;
+				$out[ $key ] = mb_strlen( $s ) > 80 ? mb_substr( $s, 0, 80 ) . '…' : $s;
+			} elseif ( is_array( $v ) ) {
+				$out[ $key ] = array_keys( $v );
+			} else {
+				$out[ $key ] = gettype( $v );
+			}
+		}
+		return $out;
+	}
+
+	/**
+	 * Build a sanitized summary of ability result for audit context.
+	 *
+	 * @param mixed $result Ability return value (array or scalar).
+	 * @return array<string, mixed>|array Empty or small summary.
+	 */
+	private static function sanitize_audit_result( $result ): array {
+		if ( ! is_array( $result ) ) {
+			return array( 'type' => gettype( $result ) );
+		}
+		$out = array();
+		if ( isset( $result['post_id'] ) ) {
+			$out['post_id'] = (int) $result['post_id'];
+		}
+		if ( isset( $result['id'] ) && ! isset( $out['post_id'] ) ) {
+			$out['id'] = (int) $result['id'];
+		}
+		if ( count( $out ) < 3 && ! empty( $result ) ) {
+			$out['keys'] = array_slice( array_keys( $result ), 0, 10 );
+		}
+		return $out;
+	}
+
+	/**
+	 * Sanitize gateway reply for safe output. When strict option is on, strips comments and instruction-like text and disallows iframe/object/embed/form.
+	 *
+	 * @param string $reply Raw reply from gateway.
+	 * @return string Sanitized reply.
+	 */
+	private static function sanitize_gateway_reply( string $reply ): string {
+		if ( '' === trim( $reply ) ) {
+			return $reply;
+		}
+		if ( ! (bool) get_option( 'wp_pinch_gateway_reply_strict_sanitize', false ) ) {
+			return wp_kses_post( $reply );
+		}
+		// Strip HTML comments to reduce instruction-injection surface.
+		$reply = preg_replace( '/<!--.*?-->/s', '', $reply );
+		// Redact instruction-like lines (same patterns as content sent to LLMs).
+		$reply = Prompt_Sanitizer::sanitize( $reply );
+		// Stricter allowed HTML: post tags minus iframe, object, embed, form.
+		$allowed = wp_kses_allowed_html( 'post' );
+		unset( $allowed['iframe'], $allowed['object'], $allowed['embed'], $allowed['form'] );
+		return wp_kses( $reply, $allowed );
+	}
+
+	/**
+	 * Ability names that count as writes for the daily budget. Filterable.
+	 *
+	 * @return string[]
+	 */
+	private static function get_write_ability_names(): array {
+		return apply_filters( 'wp_pinch_write_abilities', self::$write_abilities );
+	}
+
+	private static function is_write_ability( string $ability_name ): bool {
+		return in_array( $ability_name, self::get_write_ability_names(), true );
+	}
+
+	/**
+	 * Transient key for daily write count (date-based, resets at midnight UTC).
+	 *
+	 * @return string
+	 */
+	private static function daily_write_count_key(): string {
+		return 'wp_pinch_daily_writes_' . gmdate( 'Y-m-d' );
+	}
+
+	private static function get_daily_write_count(): int {
+		$key = self::daily_write_count_key();
+		if ( wp_using_ext_object_cache() ) {
+			return (int) wp_cache_get( $key, 'wp-pinch' );
+		}
+		return (int) get_transient( $key );
+	}
+
+	private static function increment_daily_write_count(): void {
+		$key   = self::daily_write_count_key();
+		$count = self::get_daily_write_count();
+		$ttl   = strtotime( 'tomorrow midnight', time() ) - time();
+		$ttl   = max( 3600, $ttl );
+		if ( wp_using_ext_object_cache() ) {
+			if ( 0 === $count ) {
+				wp_cache_set( $key, 1, 'wp-pinch', $ttl );
+			} else {
+				wp_cache_incr( $key, 1, 'wp-pinch' );
+			}
+		} else {
+			set_transient( $key, $count + 1, $ttl );
+		}
+	}
+
+	/**
+	 * Check if executing one more write would exceed the daily cap.
+	 *
+	 * @return \WP_Error|null Error if over cap, null if allowed.
+	 */
+	private static function check_daily_write_budget(): ?\WP_Error {
+		$cap = (int) get_option( 'wp_pinch_daily_write_cap', 0 );
+		if ( $cap <= 0 ) {
+			return null;
+		}
+		$count = self::get_daily_write_count();
+		if ( $count >= $cap ) {
+			return new \WP_Error(
+				'daily_write_budget_exceeded',
+				__( 'Daily write budget exceeded. Try again tomorrow or increase the limit in WP Pinch settings.', 'wp-pinch' ),
+				array( 'status' => 429 )
+			);
+		}
+		return null;
+	}
+
+	/**
+	 * Send at most one alert per day when usage reaches the configured threshold.
+	 */
+	private static function maybe_send_daily_write_alert(): void {
+		$cap       = (int) get_option( 'wp_pinch_daily_write_cap', 0 );
+		$email     = get_option( 'wp_pinch_daily_write_alert_email', '' );
+		$threshold = (int) get_option( 'wp_pinch_daily_write_alert_threshold', 80 );
+		if ( $cap <= 0 || '' === sanitize_email( $email ) || $threshold < 1 || $threshold > 100 ) {
+			return;
+		}
+		$count = self::get_daily_write_count();
+		$pct   = (int) floor( ( $count / $cap ) * 100 );
+		if ( $pct < $threshold ) {
+			return;
+		}
+		$alert_key = 'wp_pinch_daily_alert_sent_' . gmdate( 'Y-m-d' );
+		if ( wp_using_ext_object_cache() ) {
+			if ( wp_cache_get( $alert_key, 'wp-pinch' ) ) {
+				return;
+			}
+			wp_cache_set( $alert_key, 1, 'wp-pinch', DAY_IN_SECONDS );
+		} else {
+			if ( get_transient( $alert_key ) ) {
+				return;
+			}
+			set_transient( $alert_key, 1, DAY_IN_SECONDS );
+		}
+		$subject = sprintf(
+			/* translators: 1: site name, 2: percentage */
+			__( '[%1$s] WP Pinch daily write usage at %2$d%%', 'wp-pinch' ),
+			get_bloginfo( 'name' ),
+			$pct
+		);
+		$message = sprintf(
+			/* translators: 1: count, 2: cap, 3: percentage */
+			__( 'WP Pinch has used %1$d of %2$d daily write operations (%3$d%%). Adjust the limit or alert threshold in WP Pinch → Connection if needed.', 'wp-pinch' ),
+			$count,
+			$cap,
+			$pct
+		);
+		wp_mail( $email, $subject, $message );
 	}
 
 	private static function check_rate_limit(): bool {

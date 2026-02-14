@@ -200,6 +200,7 @@ class Governance {
 				'posts_per_page' => 20,
 				'orderby'        => 'modified',
 				'order'          => 'DESC',
+				'no_found_rows'  => true,
 			)
 		);
 
@@ -566,8 +567,9 @@ class Governance {
 		if ( '' !== $tag ) {
 			$args['tag'] = $tag;
 		}
-		$posts = get_posts( $args );
-		$out   = array();
+		$args['no_found_rows'] = true;
+		$posts                 = get_posts( $args );
+		$out                   = array();
 		foreach ( $posts as $post ) {
 			$out[] = array(
 				'post_id'  => $post->ID,
@@ -658,6 +660,7 @@ class Governance {
 					'post_status'    => 'publish',
 					'posts_per_page' => 100,
 					'paged'          => $page,
+					'no_found_rows'  => true,
 					'date_query'     => array(
 						array(
 							'column' => 'post_modified_gmt',
@@ -696,6 +699,7 @@ class Governance {
 					'post_status'    => 'publish',
 					'posts_per_page' => 100,
 					'paged'          => $page,
+					'no_found_rows'  => true,
 				)
 			);
 			foreach ( $posts as $post ) {
@@ -782,5 +786,168 @@ class Governance {
 				}
 			)
 		);
+	}
+
+	// =========================================================================
+	// Content health (for content-health-report ability)
+	// =========================================================================
+
+	/**
+	 * Posts/pages with at least one image missing alt text.
+	 *
+	 * @param int $limit Max number of posts to return. Default 50.
+	 * @return array<int, array{post_id: int, title: string, url: string}>
+	 */
+	public static function get_missing_alt_findings( int $limit = 50 ): array {
+		$findings = array();
+		$posts    = get_posts(
+			array(
+				'post_type'      => array( 'post', 'page' ),
+				'post_status'    => 'publish',
+				'posts_per_page' => min( $limit, 200 ),
+				'no_found_rows'  => true,
+			)
+		);
+		foreach ( $posts as $post ) {
+			preg_match_all( '/<img[^>]+>/i', $post->post_content, $img_matches );
+			foreach ( $img_matches[0] ?? array() as $img ) {
+				if ( ! preg_match( '/\balt\s*=\s*["\']/', $img ) ) {
+					$findings[] = array(
+						'post_id' => $post->ID,
+						'title'   => $post->post_title,
+						'url'     => get_permalink( $post->ID ),
+					);
+					break;
+				}
+			}
+		}
+		return $findings;
+	}
+
+	/**
+	 * Internal links (same site) that point to non-existent or unpublished content.
+	 *
+	 * @param int $limit Max number of broken links to return. Default 50.
+	 * @return array<int, array{post_id: int, title: string, url: string, link_url: string, reason: string}>
+	 */
+	public static function get_broken_internal_links_findings( int $limit = 50 ): array {
+		$findings  = array();
+		$home_host = wp_parse_url( home_url(), PHP_URL_HOST );
+		$posts     = get_posts(
+			array(
+				'post_type'      => array( 'post', 'page' ),
+				'post_status'    => 'publish',
+				'posts_per_page' => 100,
+				'no_found_rows'  => true,
+			)
+		);
+		foreach ( $posts as $post ) {
+			if ( count( $findings ) >= $limit ) {
+				break;
+			}
+			preg_match_all( '/href=["\']([^"\']+)["\']/i', $post->post_content, $matches );
+			$urls = array_unique( $matches[1] ?? array() );
+			foreach ( $urls as $link_url ) {
+				if ( count( $findings ) >= $limit ) {
+					break;
+				}
+				$link_url = trim( $link_url );
+				if ( preg_match( '/^(#|mailto:|tel:|javascript:|data:)/i', $link_url ) ) {
+					continue;
+				}
+				$absolute = $link_url;
+				if ( ! preg_match( '/^https?:\/\//', $link_url ) ) {
+					$absolute = home_url( $link_url );
+				}
+				$link_host = wp_parse_url( $absolute, PHP_URL_HOST );
+				if ( $link_host !== $home_host ) {
+					continue;
+				}
+				$post_id = url_to_postid( $absolute );
+				if ( 0 === $post_id ) {
+					$findings[] = array(
+						'post_id'  => $post->ID,
+						'title'    => $post->post_title,
+						'url'      => get_permalink( $post->ID ),
+						'link_url' => $link_url,
+						'reason'   => 'target_not_found',
+					);
+				} else {
+					$target = get_post( $post_id );
+					if ( ! $target || 'publish' !== $target->post_status ) {
+						$findings[] = array(
+							'post_id'  => $post->ID,
+							'title'    => $post->post_title,
+							'url'      => get_permalink( $post->ID ),
+							'link_url' => $link_url,
+							'reason'   => 'target_not_published',
+						);
+					}
+				}
+			}
+		}
+		return $findings;
+	}
+
+	/**
+	 * Posts with word count below threshold (thin content).
+	 *
+	 * @param int $min_words Minimum words to not be considered thin. Default 300.
+	 * @param int $limit     Max number of posts to return. Default 50.
+	 * @return array<int, array{post_id: int, title: string, url: string, word_count: int}>
+	 */
+	public static function get_thin_content_findings( int $min_words = 300, int $limit = 50 ): array {
+		$findings = array();
+		$posts    = get_posts(
+			array(
+				'post_type'      => array( 'post', 'page' ),
+				'post_status'    => 'publish',
+				'posts_per_page' => min( $limit, 200 ),
+				'no_found_rows'  => true,
+			)
+		);
+		foreach ( $posts as $post ) {
+			$stripped   = wp_strip_all_tags( $post->post_content );
+			$word_count = 0;
+			if ( preg_match_all( '/[\w\p{L}\p{N}]+/u', $stripped, $m ) ) {
+				$word_count = count( $m[0] );
+			}
+			if ( $word_count < $min_words ) {
+				$findings[] = array(
+					'post_id'    => $post->ID,
+					'title'      => $post->post_title,
+					'url'        => get_permalink( $post->ID ),
+					'word_count' => $word_count,
+				);
+			}
+		}
+		return $findings;
+	}
+
+	/**
+	 * Media attachments not attached to any post (post_parent = 0).
+	 *
+	 * @param int $limit Max number of attachment IDs to return. Default 50.
+	 * @return array<int, array{attachment_id: int, url: string, title: string}>
+	 */
+	public static function get_orphaned_media_findings( int $limit = 50 ): array {
+		$findings    = array();
+		$attachments = get_posts(
+			array(
+				'post_type'      => 'attachment',
+				'post_status'    => 'inherit',
+				'posts_per_page' => min( $limit, 200 ),
+				'post_parent'    => 0,
+				'no_found_rows'  => true,
+			)
+		);
+		foreach ( $attachments as $att ) {
+			$findings[] = array(
+				'attachment_id' => $att->ID,
+				'url'           => wp_get_attachment_url( $att->ID ),
+				'title'         => $att->post_title,
+			);
+		}
+		return $findings;
 	}
 }

@@ -3,7 +3,7 @@
  * Plugin Name:       WP Pinch
  * Plugin URI:        https://wp-pinch.com
  * Description:       OpenClaw + WordPress integration — bidirectional MCP, autonomous governance, conversational site management from any messaging app.
- * Version:           2.5.0
+ * Version:           2.7.0
  * Requires at least: 6.9
  * Requires PHP:      8.1
  * Author:            Nick Hamze
@@ -42,10 +42,15 @@
 
 defined( 'ABSPATH' ) || exit;
 
-defined( 'WP_PINCH_VERSION' ) || define( 'WP_PINCH_VERSION', '2.5.0' );
+defined( 'WP_PINCH_VERSION' ) || define( 'WP_PINCH_VERSION', '2.7.0' );
 defined( 'WP_PINCH_FILE' ) || define( 'WP_PINCH_FILE', __FILE__ );
 defined( 'WP_PINCH_DIR' ) || define( 'WP_PINCH_DIR', plugin_dir_path( __FILE__ ) );
 defined( 'WP_PINCH_URL' ) || define( 'WP_PINCH_URL', plugin_dir_url( __FILE__ ) );
+
+// Polyfill wp_execute_ability for WP 6.9 when it provides wp_get_ability but not wp_execute_ability.
+if ( ! function_exists( 'wp_execute_ability' ) && function_exists( 'wp_get_ability' ) ) {
+	require_once WP_PINCH_DIR . 'includes/abilities-compat.php';
+}
 
 // Jetpack Autoloader (prevents version conflicts with other plugins).
 if ( file_exists( WP_PINCH_DIR . 'vendor/autoload_packages.php' ) ) {
@@ -56,6 +61,7 @@ if ( file_exists( WP_PINCH_DIR . 'vendor/autoload_packages.php' ) ) {
 
 // Core class includes.
 require_once WP_PINCH_DIR . 'includes/class-plugin.php';
+require_once WP_PINCH_DIR . 'includes/class-utils.php';
 require_once WP_PINCH_DIR . 'includes/class-audit-table.php';
 require_once WP_PINCH_DIR . 'includes/class-mcp-server.php';
 require_once WP_PINCH_DIR . 'includes/class-abilities.php';
@@ -68,8 +74,13 @@ require_once WP_PINCH_DIR . 'includes/class-site-health.php';
 require_once WP_PINCH_DIR . 'includes/class-circuit-breaker.php';
 require_once WP_PINCH_DIR . 'includes/class-feature-flags.php';
 require_once WP_PINCH_DIR . 'includes/class-block-bindings.php';
+require_once WP_PINCH_DIR . 'includes/class-openclaw-role.php';
+require_once WP_PINCH_DIR . 'includes/class-prompt-sanitizer.php';
+require_once WP_PINCH_DIR . 'includes/class-approval-queue.php';
 require_once WP_PINCH_DIR . 'includes/class-ghost-writer.php';
 require_once WP_PINCH_DIR . 'includes/class-molt.php';
+require_once WP_PINCH_DIR . 'includes/class-rest-availability.php';
+require_once WP_PINCH_DIR . 'includes/class-dashboard-widget.php';
 
 // WP-CLI commands.
 if ( defined( 'WP_CLI' ) && WP_CLI ) {

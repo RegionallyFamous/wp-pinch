@@ -27,6 +27,7 @@ class Settings {
 		add_action( 'admin_init', array( __CLASS__, 'maybe_finish_wizard' ) );
 		add_action( 'admin_init', array( __CLASS__, 'maybe_skip_wizard' ) );
 		add_action( 'wp_ajax_wp_pinch_test_connection', array( __CLASS__, 'ajax_test_connection' ) );
+		add_action( 'wp_ajax_wp_pinch_create_openclaw_agent', array( __CLASS__, 'ajax_create_openclaw_agent' ) );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_assets' ) );
 		add_action( 'admin_init', array( __CLASS__, 'handle_audit_export' ) );
 
@@ -161,6 +162,39 @@ class Settings {
 
 		register_setting(
 			'wp_pinch_connection',
+			'wp_pinch_api_disabled',
+			array(
+				'type'              => 'boolean',
+				'sanitize_callback' => 'rest_sanitize_boolean',
+				'default'           => false,
+				'show_in_rest'      => false,
+			)
+		);
+
+		register_setting(
+			'wp_pinch_connection',
+			'wp_pinch_read_only_mode',
+			array(
+				'type'              => 'boolean',
+				'sanitize_callback' => 'rest_sanitize_boolean',
+				'default'           => false,
+				'show_in_rest'      => false,
+			)
+		);
+
+		register_setting(
+			'wp_pinch_connection',
+			'wp_pinch_gateway_reply_strict_sanitize',
+			array(
+				'type'              => 'boolean',
+				'sanitize_callback' => 'rest_sanitize_boolean',
+				'default'           => false,
+				'show_in_rest'      => false,
+			)
+		);
+
+		register_setting(
+			'wp_pinch_connection',
 			'wp_pinch_rate_limit',
 			array(
 				'type'              => 'integer',
@@ -172,11 +206,76 @@ class Settings {
 
 		register_setting(
 			'wp_pinch_connection',
+			'wp_pinch_daily_write_cap',
+			array(
+				'type'              => 'integer',
+				'sanitize_callback' => 'absint',
+				'default'           => 0,
+				'show_in_rest'      => false,
+			)
+		);
+
+		register_setting(
+			'wp_pinch_connection',
+			'wp_pinch_daily_write_alert_email',
+			array(
+				'type'              => 'string',
+				'sanitize_callback' => 'sanitize_email',
+				'default'           => '',
+				'show_in_rest'      => false,
+			)
+		);
+
+		register_setting(
+			'wp_pinch_connection',
+			'wp_pinch_daily_write_alert_threshold',
+			array(
+				'type'              => 'integer',
+				'sanitize_callback' => function ( $v ) {
+					$v = absint( $v );
+					return $v >= 1 && $v <= 100 ? $v : 80;
+				},
+				'default'           => 80,
+				'show_in_rest'      => false,
+			)
+		);
+
+		register_setting(
+			'wp_pinch_connection',
 			'wp_pinch_agent_id',
 			array(
 				'type'              => 'string',
 				'sanitize_callback' => 'sanitize_text_field',
 				'default'           => '',
+				'show_in_rest'      => false,
+			)
+		);
+
+		register_setting(
+			'wp_pinch_connection',
+			'wp_pinch_openclaw_user_id',
+			array(
+				'type'              => 'integer',
+				'sanitize_callback' => 'absint',
+				'default'           => 0,
+				'show_in_rest'      => false,
+			)
+		);
+
+		register_setting(
+			'wp_pinch_connection',
+			'wp_pinch_openclaw_capability_groups',
+			array(
+				'type'              => 'array',
+				'sanitize_callback' => function ( $value ) {
+					if ( ! is_array( $value ) ) {
+						return OpenClaw_Role::DEFAULT_GROUPS;
+					}
+					$allowed = OpenClaw_Role::get_capability_group_slugs();
+					$filtered = array_values( array_intersect( $value, $allowed ) );
+					return empty( $filtered ) ? OpenClaw_Role::DEFAULT_GROUPS : $filtered;
+				},
+				'default'           => OpenClaw_Role::DEFAULT_GROUPS,
 				'show_in_rest'      => false,
 			)
 		);
@@ -563,11 +662,11 @@ class Settings {
 					'stepOf'        => __( 'Step %1$d of %2$d', 'wp-pinch' ),
 					'pleaseGateway' => __( 'Please enter a gateway URL first.', 'wp-pinch' ),
 					'testing'       => __( 'Testing…', 'wp-pinch' ),
-					'connected'     => __( 'Connected!', 'wp-pinch' ),
+					'connected'     => __( 'Claws at the ready!', 'wp-pinch' ),
 					/* translators: %s: HTTP status code */
 					'failedHttp'    => __( 'Connection failed (HTTP %s).', 'wp-pinch' ),
 					'unableReach'   => __( 'Unable to reach gateway. Check the URL.', 'wp-pinch' ),
-					'copied'        => __( 'Copied!', 'wp-pinch' ),
+					'copied'        => __( 'Snatched!', 'wp-pinch' ),
 				),
 			)
 		);
@@ -577,6 +676,11 @@ class Settings {
 			WP_PINCH_URL . 'build/admin.css',
 			array(),
 			$asset['version']
+		);
+
+		wp_add_inline_script(
+			'wp-pinch-admin',
+			'document.addEventListener("DOMContentLoaded",function(){var btn=document.getElementById("wp-pinch-create-openclaw-agent");if(!btn)return;btn.addEventListener("click",function(){var res=document.getElementById("wp-pinch-create-agent-result");var nonce=btn.getAttribute("data-nonce");var ajaxUrl=btn.getAttribute("data-ajax-url");btn.disabled=true;res.textContent="";var url=ajaxUrl+"?action=wp_pinch_create_openclaw_agent";fetch(url,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded","X-Requested-With":"XMLHttpRequest"},body:"nonce="+encodeURIComponent(nonce),credentials:"same-origin"}).then(function(r){return r.json();}).then(function(data){if(data.success){res.textContent=data.data.message||"Created.";location.reload();}else{res.textContent=data.data||"Error";btn.disabled=false;}}).catch(function(){res.textContent="Request failed";btn.disabled=false;});});});'
 		);
 	}
 
@@ -630,7 +734,7 @@ class Settings {
 		if ( $code >= 200 && $code < 300 ) {
 			wp_send_json_success(
 				array(
-					'message' => __( 'Connected successfully!', 'wp-pinch' ),
+					'message' => __( 'Connection secured. Claws at the ready!', 'wp-pinch' ),
 					'status'  => $code,
 				)
 			);
@@ -638,6 +742,106 @@ class Settings {
 			/* translators: %d: HTTP status code returned by the gateway. */
 			wp_send_json_error( sprintf( __( 'Connection failed (HTTP %d).', 'wp-pinch' ), $code ) );
 		}
+	}
+
+	/**
+	 * AJAX: create OpenClaw agent user.
+	 */
+	public static function ajax_create_openclaw_agent(): void {
+		check_ajax_referer( 'wp_pinch_create_openclaw_agent', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( __( 'Permission denied.', 'wp-pinch' ) );
+		}
+
+		$result = OpenClaw_Role::create_agent_user();
+
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( $result->get_error_message() );
+		}
+
+		wp_send_json_success(
+			array(
+				'message'  => __( 'OpenClaw agent user created. Go to Users → Profile to generate an application password for this user.', 'wp-pinch' ),
+				'user_id'  => $result['user_id'],
+				'username' => 'openclaw-agent',
+			)
+		);
+	}
+
+	/**
+	 * Render the OpenClaw role / agent identity section.
+	 */
+	private static function render_openclaw_role_section(): void {
+		$current_user_id = (int) get_option( 'wp_pinch_openclaw_user_id', 0 );
+		$cap_groups      = get_option( 'wp_pinch_openclaw_capability_groups', OpenClaw_Role::DEFAULT_GROUPS );
+		if ( ! is_array( $cap_groups ) ) {
+			$cap_groups = OpenClaw_Role::DEFAULT_GROUPS;
+		}
+		$agent_users  = get_users(
+			array(
+				'role'    => OpenClaw_Role::ROLE_SLUG,
+				'orderby' => 'login',
+				'fields'  => array( 'ID', 'user_login' ),
+			)
+		);
+		$labels       = OpenClaw_Role::get_capability_group_labels();
+		$create_nonce = wp_create_nonce( 'wp_pinch_create_openclaw_agent' );
+		?>
+		<div class="wp-pinch-card">
+			<h3 class="wp-pinch-card__title"><?php esc_html_e( 'Agent identity (least privilege)', 'wp-pinch' ); ?></h3>
+			<p class="description" style="margin-bottom: 1em;">
+				<?php esc_html_e( 'Abilities executed via the incoming webhook run as a WordPress user. Use a dedicated OpenClaw agent with limited capabilities for better security.', 'wp-pinch' ); ?>
+			</p>
+			<table class="form-table">
+				<tr>
+					<th scope="row">
+						<label for="wp_pinch_openclaw_user_id"><?php esc_html_e( 'Webhook execution user', 'wp-pinch' ); ?></label>
+					</th>
+					<td>
+						<select id="wp_pinch_openclaw_user_id" name="wp_pinch_openclaw_user_id">
+							<option value="0" <?php selected( $current_user_id, 0 ); ?>>
+								<?php esc_html_e( 'Use first administrator (default)', 'wp-pinch' ); ?>
+							</option>
+							<?php foreach ( $agent_users as $u ) : ?>
+								<option value="<?php echo (int) $u->ID; ?>" <?php selected( $current_user_id, (int) $u->ID ); ?>>
+									<?php echo esc_html( $u->user_login ); ?>
+								</option>
+							<?php endforeach; ?>
+						</select>
+						<?php if ( empty( $agent_users ) ) : ?>
+							<button type="button" id="wp-pinch-create-openclaw-agent" class="button button-secondary" style="margin-left: 8px;"
+								data-nonce="<?php echo esc_attr( $create_nonce ); ?>"
+								data-ajax-url="<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>">
+								<?php esc_html_e( 'Create OpenClaw agent user', 'wp-pinch' ); ?>
+							</button>
+							<span id="wp-pinch-create-agent-result" class="description" style="margin-left: 8px;"></span>
+						<?php endif; ?>
+						<p class="description">
+							<?php esc_html_e( 'Create an application password for the agent user in Users → Profile. Use it for MCP/REST connections.', 'wp-pinch' ); ?>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Capability groups', 'wp-pinch' ); ?></th>
+					<td>
+						<fieldset>
+							<?php foreach ( OpenClaw_Role::get_capability_group_slugs() as $slug ) : ?>
+								<label style="display: block; margin-bottom: 4px;">
+									<input type="checkbox" name="wp_pinch_openclaw_capability_groups[]" value="<?php echo esc_attr( $slug ); ?>"
+										<?php checked( in_array( $slug, $cap_groups, true ) ); ?> />
+									<?php echo esc_html( $labels[ $slug ] ?? $slug ); ?>
+								</label>
+							<?php endforeach; ?>
+						</fieldset>
+						<p class="description">
+							<?php esc_html_e( 'Controls what the OpenClaw agent role can do. Only affects users with the OpenClaw Agent role.', 'wp-pinch' ); ?>
+						</p>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<?php
 	}
 
 	/**
@@ -655,7 +859,7 @@ class Settings {
 		$finish_url = wp_nonce_url( admin_url( 'admin.php?page=wp-pinch&wp_pinch_finish_wizard=1' ), 'wp_pinch_finish_wizard' );
 		?>
 		<div class="wrap">
-			<h1><?php esc_html_e( 'Welcome to WP Pinch', 'wp-pinch' ); ?></h1>
+			<h1><?php esc_html_e( 'Welcome to WP Pinch — your site\'s got claws', 'wp-pinch' ); ?></h1>
 
 			<div class="wp-pinch-wizard" id="wp-pinch-wizard" aria-live="polite">
 				<p class="wp-pinch-wizard__step-indicator" id="wp-pinch-wizard-step-label" aria-live="polite" aria-atomic="true">
@@ -672,7 +876,7 @@ class Settings {
 						<p>
 							<?php esc_html_e( 'WP Pinch bridges your WordPress site with OpenClaw, letting you manage your site from WhatsApp, Telegram, Slack, Discord, or any messaging platform OpenClaw supports.', 'wp-pinch' ); ?>
 						</p>
-						<h3><?php esc_html_e( 'What you\'ll need:', 'wp-pinch' ); ?></h3>
+						<h3><?php esc_html_e( 'What you\'ll need (no claws required):', 'wp-pinch' ); ?></h3>
 						<ul class="wp-pinch-wizard-list">
 							<li><?php esc_html_e( 'OpenClaw installed and running (local or remote)', 'wp-pinch' ); ?></li>
 							<li><?php esc_html_e( 'Your OpenClaw gateway URL and API token', 'wp-pinch' ); ?></li>
@@ -688,11 +892,11 @@ class Settings {
 						</p>
 						<p class="wp-pinch-wizard-actions">
 							<button type="button" class="button button-primary button-hero" data-wizard-action="go" data-wizard-to="2">
-								<?php esc_html_e( 'Let\'s Connect', 'wp-pinch' ); ?> &rarr;
+								<?php esc_html_e( 'Let\'s get pinching', 'wp-pinch' ); ?> &rarr;
 							</button>
 						</p>
 						<p class="wp-pinch-wizard-skip">
-							<a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=wp-pinch&wp_pinch_skip_wizard=1' ), 'wp_pinch_skip_wizard' ) ); ?>"><?php esc_html_e( 'Skip setup for now', 'wp-pinch' ); ?></a>
+							<a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=wp-pinch&wp_pinch_skip_wizard=1' ), 'wp_pinch_skip_wizard' ) ); ?>"><?php esc_html_e( 'I\'ll scuttle back later', 'wp-pinch' ); ?></a>
 						</p>
 					</div>
 				</div>
@@ -782,12 +986,12 @@ class Settings {
 					</div>
 				</div>
 
-				<!-- Step 3: Try it -->
+				<!-- Step 3: Time to pinch -->
 				<div class="wp-pinch-wizard__step" data-step="3" id="wp-pinch-wizard-step-3" style="display: <?php echo esc_attr( $show_s3 ); ?>;">
 					<div class="wp-pinch-wizard__card">
-						<h2><?php esc_html_e( 'Try it', 'wp-pinch' ); ?></h2>
+						<h2><?php esc_html_e( 'Time to pinch', 'wp-pinch' ); ?></h2>
 						<p>
-							<?php esc_html_e( 'Send a message from WhatsApp, Telegram, Slack, or Discord to your OpenClaw agent. Your agent can now use your WordPress site via the MCP endpoint below.', 'wp-pinch' ); ?>
+							<?php esc_html_e( 'Send a message from WhatsApp, Telegram, Slack, or Discord to your OpenClaw agent. Your agent can now pinch your WordPress site via the MCP endpoint below.', 'wp-pinch' ); ?>
 						</p>
 						<p><strong><?php esc_html_e( 'Try this first', 'wp-pinch' ); ?></strong></p>
 						<ul class="wp-pinch-wizard-list" style="margin-top: 0;">
@@ -816,7 +1020,7 @@ class Settings {
 							?>
 						</p>
 						<p class="wp-pinch-wizard-step-footer">
-							<a href="<?php echo esc_url( $finish_url ); ?>" class="button button-primary button-hero"><?php esc_html_e( 'Go to Settings', 'wp-pinch' ); ?></a>
+							<a href="<?php echo esc_url( $finish_url ); ?>" class="button button-primary button-hero"><?php esc_html_e( 'Enter the warren', 'wp-pinch' ); ?></a>
 						</p>
 					</div>
 				</div>
@@ -845,7 +1049,7 @@ class Settings {
 		// Tab is UI state only; sanitized and allowlisted below. No sensitive action.
 		$active_tab = sanitize_key( $_GET['tab'] ?? 'connection' ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$tabs       = array(
-			'what_can_i_do' => __( 'What can I do?', 'wp-pinch' ),
+			'what_can_i_do' => __( 'What can I pinch?', 'wp-pinch' ),
 			'connection'    => __( 'Connection', 'wp-pinch' ),
 			'webhooks'      => __( 'Webhooks', 'wp-pinch' ),
 			'governance'    => __( 'Governance', 'wp-pinch' ),
@@ -863,7 +1067,7 @@ class Settings {
 				add_settings_error(
 					'wp_pinch_messages',
 					'settings_updated',
-					__( 'Settings saved.', 'wp-pinch' ),
+					__( 'Settings saved. Territory secured.', 'wp-pinch' ),
 					'success'
 				);
 			}
@@ -918,7 +1122,7 @@ class Settings {
 		$wiki = 'https://github.com/RegionallyFamous/wp-pinch/wiki';
 		?>
 		<div class="wp-pinch-what-can-i-do">
-			<p><?php esc_html_e( 'Here’s what you can do with WP Pinch:', 'wp-pinch' ); ?></p>
+			<p><?php esc_html_e( 'Here’s what this lobster can pinch for you:', 'wp-pinch' ); ?></p>
 			<ul>
 				<li>
 					<strong><?php esc_html_e( 'Capture from channels (PinchDrop)', 'wp-pinch' ); ?></strong>
@@ -947,7 +1151,7 @@ class Settings {
 				</li>
 			</ul>
 			<p>
-				<a href="<?php echo esc_url( $wiki . '/Abilities-Reference' ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Full Abilities Reference', 'wp-pinch' ); ?> &rarr;</a>
+				<a href="<?php echo esc_url( $wiki . '/Abilities-Reference' ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Full Abilities Reference (the whole claw)', 'wp-pinch' ); ?> &rarr;</a>
 			</p>
 		</div>
 		<?php
@@ -962,7 +1166,7 @@ class Settings {
 			<?php settings_fields( 'wp_pinch_connection' ); ?>
 
 			<div class="wp-pinch-card">
-				<h3 class="wp-pinch-card__title"><?php esc_html_e( 'Gateway & API', 'wp-pinch' ); ?></h3>
+				<h3 class="wp-pinch-card__title"><?php esc_html_e( 'Gateway & API — where the claws connect', 'wp-pinch' ); ?></h3>
 				<table class="form-table">
 					<tr>
 						<th scope="row">
@@ -972,7 +1176,7 @@ class Settings {
 							<input type="url" id="wp_pinch_gateway_url" name="wp_pinch_gateway_url"
 									value="<?php echo esc_attr( get_option( 'wp_pinch_gateway_url' ) ); ?>"
 									class="regular-text" placeholder="http://127.0.0.1:3000" />
-							<p class="description"><?php esc_html_e( 'The URL of your OpenClaw Gateway instance.', 'wp-pinch' ); ?></p>
+							<p class="description"><?php esc_html_e( 'The URL of your OpenClaw gateway. This is where we reach out and pinch.', 'wp-pinch' ); ?></p>
 						</td>
 					</tr>
 					<tr>
@@ -984,7 +1188,40 @@ class Settings {
 						<input type="password" id="wp_pinch_api_token" name="wp_pinch_api_token"
 								value="<?php echo $has_token ? esc_attr( str_repeat( "\u{2022}", 8 ) ) : ''; ?>"
 								class="regular-text" autocomplete="off" />
-							<p class="description"><?php esc_html_e( 'Bearer token for authenticating with the OpenClaw webhook API.', 'wp-pinch' ); ?></p>
+							<p class="description"><?php esc_html_e( 'Your secret handshake. Bearer token for webhook auth — keep it safe, we\'re territorial about it.', 'wp-pinch' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Safety controls (claws sheathed)', 'wp-pinch' ); ?></th>
+						<td>
+							<label>
+								<input type="checkbox" id="wp_pinch_api_disabled" name="wp_pinch_api_disabled" value="1"
+									<?php checked( (bool) get_option( 'wp_pinch_api_disabled', false ) ); ?> />
+								<?php esc_html_e( 'Disable API access (hide in the kelp)', 'wp-pinch' ); ?>
+							</label>
+							<p class="description"><?php esc_html_e( 'When checked, all REST endpoints return 503. Use during incidents — we\'ll keep our claws to ourselves.', 'wp-pinch' ); ?></p>
+							<label style="display:block; margin-top:1em;">
+								<input type="checkbox" id="wp_pinch_read_only_mode" name="wp_pinch_read_only_mode" value="1"
+									<?php checked( (bool) get_option( 'wp_pinch_read_only_mode', false ) ); ?> />
+								<?php esc_html_e( 'Read-only mode (look but don\'t pinch)', 'wp-pinch' ); ?>
+							</label>
+							<p class="description"><?php esc_html_e( 'When checked, write abilities are blocked. We\'ll look around all you want, but no grabbing.', 'wp-pinch' ); ?></p>
+							<label style="display:block; margin-top:1em;">
+								<input type="checkbox" id="wp_pinch_gateway_reply_strict_sanitize" name="wp_pinch_gateway_reply_strict_sanitize" value="1"
+									<?php checked( (bool) get_option( 'wp_pinch_gateway_reply_strict_sanitize', false ) ); ?> />
+								<?php esc_html_e( 'Strict gateway reply sanitization', 'wp-pinch' ); ?>
+							</label>
+							<p class="description"><?php esc_html_e( 'When checked, chat replies are stripped of HTML comments and instruction-like text, and iframe/object/embed/form are removed to reduce prompt-injection and XSS risk.', 'wp-pinch' ); ?></p>
+							<?php if ( defined( 'WP_PINCH_DISABLED' ) && WP_PINCH_DISABLED ) : ?>
+								<p class="description" style="color:#b32d2e;">
+									<?php esc_html_e( 'Note: WP_PINCH_DISABLED is set in wp-config.php — API is disabled until that constant is removed.', 'wp-pinch' ); ?>
+								</p>
+							<?php endif; ?>
+							<?php if ( defined( 'WP_PINCH_READ_ONLY' ) && WP_PINCH_READ_ONLY ) : ?>
+								<p class="description" style="color:#b32d2e;">
+									<?php esc_html_e( 'Note: WP_PINCH_READ_ONLY is set in wp-config.php — write operations are disabled until that constant is removed.', 'wp-pinch' ); ?>
+								</p>
+							<?php endif; ?>
 						</td>
 					</tr>
 					<tr>
@@ -996,6 +1233,30 @@ class Settings {
 									value="<?php echo esc_attr( get_option( 'wp_pinch_rate_limit', 30 ) ); ?>"
 									class="small-text" min="1" max="1000" />
 							<span><?php esc_html_e( 'webhooks per minute', 'wp-pinch' ); ?></span>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="wp_pinch_daily_write_cap"><?php esc_html_e( 'Daily write budget', 'wp-pinch' ); ?></label>
+						</th>
+						<td>
+							<input type="number" id="wp_pinch_daily_write_cap" name="wp_pinch_daily_write_cap"
+									value="<?php echo esc_attr( get_option( 'wp_pinch_daily_write_cap', 0 ) ); ?>"
+									class="small-text" min="0" max="10000" />
+							<span><?php esc_html_e( 'max write operations per day (0 = no limit)', 'wp-pinch' ); ?></span>
+							<p class="description">
+								<?php esc_html_e( 'Write operations: create/update/delete posts, media, options, etc. When exceeded, requests return 429 until the next day.', 'wp-pinch' ); ?>
+							</p>
+							<p class="description" style="margin-top:0.5em;">
+								<label for="wp_pinch_daily_write_alert_threshold"><?php esc_html_e( 'Alert email when usage reaches', 'wp-pinch' ); ?></label>
+								<input type="number" id="wp_pinch_daily_write_alert_threshold" name="wp_pinch_daily_write_alert_threshold"
+										value="<?php echo esc_attr( get_option( 'wp_pinch_daily_write_alert_threshold', 80 ) ); ?>"
+										class="tiny-text" min="1" max="100" /> %
+								<label for="wp_pinch_daily_write_alert_email"><?php esc_html_e( '— Email:', 'wp-pinch' ); ?></label>
+								<input type="email" id="wp_pinch_daily_write_alert_email" name="wp_pinch_daily_write_alert_email"
+										value="<?php echo esc_attr( get_option( 'wp_pinch_daily_write_alert_email', '' ) ); ?>"
+										class="regular-text" placeholder="<?php esc_attr_e( 'admin@example.com', 'wp-pinch' ); ?>" />
+							</p>
 						</td>
 					</tr>
 					<tr>
@@ -1018,6 +1279,8 @@ class Settings {
 					</tr>
 				</table>
 			</div>
+
+			<?php self::render_openclaw_role_section(); ?>
 
 			<div class="wp-pinch-card">
 				<h3 class="wp-pinch-card__title"><?php esc_html_e( 'Webhook defaults', 'wp-pinch' ); ?></h3>
@@ -1141,7 +1404,7 @@ class Settings {
 
 			<div class="wp-pinch-card">
 				<h3 class="wp-pinch-card__title"><?php esc_html_e( 'Chat Settings', 'wp-pinch' ); ?></h3>
-				<p class="description"><?php esc_html_e( 'Configure the interactive chat block behavior.', 'wp-pinch' ); ?></p>
+				<p class="description"><?php esc_html_e( 'Configure how the chat block behaves — model, thinking level, placeholder, and more.', 'wp-pinch' ); ?></p>
 				<table class="form-table">
 				<tr>
 					<th scope="row">
@@ -1202,7 +1465,7 @@ class Settings {
 								value="<?php echo esc_attr( get_option( 'wp_pinch_chat_placeholder', '' ) ); ?>"
 								class="regular-text" />
 						<p class="description">
-							<?php esc_html_e( 'Default placeholder for the chat input. Leave empty for block default. Can be overridden per post via Block Bindings (post meta wp_pinch_chat_placeholder).', 'wp-pinch' ); ?>
+							<?php esc_html_e( 'Default placeholder when the block hasn\'t been customized. Leave empty for our lobster-y default. Can be overridden per post via Block Bindings.', 'wp-pinch' ); ?>
 						</p>
 					</td>
 				</tr>
@@ -1498,7 +1761,7 @@ class Settings {
 		$labels = array(
 			'streaming_chat'     => __( 'Streaming Chat (SSE)', 'wp-pinch' ),
 			'webhook_signatures' => __( 'HMAC-SHA256 Webhook Signatures', 'wp-pinch' ),
-			'circuit_breaker'    => __( 'Circuit Breaker (fail-fast on gateway outage)', 'wp-pinch' ),
+			'circuit_breaker'    => __( 'Circuit Breaker (claws up when the gateway goes down)', 'wp-pinch' ),
 			'ability_toggle'     => __( 'Ability Toggle (disable individual abilities)', 'wp-pinch' ),
 			'webhook_dashboard'  => __( 'Webhook Dashboard in Audit Log', 'wp-pinch' ),
 			'audit_search'       => __( 'Audit Log Search & Filters', 'wp-pinch' ),
@@ -1506,13 +1769,17 @@ class Settings {
 			'slash_commands'     => __( 'Slash commands (/new, /status) in chat', 'wp-pinch' ),
 			'token_display'      => __( 'Show token usage in chat footer', 'wp-pinch' ),
 			'pinchdrop_engine'   => __( 'PinchDrop engine (capture anywhere draft packs)', 'wp-pinch' ),
+			'ghost_writer'       => __( 'Ghost Writer (draft completion in author voice)', 'wp-pinch' ),
+			'molt'               => __( 'Molt (content repackager)', 'wp-pinch' ),
+			'prompt_sanitizer'   => __( 'Prompt sanitizer (mitigate instruction injection in content sent to LLMs)', 'wp-pinch' ),
+			'approval_workflow'  => __( 'Approval workflow (queue destructive abilities for admin approval)', 'wp-pinch' ),
 		);
 		?>
 		<form method="post" action="options.php">
 			<?php settings_fields( 'wp_pinch_features' ); ?>
 
 			<h3><?php esc_html_e( 'Feature Flags', 'wp-pinch' ); ?></h3>
-			<p><?php esc_html_e( 'Enable or disable features. Changes take effect immediately.', 'wp-pinch' ); ?></p>
+			<p><?php esc_html_e( 'Flip the switches. Enable what you need — we take our features as seriously as a lobster takes its territory.', 'wp-pinch' ); ?></p>
 
 			<table class="form-table">
 				<?php foreach ( $labels as $flag => $label ) : ?>
@@ -1544,8 +1811,8 @@ class Settings {
 			$retry_after = Circuit_Breaker::get_retry_after();
 			$state_label = array(
 				'closed'    => __( 'Closed (normal)', 'wp-pinch' ),
-				'open'      => __( 'Open (failing fast)', 'wp-pinch' ),
-				'half_open' => __( 'Half-Open (probing)', 'wp-pinch' ),
+				'open'      => __( 'Claws up (failing fast)', 'wp-pinch' ),
+				'half_open' => __( 'Half-Open (poking a claw out)', 'wp-pinch' ),
 			);
 			?>
 			<p>
@@ -1620,10 +1887,18 @@ class Settings {
 					class="regular-text" />
 
 				<label for="event_type"><?php esc_html_e( 'Event:', 'wp-pinch' ); ?></label>
-				<input type="text" id="event_type" name="event_type"
-					value="<?php echo esc_attr( $filter ); ?>"
-					placeholder="<?php esc_attr_e( 'e.g. webhook_sent', 'wp-pinch' ); ?>"
-					class="regular-text wp-pinch-audit-input-event" />
+				<select id="event_type" name="event_type" class="wp-pinch-audit-input-event">
+					<option value=""><?php esc_html_e( 'All events', 'wp-pinch' ); ?></option>
+					<option value="ability_executed" <?php selected( $filter, 'ability_executed' ); ?>><?php esc_html_e( 'Ability executed', 'wp-pinch' ); ?></option>
+					<option value="batch_executed" <?php selected( $filter, 'batch_executed' ); ?>><?php esc_html_e( 'Batch executed', 'wp-pinch' ); ?></option>
+					<option value="post_created" <?php selected( $filter, 'post_created' ); ?>><?php esc_html_e( 'Post created', 'wp-pinch' ); ?></option>
+					<option value="post_updated" <?php selected( $filter, 'post_updated' ); ?>><?php esc_html_e( 'Post updated', 'wp-pinch' ); ?></option>
+					<option value="preview_approved" <?php selected( $filter, 'preview_approved' ); ?>><?php esc_html_e( 'Preview approved', 'wp-pinch' ); ?></option>
+					<option value="webhook_sent" <?php selected( $filter, 'webhook_sent' ); ?>><?php esc_html_e( 'Webhook sent', 'wp-pinch' ); ?></option>
+					<option value="webhook_failed" <?php selected( $filter, 'webhook_failed' ); ?>><?php esc_html_e( 'Webhook failed', 'wp-pinch' ); ?></option>
+					<option value="chat_message" <?php selected( $filter, 'chat_message' ); ?>><?php esc_html_e( 'Chat message', 'wp-pinch' ); ?></option>
+					<option value="incoming_hook" <?php selected( $filter, 'incoming_hook' ); ?>><?php esc_html_e( 'Incoming hook', 'wp-pinch' ); ?></option>
+				</select>
 
 				<label for="source"><?php esc_html_e( 'Source:', 'wp-pinch' ); ?></label>
 				<input type="text" id="source" name="source"
@@ -1677,15 +1952,37 @@ class Settings {
 						<th><?php esc_html_e( 'Event', 'wp-pinch' ); ?></th>
 						<th><?php esc_html_e( 'Source', 'wp-pinch' ); ?></th>
 						<th><?php esc_html_e( 'Message', 'wp-pinch' ); ?></th>
+						<th><?php esc_html_e( 'Details', 'wp-pinch' ); ?></th>
 					</tr>
 				</thead>
 				<tbody>
 					<?php foreach ( $items as $item ) : ?>
+						<?php
+						$ctx     = ( isset( $item['context'] ) && is_array( $item['context'] ) ) ? $item['context'] : array();
+						$details = array();
+						if ( ! empty( $ctx['post_id'] ) ) {
+							$details[] = 'post_id: ' . (int) $ctx['post_id'];
+						}
+						if ( ! empty( $ctx['ability'] ) ) {
+							$details[] = 'ability: ' . esc_html( (string) $ctx['ability'] );
+						}
+						if ( ! empty( $ctx['diff'] ) && is_array( $ctx['diff'] ) ) {
+							$details[] = 'diff: ' . esc_html( wp_json_encode( $ctx['diff'] ) );
+						}
+						if ( ! empty( $ctx['request_summary'] ) && is_array( $ctx['request_summary'] ) ) {
+							$details[] = 'params: ' . esc_html( wp_json_encode( $ctx['request_summary'] ) );
+						}
+						$details_str = implode( '; ', $details );
+						if ( mb_strlen( $details_str ) > 120 ) {
+							$details_str = mb_substr( $details_str, 0, 120 ) . '…';
+						}
+						?>
 						<tr>
 							<td class="wp-pinch-audit-date"><?php echo esc_html( $item['created_at'] ); ?></td>
 							<td><code><?php echo esc_html( $item['event_type'] ); ?></code></td>
 							<td><?php echo esc_html( $item['source'] ); ?></td>
 							<td><?php echo esc_html( $item['message'] ); ?></td>
+							<td class="wp-pinch-audit-details"><?php echo esc_html( $details_str ); ?></td>
 						</tr>
 					<?php endforeach; ?>
 				</tbody>
@@ -1714,9 +2011,9 @@ class Settings {
 			<?php endif; ?>
 		<?php else : ?>
 			<div class="wp-pinch-audit-empty">
-				<div class="wp-pinch-audit-empty-icon" aria-hidden="true">📋</div>
-				<p><?php esc_html_e( 'No audit log entries match your filters.', 'wp-pinch' ); ?></p>
-				<p class="description"><?php esc_html_e( 'Events will appear here once webhooks run or the chat block is used. Try adjusting filters or check back later.', 'wp-pinch' ); ?></p>
+				<div class="wp-pinch-audit-empty-icon" aria-hidden="true">🦞</div>
+				<p><?php esc_html_e( 'Nothing in the log yet — the waters are calm.', 'wp-pinch' ); ?></p>
+				<p class="description"><?php esc_html_e( 'Events will pinch in once webhooks run or the chat block is used. Try adjusting filters or scuttle back later.', 'wp-pinch' ); ?></p>
 			</div>
 		<?php endif; ?>
 		<?php

@@ -62,6 +62,9 @@ class Abilities {
 		'default_role',
 		'wp_pinch_api_token',
 		'wp_pinch_capture_token',
+		'siteurl',
+		'home',
+		'admin_email',
 	);
 
 	/**
@@ -138,6 +141,7 @@ class Abilities {
 	 * Wire hooks.
 	 */
 	public static function init(): void {
+		add_action( 'wp_abilities_api_categories_init', array( __CLASS__, 'register_category' ) );
 		add_action( 'wp_abilities_api_init', array( __CLASS__, 'register_abilities' ), 20 );
 		add_action( 'transition_post_status', array( __CLASS__, 'maybe_generate_tldr_on_publish' ), 10, 3 );
 
@@ -158,6 +162,27 @@ class Abilities {
 				do_action( 'wp_pinch_register_abilities' );
 			},
 			25
+		);
+	}
+
+	/**
+	 * Register the wp-pinch ability category.
+	 *
+	 * Must run on wp_abilities_api_categories_init (before wp_abilities_api_init)
+	 * per the Abilities API: https://developer.wordpress.org/apis/abilities-api/
+	 *
+	 * @return void
+	 */
+	public static function register_category(): void {
+		if ( ! function_exists( 'wp_register_ability_category' ) ) {
+			return;
+		}
+		wp_register_ability_category(
+			'wp-pinch',
+			array(
+				'label'       => __( 'WP Pinch', 'wp-pinch' ),
+				'description' => __( 'Abilities for content, media, options, and site management via OpenClaw.', 'wp-pinch' ),
+			)
 		);
 	}
 
@@ -203,6 +228,7 @@ class Abilities {
 
 			// Analytics & Maintenance.
 			'wp-pinch/site-health',
+			'wp-pinch/content-health-report',
 			'wp-pinch/recent-activity',
 			'wp-pinch/search-content',
 			'wp-pinch/export-data',
@@ -211,6 +237,7 @@ class Abilities {
 			'wp-pinch/synthesize',
 			'wp-pinch/generate-tldr',
 			'wp-pinch/suggest-links',
+			'wp-pinch/suggest-terms',
 			'wp-pinch/quote-bank',
 			'wp-pinch/what-do-i-know',
 			'wp-pinch/project-assembly',
@@ -322,32 +349,52 @@ class Abilities {
 				'type'       => 'object',
 				'required'   => array( 'title' ),
 				'properties' => array(
-					'title'      => array( 'type' => 'string' ),
-					'content'    => array(
-						'type'    => 'string',
-						'default' => '',
+					'title'                 => array( 'type' => 'string' ),
+					'content'               => array(
+						'type'        => 'string',
+						'default'     => '',
+						'description' => 'Post body. Accepts HTML or Gutenberg block markup (e.g. <!-- wp:paragraph -->). Use block markup for native editor compatibility. Ignored when blocks is provided.',
 					),
-					'status'     => array(
+					'blocks'                => array(
+						'type'        => 'array',
+						'description' => 'Optional. Array of block objects (blockName, attrs, innerContent, innerBlocks) to set as post content. Takes precedence over content when provided.',
+					),
+					'status'                => array(
 						'type'    => 'string',
 						'default' => 'draft',
 					),
-					'post_type'  => array(
+					'post_type'             => array(
 						'type'    => 'string',
 						'default' => 'post',
 					),
-					'categories' => array(
+					'categories'            => array(
 						'type'    => 'array',
 						'items'   => array( 'type' => 'integer' ),
 						'default' => array(),
 					),
-					'tags'       => array(
+					'tags'                  => array(
 						'type'    => 'array',
 						'items'   => array( 'type' => 'string' ),
 						'default' => array(),
 					),
-					'excerpt'    => array(
+					'excerpt'               => array(
 						'type'    => 'string',
 						'default' => '',
+					),
+					'featured_image_url'    => array(
+						'type'        => 'string',
+						'default'     => '',
+						'description' => 'URL of image to set as featured image. Use this or featured_image_base64, not both.',
+					),
+					'featured_image_base64' => array(
+						'type'        => 'string',
+						'default'     => '',
+						'description' => 'Base64-encoded image data (or data URL) to set as featured image.',
+					),
+					'featured_image_alt'    => array(
+						'type'        => 'string',
+						'default'     => '',
+						'description' => 'Alt text for the featured image.',
 					),
 				),
 			),
@@ -359,16 +406,24 @@ class Abilities {
 		self::register(
 			'wp-pinch/update-post',
 			__( 'Update Post', 'wp-pinch' ),
-			__( 'Update an existing post by ID.', 'wp-pinch' ),
+			__( 'Update an existing post by ID. Pass post_modified from get-post for optimistic locking; updates are rejected if the post changed since then.', 'wp-pinch' ),
 			array(
 				'type'       => 'object',
 				'required'   => array( 'id' ),
 				'properties' => array(
-					'id'      => array( 'type' => 'integer' ),
-					'title'   => array( 'type' => 'string' ),
-					'content' => array( 'type' => 'string' ),
-					'status'  => array( 'type' => 'string' ),
-					'excerpt' => array( 'type' => 'string' ),
+					'id'            => array( 'type' => 'integer' ),
+					'title'         => array( 'type' => 'string' ),
+					'content'       => array( 'type' => 'string' ),
+					'blocks'        => array(
+						'type'        => 'array',
+						'description' => 'Optional. Array of block objects (blockName, attrs, innerContent, innerBlocks) to set as post content. Takes precedence over content when provided.',
+					),
+					'status'        => array( 'type' => 'string' ),
+					'excerpt'       => array( 'type' => 'string' ),
+					'post_modified' => array(
+						'type'        => 'string',
+						'description' => 'Value from get-post modified field for optimistic locking. If provided and the post has changed since, the update is rejected.',
+					),
 				),
 			),
 			array( 'type' => 'object' ),
@@ -666,10 +721,17 @@ class Abilities {
 				'required'   => array( 'key', 'value' ),
 				'properties' => array(
 					'key'   => array( 'type' => 'string' ),
-					'value' => array(),
+					'value' => array( 'type' => 'string' ),
 				),
 			),
-			array( 'type' => 'object' ),
+			array(
+				'type'       => 'object',
+				'properties' => array(
+					'key'     => array( 'type' => 'string' ),
+					'updated' => array( 'type' => 'boolean' ),
+					'error'   => array( 'type' => 'string' ),
+				),
+			),
 			'manage_options',
 			array( __CLASS__, 'execute_update_option' )
 		);
@@ -756,6 +818,31 @@ class Abilities {
 			array( 'type' => 'object' ),
 			'manage_options',
 			array( __CLASS__, 'execute_site_health' ),
+			true
+		);
+
+		self::register(
+			'wp-pinch/content-health-report',
+			__( 'Content Health Report', 'wp-pinch' ),
+			__( 'Get a content health report: missing alt text, broken internal links, thin content, orphaned media.', 'wp-pinch' ),
+			array(
+				'type'       => 'object',
+				'properties' => array(
+					'limit'     => array(
+						'type'        => 'integer',
+						'default'     => 50,
+						'description' => 'Max items per category (1–100).',
+					),
+					'min_words' => array(
+						'type'        => 'integer',
+						'default'     => 300,
+						'description' => 'Minimum word count to not flag as thin content.',
+					),
+				),
+			),
+			array( 'type' => 'object' ),
+			'edit_posts',
+			array( __CLASS__, 'execute_content_health_report' ),
 			true
 		);
 
@@ -946,6 +1033,33 @@ class Abilities {
 			array( 'type' => 'object' ),
 			'edit_posts',
 			array( __CLASS__, 'execute_suggest_links' ),
+			true
+		);
+
+		self::register(
+			'wp-pinch/suggest-terms',
+			__( 'Suggest Categories & Tags', 'wp-pinch' ),
+			__( 'Given a draft post ID or content, return suggested categories and tags (by content similarity and term match).', 'wp-pinch' ),
+			array(
+				'type'       => 'object',
+				'properties' => array(
+					'post_id' => array(
+						'type'        => 'integer',
+						'description' => 'Draft or published post ID to suggest terms for.',
+					),
+					'content' => array(
+						'type'        => 'string',
+						'description' => 'Draft body text when post_id is not provided.',
+					),
+					'limit'   => array(
+						'type'    => 'integer',
+						'default' => 15,
+					),
+				),
+			),
+			array( 'type' => 'object' ),
+			'edit_posts',
+			array( __CLASS__, 'execute_suggest_terms' ),
 			true
 		);
 
@@ -1632,14 +1746,20 @@ class Abilities {
 		wp_register_ability(
 			$name,
 			array(
-				'title'               => $title,
+				'label'               => $title,
 				'description'         => $description,
+				'category'            => 'wp-pinch',
 				'input_schema'        => $input,
 				'output_schema'       => $output,
 				'permission_callback' => function () use ( $capability ) {
 					return current_user_can( $capability );
 				},
 				'execute_callback'    => function ( $input ) use ( $name, $callback, $readonly ) {
+					// Read-only mode: block all write abilities.
+					if ( ! $readonly && Plugin::is_read_only_mode() ) {
+						return array( 'error' => __( 'API is in read-only mode. Write operations are disabled.', 'wp-pinch' ) );
+					}
+
 					// Cache for read-only abilities (scoped per user).
 					// Prefer object cache when a persistent backend is available.
 					if ( $readonly ) {
@@ -1781,9 +1901,16 @@ class Abilities {
 			);
 		}
 
+		$post_content = isset( $input['blocks'] ) && is_array( $input['blocks'] ) && ! empty( $input['blocks'] )
+			? self::blocks_to_content( $input['blocks'] )
+		: null;
+		if ( is_wp_error( $post_content ) ) {
+			return array( 'error' => $post_content->get_error_message() );
+		}
+
 		$post_data = array(
 			'post_title'   => sanitize_text_field( $input['title'] ),
-			'post_content' => wp_kses_post( $input['content'] ?? '' ),
+			'post_content' => null !== $post_content ? $post_content : wp_kses_post( $input['content'] ?? '' ),
 			'post_status'  => sanitize_key( $input['status'] ?? 'draft' ),
 			'post_type'    => $post_type,
 			'post_excerpt' => sanitize_text_field( $input['excerpt'] ?? '' ),
@@ -1799,16 +1926,43 @@ class Abilities {
 			return array( 'error' => $post_id->get_error_message() );
 		}
 
+		// Mark as AI-generated so draft-first workflows can surface it; used for preview/approve.
+		update_post_meta( $post_id, '_wp_pinch_ai_generated', time() );
+
 		if ( ! empty( $input['tags'] ) ) {
 			wp_set_post_tags( $post_id, array_map( 'sanitize_text_field', $input['tags'] ) );
 		}
 
+		// Featured image: URL or base64; create attachment and set as thumbnail.
+		$featured_url           = isset( $input['featured_image_url'] ) && is_string( $input['featured_image_url'] ) ? trim( $input['featured_image_url'] ) : '';
+		$featured_b64           = isset( $input['featured_image_base64'] ) && is_string( $input['featured_image_base64'] ) ? trim( $input['featured_image_base64'] ) : '';
+		$featured_alt           = isset( $input['featured_image_alt'] ) && is_string( $input['featured_image_alt'] ) ? sanitize_text_field( $input['featured_image_alt'] ) : '';
+		$featured_attachment_id = 0;
+		if ( '' !== $featured_url || '' !== $featured_b64 ) {
+			$attachment_id = self::create_attachment_from_url_or_base64( $featured_url, $featured_b64, $featured_alt, $post_id );
+			if ( ! is_wp_error( $attachment_id ) ) {
+				set_post_thumbnail( $post_id, $attachment_id );
+				$featured_attachment_id = (int) $attachment_id;
+			}
+		}
+
 		Audit_Table::insert( 'post_created', 'ability', sprintf( 'Post #%d created via ability.', $post_id ), array( 'post_id' => $post_id ) );
 
-		return array(
-			'id'  => $post_id,
-			'url' => get_permalink( $post_id ),
+		$post_obj    = get_post( $post_id );
+		$preview     = $post_obj ? get_preview_post_link( $post_obj ) : false;
+		$preview_url = ( is_string( $preview ) && '' !== $preview ) ? $preview : get_permalink( $post_id );
+
+		$result = array(
+			'id'           => $post_id,
+			'url'          => get_permalink( $post_id ),
+			'preview_url'  => $preview_url,
+			'ai_generated' => true,
 		);
+		if ( $featured_attachment_id > 0 ) {
+			$result['featured_image_id']  = $featured_attachment_id;
+			$result['featured_image_url'] = wp_get_attachment_image_url( $featured_attachment_id, 'full' );
+		}
+		return $result;
 	}
 
 	/**
@@ -1820,7 +1974,8 @@ class Abilities {
 	public static function execute_update_post( array $input ): array {
 		$post_id = absint( $input['id'] );
 
-		if ( ! get_post( $post_id ) ) {
+		$before = get_post( $post_id );
+		if ( ! $before ) {
 			return array( 'error' => __( 'Post not found.', 'wp-pinch' ) );
 		}
 
@@ -1828,12 +1983,36 @@ class Abilities {
 			return array( 'error' => __( 'You do not have permission to edit this post.', 'wp-pinch' ) );
 		}
 
+		// Optimistic locking: reject update if post_modified was provided and has changed.
+		$expected_modified = isset( $input['post_modified'] ) && is_string( $input['post_modified'] )
+			? trim( $input['post_modified'] )
+			: '';
+
+		if ( '' !== $expected_modified ) {
+			$current_modified = $before->post_modified;
+			if ( $current_modified !== $expected_modified ) {
+				return array(
+					'error'          => __( 'Post was modified by someone else. Refetch with get-post and retry.', 'wp-pinch' ),
+					'conflict'       => true,
+					'post_modified'  => $current_modified,
+					'current_title'  => $before->post_title,
+					'current_status' => $before->post_status,
+				);
+			}
+		}
+
 		$post_data = array( 'ID' => $post_id );
 
 		if ( isset( $input['title'] ) ) {
 			$post_data['post_title'] = sanitize_text_field( $input['title'] );
 		}
-		if ( isset( $input['content'] ) ) {
+		if ( isset( $input['blocks'] ) && is_array( $input['blocks'] ) && ! empty( $input['blocks'] ) ) {
+			$from_blocks = self::blocks_to_content( $input['blocks'] );
+			if ( is_wp_error( $from_blocks ) ) {
+				return array( 'error' => $from_blocks->get_error_message() );
+			}
+			$post_data['post_content'] = $from_blocks;
+		} elseif ( isset( $input['content'] ) ) {
 			$post_data['post_content'] = wp_kses_post( $input['content'] );
 		}
 		if ( isset( $input['status'] ) ) {
@@ -1849,11 +2028,29 @@ class Abilities {
 			return array( 'error' => $result->get_error_message() );
 		}
 
-		Audit_Table::insert( 'post_updated', 'ability', sprintf( 'Post #%d updated via ability.', $post_id ), array( 'post_id' => $post_id ) );
+		// Mark as AI-touched for draft-first workflows.
+		update_post_meta( $post_id, '_wp_pinch_ai_generated', time() );
+
+		$context = array( 'post_id' => $post_id );
+		if ( isset( $post_data['post_title'] ) || isset( $post_data['post_content'] ) ) {
+			$context['diff'] = array(
+				'title_length_before'   => mb_strlen( $before->post_title ),
+				'title_length_after'    => isset( $post_data['post_title'] ) ? mb_strlen( $post_data['post_title'] ) : null,
+				'content_length_before' => mb_strlen( $before->post_content ),
+				'content_length_after'  => isset( $post_data['post_content'] ) ? mb_strlen( $post_data['post_content'] ) : null,
+			);
+		}
+		Audit_Table::insert( 'post_updated', 'ability', sprintf( 'Post #%d updated via ability.', $post_id ), $context );
+
+		$post_obj    = get_post( $post_id );
+		$preview     = $post_obj ? get_preview_post_link( $post_obj ) : false;
+		$preview_url = ( is_string( $preview ) && '' !== $preview ) ? $preview : get_permalink( $post_id );
 
 		return array(
-			'id'      => $post_id,
-			'updated' => true,
+			'id'          => $post_id,
+			'updated'     => true,
+			'preview_url' => $preview_url,
+			'url'         => get_permalink( $post_id ),
 		);
 	}
 
@@ -2054,6 +2251,159 @@ class Abilities {
 	 * @param array $input Ability input.
 	 * @return array
 	 */
+	/**
+	 * Convert an array of block structures to post_content (serialized block markup).
+	 *
+	 * Each block should have blockName, attrs (object), innerContent (array), innerBlocks (array).
+	 * Uses WordPress serialize_blocks() when available.
+	 *
+	 * @param array $blocks Raw blocks from API (blockName, attrs?, innerContent?, innerHTML?, innerBlocks?).
+	 * @return string|\WP_Error Serialized content or error.
+	 */
+	private static function blocks_to_content( array $blocks ) {
+		if ( ! function_exists( 'serialize_blocks' ) ) {
+			return new \WP_Error( 'blocks_unavailable', __( 'Block editor (serialize_blocks) is not available.', 'wp-pinch' ) );
+		}
+		$normalized = self::normalize_blocks_for_serialize( array_slice( $blocks, 0, 500 ) );
+		if ( empty( $normalized ) ) {
+			return new \WP_Error( 'invalid_blocks', __( 'No valid blocks provided. Each block needs blockName (e.g. core/paragraph) and optionally attrs, innerContent, innerBlocks.', 'wp-pinch' ) );
+		}
+		return serialize_blocks( $normalized );
+	}
+
+	/**
+	 * Normalize raw block arrays to the shape expected by serialize_blocks (blockName, attrs, innerContent, innerBlocks).
+	 *
+	 * @param array $blocks Raw blocks.
+	 * @return array Normalized blocks.
+	 */
+	private static function normalize_blocks_for_serialize( array $blocks ): array {
+		$out = array();
+		foreach ( $blocks as $block ) {
+			if ( ! is_array( $block ) ) {
+				continue;
+			}
+			$name = isset( $block['blockName'] ) && is_string( $block['blockName'] ) ? $block['blockName'] : '';
+			if ( '' === $name || ! preg_match( '/^[a-z0-9_-]+\/[a-z0-9_-]+$/', $name ) ) {
+				continue;
+			}
+			$attrs         = isset( $block['attrs'] ) && is_array( $block['attrs'] ) ? $block['attrs'] : array();
+			$inner_content = isset( $block['innerContent'] ) && is_array( $block['innerContent'] ) ? $block['innerContent'] : array();
+			if ( empty( $inner_content ) && isset( $block['innerHTML'] ) && is_string( $block['innerHTML'] ) ) {
+				$inner_content = array( $block['innerHTML'] );
+			}
+			$inner_blocks = array();
+			if ( ! empty( $block['innerBlocks'] ) && is_array( $block['innerBlocks'] ) ) {
+				$inner_blocks = self::normalize_blocks_for_serialize( $block['innerBlocks'] );
+			}
+			$out[] = array(
+				'blockName'    => $name,
+				'attrs'        => $attrs,
+				'innerContent' => $inner_content,
+				'innerBlocks'  => $inner_blocks,
+			);
+		}
+		return $out;
+	}
+
+	/**
+	 * Create an attachment from a URL or base64 data (for featured image in create-post).
+	 *
+	 * @param string $url    HTTP(S) URL (empty to use base64).
+	 * @param string $base64 Base64 string or data URL (e.g. data:image/png;base64,...).
+	 * @param string $alt    Alt text for the image.
+	 * @param int    $parent_post_id Parent post ID for the attachment.
+	 * @return int|\WP_Error Attachment ID or error.
+	 */
+	private static function create_attachment_from_url_or_base64( string $url, string $base64, string $alt, int $parent_post_id ) {
+		require_once ABSPATH . 'wp-admin/includes/media.php';
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		require_once ABSPATH . 'wp-admin/includes/image.php';
+
+		if ( '' !== $url ) {
+			$url    = esc_url_raw( $url );
+			$scheme = wp_parse_url( $url, PHP_URL_SCHEME );
+			if ( ! in_array( $scheme, array( 'http', 'https' ), true ) ) {
+				return new \WP_Error( 'invalid_url', __( 'Only HTTP and HTTPS URLs are allowed.', 'wp-pinch' ) );
+			}
+			if ( ! wp_http_validate_url( $url ) ) {
+				return new \WP_Error( 'invalid_url', __( 'URL failed security validation.', 'wp-pinch' ) );
+			}
+			$tmp = download_url( $url );
+			if ( is_wp_error( $tmp ) ) {
+				return $tmp;
+			}
+			$path          = wp_parse_url( $url, PHP_URL_PATH );
+			$basename      = ( false !== $path && '' !== $path ) ? wp_basename( $path ) : 'image';
+			$file_array    = array(
+				'name'     => $basename,
+				'tmp_name' => $tmp,
+			);
+			$attachment_id = media_handle_sideload( $file_array, $parent_post_id );
+			if ( is_wp_error( $attachment_id ) ) {
+				wp_delete_file( $tmp );
+				return $attachment_id;
+			}
+			if ( '' !== $alt ) {
+				update_post_meta( $attachment_id, '_wp_attachment_image_alt', $alt );
+			}
+			return $attachment_id;
+		}
+
+		if ( '' === $base64 ) {
+			return new \WP_Error( 'missing_image', __( 'Provide featured_image_url or featured_image_base64.', 'wp-pinch' ) );
+		}
+
+		$mime_type = 'image/png';
+		$extension = 'png';
+		$data      = $base64;
+
+		if ( str_starts_with( $base64, 'data:' ) ) {
+			if ( preg_match( '#^data:([^;]+);base64,(.+)$#s', $base64, $m ) ) {
+				$mime_type = trim( $m[1] );
+				$data      = $m[2];
+				$map       = array(
+					'image/jpeg' => 'jpg',
+					'image/jpg'  => 'jpg',
+					'image/png'  => 'png',
+					'image/gif'  => 'gif',
+					'image/webp' => 'webp',
+				);
+				$extension = $map[ $mime_type ] ?? 'png';
+			}
+		}
+
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode -- Used for featured image upload from base64 API input.
+		$decoded = base64_decode( $data, true );
+		if ( false === $decoded || strlen( $decoded ) === 0 ) {
+			return new \WP_Error( 'invalid_base64', __( 'Invalid base64 image data.', 'wp-pinch' ) );
+		}
+
+		$filename = 'featured-' . wp_unique_id() . '.' . $extension;
+		$upload   = wp_upload_bits( $filename, null, $decoded );
+		if ( ! empty( $upload['error'] ) ) {
+			return new \WP_Error( 'upload_failed', $upload['error'] );
+		}
+
+		$attachment    = array(
+			'post_mime_type' => $mime_type,
+			'post_title'     => sanitize_file_name( pathinfo( $filename, PATHINFO_FILENAME ) ),
+			'post_content'   => '',
+			'post_status'    => 'inherit',
+			'post_parent'    => $parent_post_id,
+		);
+		$attachment_id = wp_insert_attachment( $attachment, $upload['file'], $parent_post_id );
+		if ( is_wp_error( $attachment_id ) ) {
+			wp_delete_file( $upload['file'] );
+			return $attachment_id;
+		}
+		wp_generate_attachment_metadata( $attachment_id, $upload['file'] );
+		if ( '' !== $alt ) {
+			update_post_meta( $attachment_id, '_wp_attachment_image_alt', $alt );
+		}
+		return $attachment_id;
+	}
+
 	public static function execute_upload_media( array $input ): array {
 		require_once ABSPATH . 'wp-admin/includes/media.php';
 		require_once ABSPATH . 'wp-admin/includes/file.php';
@@ -2427,7 +2777,7 @@ class Abilities {
 			'wp_pinch_option_read_allowlist',
 			array_merge(
 				self::OPTION_ALLOWLIST,
-				array( 'siteurl', 'home', 'WPLANG', 'permalink_structure' )
+				array( 'WPLANG', 'permalink_structure' )
 			)
 		);
 
@@ -2661,6 +3011,24 @@ class Abilities {
 			),
 			'theme'     => get_stylesheet(),
 			'timezone'  => wp_timezone_string(),
+		);
+	}
+
+	/**
+	 * Content health report: missing alt, broken internal links, thin content, orphaned media.
+	 *
+	 * @param array $input Ability input (limit, min_words).
+	 * @return array
+	 */
+	public static function execute_content_health_report( array $input ): array {
+		$limit     = max( 1, min( absint( $input['limit'] ?? 50 ), 100 ) );
+		$min_words = max( 1, min( absint( $input['min_words'] ?? 300 ), 5000 ) );
+
+		return array(
+			'missing_alt'           => Governance::get_missing_alt_findings( $limit ),
+			'broken_internal_links' => Governance::get_broken_internal_links_findings( $limit ),
+			'thin_content'          => Governance::get_thin_content_findings( $min_words, $limit ),
+			'orphaned_media'        => Governance::get_orphaned_media_findings( $limit ),
 		);
 	}
 
@@ -2914,15 +3282,28 @@ class Abilities {
 			foreach ( $public_taxonomies as $tax_name ) {
 				$term_list = wp_get_post_terms( $post->ID, $tax_name );
 				if ( is_array( $term_list ) && ! empty( $term_list ) ) {
-					$terms[ $tax_name ] = wp_list_pluck( $term_list, 'name' );
+					$names = wp_list_pluck( $term_list, 'name' );
+					if ( Feature_Flags::is_enabled( 'prompt_sanitizer' ) && Prompt_Sanitizer::is_enabled() ) {
+						$names = array_map( array( Prompt_Sanitizer::class, 'sanitize_string' ), $names );
+					}
+					$terms[ $tax_name ] = $names;
 				}
 			}
 			$tldr    = get_post_meta( $post->ID, 'wp_pinch_tldr', true );
+			$title   = $post->post_title;
+			$excerpt = wp_trim_words( wp_strip_all_tags( $post->post_content ), 30 );
+			if ( Feature_Flags::is_enabled( 'prompt_sanitizer' ) && Prompt_Sanitizer::is_enabled() ) {
+				$title   = Prompt_Sanitizer::sanitize_string( $title );
+				$excerpt = Prompt_Sanitizer::sanitize( $excerpt );
+				$tldr    = is_string( $tldr ) && '' !== trim( $tldr ) ? Prompt_Sanitizer::sanitize_string( $tldr ) : null;
+			} else {
+				$tldr = is_string( $tldr ) && '' !== trim( $tldr ) ? $tldr : null;
+			}
 			$items[] = array(
 				'id'         => $post->ID,
-				'title'      => $post->post_title,
-				'excerpt'    => wp_trim_words( wp_strip_all_tags( $post->post_content ), 30 ),
-				'tldr'       => is_string( $tldr ) && '' !== trim( $tldr ) ? $tldr : null,
+				'title'      => $title,
+				'excerpt'    => $excerpt,
+				'tldr'       => $tldr,
 				'url'        => get_permalink( $post->ID ),
 				'date'       => $post->post_date,
 				'taxonomies' => $terms,
@@ -3017,9 +3398,13 @@ class Abilities {
 				)
 			);
 			foreach ( $fetched as $p ) {
+				$title = $p->post_title;
+				if ( Feature_Flags::is_enabled( 'prompt_sanitizer' ) && Prompt_Sanitizer::is_enabled() ) {
+					$title = Prompt_Sanitizer::sanitize_string( $title );
+				}
 				$post_map[ $p->ID ] = array(
 					'id'    => (int) $p->ID,
-					'title' => $p->post_title,
+					'title' => $title,
 					'url'   => get_permalink( $p->ID ),
 					'type'  => $p->post_type,
 				);
@@ -3074,9 +3459,15 @@ class Abilities {
 				continue;
 			}
 			$content = wp_strip_all_tags( $post->post_content );
+			if ( Feature_Flags::is_enabled( 'prompt_sanitizer' ) && Prompt_Sanitizer::is_enabled() ) {
+				$content = Prompt_Sanitizer::sanitize( $content );
+				$title   = Prompt_Sanitizer::sanitize_string( $post->post_title );
+			} else {
+				$title = $post->post_title;
+			}
 			$posts[] = array(
 				'id'              => $post->ID,
-				'title'           => $post->post_title,
+				'title'           => $title,
 				'excerpt'         => wp_trim_words( $content, max( 1, $excerpt_words ) ),
 				'content_snippet' => wp_trim_words( $content, max( 1, $snippet_words ) ),
 				'url'             => get_permalink( $post->ID ),
@@ -3228,6 +3619,103 @@ class Abilities {
 	}
 
 	/**
+	 * Suggest categories and tags for a draft (by content similarity and term-in-content match).
+	 *
+	 * @param array $input Ability input (post_id or content, limit).
+	 * @return array
+	 */
+	public static function execute_suggest_terms( array $input ): array {
+		$post_id = absint( $input['post_id'] ?? 0 );
+		$content = isset( $input['content'] ) && is_string( $input['content'] ) ? $input['content'] : '';
+		$limit   = max( 1, min( absint( $input['limit'] ?? 15 ), 50 ) );
+
+		$search_text = '';
+		if ( $post_id ) {
+			$post = get_post( $post_id );
+			if ( ! $post || ! current_user_can( 'edit_post', $post_id ) ) {
+				return array( 'error' => __( 'Post not found or insufficient permissions.', 'wp-pinch' ) );
+			}
+			$search_text = $post->post_title . ' ' . wp_trim_words( wp_strip_all_tags( $post->post_content ), 50 );
+		} elseif ( '' !== trim( $content ) ) {
+			$search_text = wp_trim_words( wp_strip_all_tags( $content ), 50 );
+		} else {
+			return array( 'error' => __( 'Provide post_id or content.', 'wp-pinch' ) );
+		}
+
+		$search       = self::execute_search_content(
+			array(
+				'query'     => $search_text,
+				'per_page'  => $limit,
+				'post_type' => 'post',
+			)
+		);
+		$category_ids = array();
+		$tag_ids      = array();
+		foreach ( $search['results'] ?? array() as $r ) {
+			$id = isset( $r['id'] ) ? (int) $r['id'] : 0;
+			if ( ! $id ) {
+				continue;
+			}
+			$terms = get_the_terms( $id, 'category' );
+			if ( is_array( $terms ) ) {
+				foreach ( $terms as $t ) {
+					$category_ids[ $t->term_id ] = $t;
+				}
+			}
+			$terms = get_the_terms( $id, 'post_tag' );
+			if ( is_array( $terms ) ) {
+				foreach ( $terms as $t ) {
+					$tag_ids[ $t->term_id ] = $t;
+				}
+			}
+		}
+
+		// Also suggest terms whose name/slug appears in the draft text.
+		$text_lower = mb_strtolower( $search_text );
+		$all_cats   = get_terms(
+			array(
+				'taxonomy'   => 'category',
+				'hide_empty' => false,
+			)
+		);
+		$all_tags   = get_terms(
+			array(
+				'taxonomy'   => 'post_tag',
+				'hide_empty' => false,
+			)
+		);
+		foreach ( is_array( $all_cats ) ? $all_cats : array() as $t ) {
+			if ( mb_strlen( $t->name ) < 2 ) {
+				continue;
+			}
+			if ( false !== mb_strpos( $text_lower, mb_strtolower( $t->name ) ) || false !== mb_strpos( $text_lower, mb_strtolower( $t->slug ) ) ) {
+				$category_ids[ $t->term_id ] = $t;
+			}
+		}
+		foreach ( is_array( $all_tags ) ? $all_tags : array() as $t ) {
+			if ( mb_strlen( $t->name ) < 2 ) {
+				continue;
+			}
+			if ( false !== mb_strpos( $text_lower, mb_strtolower( $t->name ) ) || false !== mb_strpos( $text_lower, mb_strtolower( $t->slug ) ) ) {
+				$tag_ids[ $t->term_id ] = $t;
+			}
+		}
+
+		$format_term = function ( $t ) {
+			return array(
+				'id'   => $t->term_id,
+				'name' => $t->name,
+				'slug' => $t->slug,
+			);
+		};
+
+		return array(
+			'suggested_categories' => array_values( array_slice( array_map( $format_term, array_values( $category_ids ) ), 0, $limit ) ),
+			'suggested_tags'       => array_values( array_slice( array_map( $format_term, array_values( $tag_ids ) ), 0, $limit ) ),
+		);
+	}
+
+	/**
 	 * Call the OpenClaw gateway with a single message and return the reply text.
 	 *
 	 * @param string $message     User or system message.
@@ -3329,6 +3817,9 @@ class Abilities {
 			}
 			$len = mb_strlen( $s );
 			if ( $len >= 40 && $len <= 300 ) {
+				if ( Feature_Flags::is_enabled( 'prompt_sanitizer' ) && Prompt_Sanitizer::is_enabled() ) {
+					$s = Prompt_Sanitizer::sanitize( $s );
+				}
 				$quotes[] = $s;
 			}
 		}
@@ -3415,10 +3906,16 @@ class Abilities {
 			if ( ! $post ) {
 				continue;
 			}
+			$title   = $post->post_title;
+			$content = wp_strip_all_tags( $post->post_content );
+			if ( Feature_Flags::is_enabled( 'prompt_sanitizer' ) && Prompt_Sanitizer::is_enabled() ) {
+				$title   = Prompt_Sanitizer::sanitize_string( $title );
+				$content = Prompt_Sanitizer::sanitize( $content );
+			}
 			$sources[] = array(
 				'id'      => $post->ID,
-				'title'   => $post->post_title,
-				'content' => wp_strip_all_tags( $post->post_content ),
+				'title'   => $title,
+				'content' => $content,
 			);
 		}
 		if ( empty( $sources ) ) {

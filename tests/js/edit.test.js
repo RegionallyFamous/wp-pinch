@@ -34,7 +34,8 @@ describe( 'Pinch Chat block editor', () => {
 
 	describe( 'block attributes defaults', () => {
 		const defaults = {
-			placeholder: 'Ask your AI assistant anything about this site...',
+			placeholder:
+				'Pinch in a question — what do you want to know about this site?',
 			showHeader: true,
 			maxHeight: '400px',
 			blockId: '',
@@ -42,7 +43,7 @@ describe( 'Pinch Chat block editor', () => {
 
 		it( 'should have expected default placeholder', () => {
 			expect( defaults.placeholder ).toBe(
-				'Ask your AI assistant anything about this site...'
+				'Pinch in a question — what do you want to know about this site?'
 			);
 		} );
 
