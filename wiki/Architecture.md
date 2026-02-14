@@ -10,7 +10,7 @@ How the lobster trap is wired. WP Pinch sits inside WordPress and talks to OpenC
 │                                                           │
 │  ┌─────────────┐  ┌──────────────┐  ┌────────────────┐  │
 │  │  Abilities   │  │  MCP Server  │  │   Governance   │  │
-│  │  (38+ tools)  │──│  (endpoint)  │  │   (7 tasks)    │  │
+│  │  (38+ tools)  │──│  (endpoint)  │  │   (8 tasks)    │  │
 │  └──────┬───────┘  └──────┬───────┘  └───────┬────────┘  │
 │         │                 │                   │           │
 │  ┌──────┴─────────────────┴───────────────────┴────────┐ │
@@ -74,11 +74,11 @@ Features:
 
 ### Incoming Webhook Receiver
 
-The `/hook` endpoint lets OpenClaw push ability execution requests back to WordPress. HMAC-SHA256 verified, rate-limited, and fully logged.
+The `/hooks/receive` endpoint lets OpenClaw push ability execution requests back to WordPress. HMAC-SHA256 verified, rate-limited, and fully logged.
 
 ### Governance Engine
 
-Seven recurring background tasks run via Action Scheduler (even lobsters pace themselves):
+Eight recurring background tasks run via Action Scheduler (even lobsters pace themselves):
 
 | Task | What It Catches |
 |---|---|
@@ -88,6 +88,7 @@ Seven recurring background tasks run via Action Scheduler (even lobsters pace th
 | **Broken Link Detection** | Dead links lurking in your content |
 | **Security Scanning** | Suspicious plugin changes, available updates |
 | **Draft Necromancer** | Abandoned drafts worth resurrecting (Ghost Writer) |
+| **Spaced Resurfacing** | Notes not updated in N days — revisit list by category/tag |
 | **Tide Report** | Daily digest — bundles content freshness, SEO, comments, and (optionally) draft necromancer into one webhook payload |
 
 Findings are delivered via webhook to OpenClaw or processed server-side. Tasks can run on a schedule or be triggered manually via WP-CLI (`wp pinch governance run`). Set it and check it — like a lobster trap.
@@ -137,5 +138,6 @@ All REST API endpoints:
 | `/wp-pinch/v1/session/reset` | POST | `edit_posts` or flag | Mint a new session key |
 | `/wp-pinch/v1/status` | GET | `manage_options` | Plugin status and health |
 | `/wp-pinch/v1/health` | GET | None | Public health check |
-| `/wp-pinch/v1/hook` | POST | HMAC | Incoming webhook receiver |
+| `/wp-pinch/v1/abilities` | GET | `edit_posts` | List abilities (name, title, description, input_schema) for discovery |
+| `/wp-pinch/v1/hooks/receive` | POST | HMAC | Incoming webhook receiver (execute_ability, execute_batch, run_governance, ping) |
 | `/wp-pinch/v1/mcp` | Varies | MCP | MCP server endpoint |

@@ -28,13 +28,14 @@ class Governance {
 	 * @var array<string, int>
 	 */
 	const DEFAULT_INTERVALS = array(
-		'content_freshness' => DAY_IN_SECONDS,
-		'seo_health'        => DAY_IN_SECONDS,
-		'comment_sweep'     => 6 * HOUR_IN_SECONDS,
-		'broken_links'      => WEEK_IN_SECONDS,
-		'security_scan'     => DAY_IN_SECONDS,
-		'draft_necromancer' => WEEK_IN_SECONDS,
-		'tide_report'       => DAY_IN_SECONDS,
+		'content_freshness'  => DAY_IN_SECONDS,
+		'seo_health'         => DAY_IN_SECONDS,
+		'comment_sweep'      => 6 * HOUR_IN_SECONDS,
+		'broken_links'       => WEEK_IN_SECONDS,
+		'security_scan'      => DAY_IN_SECONDS,
+		'draft_necromancer'  => WEEK_IN_SECONDS,
+		'spaced_resurfacing' => DAY_IN_SECONDS,
+		'tide_report'        => DAY_IN_SECONDS,
 	);
 
 	/**
@@ -47,6 +48,7 @@ class Governance {
 		add_action( 'wp_pinch_governance_broken_links', array( __CLASS__, 'task_broken_links' ) );
 		add_action( 'wp_pinch_governance_security_scan', array( __CLASS__, 'task_security_scan' ) );
 		add_action( 'wp_pinch_governance_draft_necromancer', array( __CLASS__, 'task_draft_necromancer' ) );
+		add_action( 'wp_pinch_governance_spaced_resurfacing', array( __CLASS__, 'task_spaced_resurfacing' ) );
 		add_action( 'wp_pinch_governance_tide_report', array( __CLASS__, 'task_tide_report' ) );
 
 		// Re-evaluate task schedules once per plugin version (avoids DB queries on every admin load).
@@ -502,14 +504,79 @@ class Governance {
 	 */
 	public static function get_available_tasks(): array {
 		return array(
-			'content_freshness' => __( 'Content Freshness — flag posts not updated in 180+ days', 'wp-pinch' ),
-			'seo_health'        => __( 'SEO Health — check titles, alt text, content length', 'wp-pinch' ),
-			'comment_sweep'     => __( 'Comment Sweep — pending moderation and spam count', 'wp-pinch' ),
-			'broken_links'      => __( 'Broken Links — check for dead links in content', 'wp-pinch' ),
-			'security_scan'     => __( 'Security Scan — outdated software, debug mode, file editing', 'wp-pinch' ),
-			'draft_necromancer' => __( 'Draft Necromancer — surface abandoned drafts worth resurrecting', 'wp-pinch' ),
-			'tide_report'       => __( 'Tide Report — daily digest: drafts, SEO, comments in one webhook', 'wp-pinch' ),
+			'content_freshness'  => __( 'Content Freshness — flag posts not updated in 180+ days', 'wp-pinch' ),
+			'seo_health'         => __( 'SEO Health — check titles, alt text, content length', 'wp-pinch' ),
+			'comment_sweep'      => __( 'Comment Sweep — pending moderation and spam count', 'wp-pinch' ),
+			'broken_links'       => __( 'Broken Links — check for dead links in content', 'wp-pinch' ),
+			'security_scan'      => __( 'Security Scan — outdated software, debug mode, file editing', 'wp-pinch' ),
+			'draft_necromancer'  => __( 'Draft Necromancer — surface abandoned drafts worth resurrecting', 'wp-pinch' ),
+			'spaced_resurfacing' => __( 'Spaced Resurfacing — notes not updated in N days (revisit list)', 'wp-pinch' ),
+			'tide_report'        => __( 'Tide Report — daily digest: drafts, SEO, comments in one webhook', 'wp-pinch' ),
 		);
+	}
+
+	/**
+	 * Spaced Resurfacing — posts not updated in N days (optionally by category/tag).
+	 */
+	public static function task_spaced_resurfacing(): void {
+		$days     = (int) apply_filters( 'wp_pinch_spaced_resurfacing_days', 30 );
+		$findings = self::get_spaced_resurfacing_findings( $days, '', '', 100 );
+		if ( empty( $findings ) ) {
+			return;
+		}
+		self::deliver_findings(
+			'spaced_resurfacing',
+			$findings,
+			sprintf(
+				/* translators: %1$d: number of posts, %2$d: days */
+				__( '%1$d posts have not been updated in over %2$d days.', 'wp-pinch' ),
+				count( $findings ),
+				$days
+			)
+		);
+	}
+
+	/**
+	 * Get spaced resurfacing findings (posts not updated in N days). Public for ability use.
+	 *
+	 * @param int    $days     Minimum days since last update.
+	 * @param string $category Optional category slug.
+	 * @param string $tag      Optional tag slug.
+	 * @param int    $limit    Max number of posts.
+	 * @return array List of post summaries (id, title, url, modified).
+	 */
+	public static function get_spaced_resurfacing_findings( int $days = 30, string $category = '', string $tag = '', int $limit = 50 ): array {
+		$cutoff = gmdate( 'Y-m-d H:i:s', time() - ( $days * DAY_IN_SECONDS ) );
+		$args   = array(
+			'post_type'      => 'post',
+			'post_status'    => 'publish',
+			'posts_per_page' => $limit,
+			'date_query'     => array(
+				array(
+					'column' => 'post_modified_gmt',
+					'before' => $cutoff,
+				),
+			),
+			'orderby'        => 'modified',
+			'order'          => 'ASC',
+		);
+		if ( '' !== $category ) {
+			$args['category_name'] = $category;
+		}
+		if ( '' !== $tag ) {
+			$args['tag'] = $tag;
+		}
+		$posts = get_posts( $args );
+		$out   = array();
+		foreach ( $posts as $post ) {
+			$out[] = array(
+				'post_id'  => $post->ID,
+				'title'    => $post->post_title,
+				'url'      => get_permalink( $post->ID ),
+				'modified' => $post->post_modified,
+			);
+		}
+		return $out;
 	}
 
 	/**
@@ -542,6 +609,11 @@ class Governance {
 			}
 		}
 
+		$spaced = self::get_spaced_resurfacing_findings( 30, '', '', 50 );
+		if ( ! empty( $spaced ) ) {
+			$bundle['spaced_resurfacing'] = $spaced;
+		}
+
 		if ( empty( $bundle ) ) {
 			return;
 		}
@@ -560,6 +632,9 @@ class Governance {
 		}
 		if ( ! empty( $bundle['draft_necromancer'] ) ) {
 			$parts[] = count( $bundle['draft_necromancer'] ) . ' drafts worth resurrecting';
+		}
+		if ( ! empty( $bundle['spaced_resurfacing'] ) ) {
+			$parts[] = count( $bundle['spaced_resurfacing'] ) . ' notes to resurface';
 		}
 		$summary = __( 'Tide Report: ', 'wp-pinch' ) . implode( '; ', $parts ) . '.';
 

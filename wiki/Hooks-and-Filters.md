@@ -19,6 +19,22 @@ WP Pinch provides over 12 filters and 6 actions for customizing every aspect of 
 | `wp_pinch_chat_payload` | Modify chat payload before sending to gateway | `array $payload, WP_REST_Request $request` |
 | `wp_register_ability_args` | Modify ability registration args | `array $args` |
 | `wp_pinch_feature_flags` | Override feature flag values | `array $flags` |
+| `wp_pinch_synthesize_excerpt_words` | Excerpt word count for synthesize/what-do-i-know (default 40) | `int $words` |
+| `wp_pinch_synthesize_content_snippet_words` | Content snippet word count sent to LLM (default 75, was 150) | `int $words` |
+| `wp_pinch_synthesize_per_page_max` | Max posts per synthesize query (default 25) | `int $max` |
+| `wp_pinch_block_type_metadata` | Modify Pinch Chat block registration args | `array $args, string $block_type` |
+
+---
+
+## Block Bindings (Pinch Chat)
+
+The Pinch Chat block supports the Block Bindings API (WordPress 6.5+). You can bind `agentId` and `placeholder` to:
+
+- **core/post-meta** — Per-post overrides: `wp_pinch_chat_agent_id`, `wp_pinch_chat_placeholder`
+- **wp-pinch/agent-id** — Site option `wp_pinch_agent_id`
+- **wp-pinch/chat-placeholder** — Site option `wp_pinch_chat_placeholder`
+
+In the block editor: select the Pinch Chat block → Settings sidebar → Block bindings → connect an attribute to a source.
 
 ---
 

@@ -1,6 +1,6 @@
 # Abilities Reference
 
-WP Pinch provides **core abilities** (standard WordPress operations the AI can perform) and **tools** (PinchDrop and Ghost Writer workflows). You get **38 core abilities** across 10 categories, plus **PinchDrop** and **Ghost Writer** (4 tool abilities), and **10 WooCommerce abilities** when WooCommerce is active. Every ability has built-in security guards: capability checks, input sanitization, existence validation, and audit logging. We don't let AI agents run around your site like unsupervised lobsters in a kitchen.
+WP Pinch provides **core abilities** (standard WordPress operations the AI can perform) and **tools** (PinchDrop, Ghost Writer, Molt, and a whole claw-full of quick-win and high-leverage abilities). You get **38 core abilities** across 10 categories, plus PinchDrop, Ghost Writer, Molt, TL;DR, Link Suggester, Quote Bank, What do I know, Project Assembly, Spaced Resurfacing, Find Similar, Knowledge Graph — and **2 WooCommerce abilities** when WooCommerce is active. Every ability has built-in security guards: capability checks, input sanitization, existence validation, and audit logging. We don't let AI agents run around your site like unsupervised lobsters in a kitchen. *Someone* has to be the bouncer.
 
 ---
 
@@ -19,7 +19,7 @@ Core abilities cover content, media, users, comments, settings, plugins/themes, 
 | **Plugins & Themes** | Extension management | `list-plugins`, `toggle-plugin`, `list-themes`, `switch-theme` |
 | **Analytics** | Site health, data export, context & discovery | `site-health`, `recent-activity`, `search-content`, `export-data`, `site-digest`, `related-posts`, `synthesize` |
 | **Advanced** | Menus, meta, revisions, bulk ops, cron | `list-menus`, `manage-menu-item`, `get-post-meta`, `update-post-meta`, `list-revisions`, `restore-revision`, `bulk-edit-posts`, `list-cron-events`, `manage-cron` |
-| **WooCommerce** | Shop abilities (when WooCommerce is active) | `woo-list-products`, `woo-manage-order`, `woo-create-product`, `woo-update-product`, `woo-manage-inventory`, `woo-list-orders`, `woo-list-customers`, `woo-list-coupons`, `woo-create-coupon`, `woo-revenue-summary` |
+| **WooCommerce** | Shop abilities (when WooCommerce is active) | `woo-list-products`, `woo-manage-order` |
 
 ---
 
@@ -45,15 +45,35 @@ The AI that writes like *you*. Ghost Writer learns each author's writing voice f
 
 ### Context & discovery (Memory Bait, Echo Net, Weave)
 
-- **`site-digest` (Memory Bait)** — Compact export of recent posts (title, excerpt, taxonomy terms) for agent memory-core or system prompt.
+- **`site-digest` (Memory Bait)** — Compact export of recent posts (title, excerpt, taxonomy terms, optional `tldr` when set) for agent memory-core or system prompt.
 - **`related-posts` (Echo Net)** — Given a post ID, returns posts that link to it (backlinks) or share taxonomy terms.
 - **`synthesize` (Weave)** — Given a query, search posts and return a payload (title, excerpt, content snippet) for LLM synthesis; first draft, human refines.
+
+### Quick-win tools (TL;DR, Link Suggester, Quote Bank)
+
+- **`generate-tldr`** — Generate a 1–2 sentence summary for a post via Molt and store it in post meta (`wp_pinch_tldr`). Runs automatically when a post is published (if Molt is enabled). Input: `post_id`.
+- **`suggest-links`** — Given a post ID or text query, return existing posts that are good link candidates (search + related-posts). Input: `post_id` or `query`, optional `limit` (default 15).
+- **`quote-bank`** — Extract notable sentences from a post (heuristic: medium-length sentences, 40–300 chars). Returns a list of strings. Input: `post_id`, optional `max` (default 15).
+
+### High-leverage tools (What do I know, Project Assembly, Spaced Resurfacing)
+
+- **`what-do-i-know`** — Natural-language query → search + gateway synthesis → coherent answer plus source post IDs. Input: `query`, optional `per_page` (default 10). Flagship retrieval experience.
+- **`project-assembly`** — Given `post_ids` and optional `prompt`, weave those posts into one draft with citations. Returns `draft`; optional `save_as_draft` creates a draft post.
+- **`spaced-resurfacing`** — List posts not updated in N days (optionally by `category` or `tag`). Input: `days` (default 30), `category`, `tag`, `limit` (default 50). Also available as a daily governance task and in the Tide Report.
+
+### Semantic search (MVP)
+
+- **`find-similar`** — Given `post_id` or `query`, return related posts (by keyword search and taxonomy). MVP uses title/excerpt similarity and related-posts; **future:** full semantic search with embeddings.
+
+### Knowledge Graph
+
+- **`knowledge-graph`** — Returns nodes (posts, optionally terms) and edges (content links, shared tags). Input: `post_type` (default `post`), `limit` (default 200), `include_terms` (default true). Payload suitable for external graph visualization.
 
 ---
 
 ## Security Guards
 
-Every ability execution goes through these checks before any work is done. Think of it as a bouncer at a seafood restaurant — only the right claws get past the velvet rope:
+Every ability execution goes through these checks before any work is done. Think of it as a bouncer at a seafood restaurant — only the right claws get past the velvet rope. (We take our crustacean security very seriously.)
 
 1. **Capability check** -- Does the current user have permission? (e.g., `edit_posts`, `manage_options`)
 2. **Per-post verification** -- For meta operations, verifies `current_user_can( 'edit_post', $post_id )`

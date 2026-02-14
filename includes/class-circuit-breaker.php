@@ -40,6 +40,11 @@ class Circuit_Breaker {
 	const OPEN_UNTIL_KEY = 'wp_pinch_circuit_open_until';
 
 	/**
+	 * Option key for when the circuit was last opened (ISO8601 string).
+	 */
+	const LAST_OPENED_AT_OPTION = 'wp_pinch_circuit_last_opened_at';
+
+	/**
 	 * Number of consecutive failures before opening the circuit.
 	 */
 	const FAILURE_THRESHOLD = 3;
@@ -111,6 +116,7 @@ class Circuit_Breaker {
 		if ( $failures >= self::FAILURE_THRESHOLD ) {
 			self::set_state( self::STATE_OPEN );
 			set_transient( self::OPEN_UNTIL_KEY, time() + self::COOLDOWN_SECONDS, self::COOLDOWN_SECONDS + 10 );
+			update_option( self::LAST_OPENED_AT_OPTION, gmdate( 'c' ), false );
 
 			Audit_Table::insert(
 				'circuit_open',
@@ -155,6 +161,16 @@ class Circuit_Breaker {
 		}
 
 		return $state;
+	}
+
+	/**
+	 * Get the ISO8601 timestamp when the circuit was last opened.
+	 *
+	 * @return string|null Timestamp or null if never opened (or option not set).
+	 */
+	public static function get_last_failure_at(): ?string {
+		$at = get_option( self::LAST_OPENED_AT_OPTION, '' );
+		return is_string( $at ) && '' !== $at ? $at : null;
 	}
 
 	/**

@@ -7,8 +7,8 @@ Release prep is complete. Use this checklist to cut the release.
 - [x] All linting (PHP, JS, CSS) — passing
 - [x] Version bumped to **2.4.0** in `wp-pinch.php`, `package.json`
 - [x] `CHANGELOG.md` — [2.4.0] added with Quick Drop, Memory Bait, Tide Report, Echo Net, Weave
-- [x] `readme.txt` — Stable tag, changelog, upgrade notice, governance count (seven tasks)
-- [x] `README.md` — Seven governance tasks, Quick Drop, Memory Bait / Echo Net / Weave in Tools
+- [x] `readme.txt` — Stable tag, changelog, upgrade notice, governance count (eight tasks)
+- [x] `README.md` — Eight governance tasks, Quick Drop, Memory Bait / Echo Net / Weave in Tools
 - [x] `wiki/Abilities-Reference.md` — 38 core abilities, Analytics row updated, Quick Drop + Context & discovery section
 - [x] `npm run build` — assets built successfully
 

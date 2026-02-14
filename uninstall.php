@@ -43,6 +43,7 @@ function wp_pinch_cleanup_site() {
 		'wp_pinch_chat_model',
 		'wp_pinch_chat_thinking',
 		'wp_pinch_chat_timeout',
+		'wp_pinch_chat_placeholder',
 		'wp_pinch_session_idle_minutes',
 
 		// Governance settings.
@@ -53,6 +54,9 @@ function wp_pinch_cleanup_site() {
 		// Feature flags & abilities.
 		'wp_pinch_feature_flags',
 		'wp_pinch_disabled_abilities',
+
+		// Circuit breaker.
+		'wp_pinch_circuit_last_opened_at',
 
 		// Ghost Writer.
 		'wp_pinch_ghost_writer_threshold',

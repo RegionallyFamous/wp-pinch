@@ -41,11 +41,53 @@ class Rest_Controller {
 	const MAX_PARAMS_KEYS_PER_LEVEL = 100;
 
 	/**
+	 * Trace ID for the current REST request (set in rest_request_before_callbacks).
+	 *
+	 * @var string|null
+	 */
+	public static $current_trace_id = null;
+
+	/**
 	 * Wire hooks.
 	 */
 	public static function init(): void {
 		add_action( 'rest_api_init', array( __CLASS__, 'register_routes' ) );
+		add_filter( 'rest_request_before_callbacks', array( __CLASS__, 'ensure_trace_id' ), 10, 3 );
 		add_filter( 'rest_post_dispatch', array( __CLASS__, 'add_security_headers' ), 10, 3 );
+	}
+
+	/**
+	 * Ensure the request has a trace ID and store it for audit log correlation.
+	 *
+	 * @param \WP_REST_Response|\WP_HTTP_Response|\WP_Error $response Response to send.
+	 * @param array                                        $handler  Route handler.
+	 * @param \WP_REST_Request                             $request  Request.
+	 * @return \WP_REST_Response|\WP_HTTP_Response|\WP_Error
+	 */
+	public static function ensure_trace_id( $response, array $handler, \WP_REST_Request $request ) {
+		$route = $request->get_route();
+		if ( ! str_starts_with( $route, '/wp-pinch/' ) ) {
+			return $response;
+		}
+
+		$tid = $request->get_header( 'X-WP-Pinch-Trace-Id' );
+		if ( empty( $tid ) || ! is_string( $tid ) ) {
+			$tid = function_exists( 'wp_generate_uuid4' ) ? wp_generate_uuid4() : uniqid( 'wp-pinch-', true );
+			$request->set_header( 'X-WP-Pinch-Trace-Id', $tid );
+		}
+
+		self::$current_trace_id = $tid;
+
+		return $response;
+	}
+
+	/**
+	 * Get the trace ID for the current REST request (for audit log context).
+	 *
+	 * @return string|null
+	 */
+	public static function get_trace_id(): ?string {
+		return self::$current_trace_id;
 	}
 
 	/**
@@ -68,14 +110,14 @@ class Rest_Controller {
 							'validate_callback' => function ( $value ) {
 								if ( ! is_string( $value ) || '' === trim( $value ) ) {
 									return new \WP_Error(
-										'rest_invalid_param',
+										'validation_error',
 										__( 'Message cannot be empty.', 'wp-pinch' ),
 										array( 'status' => 400 )
 									);
 								}
 								if ( mb_strlen( $value ) > self::MAX_MESSAGE_LENGTH ) {
 									return new \WP_Error(
-										'rest_invalid_param',
+										'validation_error',
 										__( 'Message is too long.', 'wp-pinch' ),
 										array( 'status' => 400 )
 									);
@@ -90,7 +132,7 @@ class Rest_Controller {
 							'validate_callback' => function ( $value ) {
 								if ( is_string( $value ) && mb_strlen( $value ) > self::MAX_SESSION_KEY_LENGTH ) {
 									return new \WP_Error(
-										'rest_invalid_param',
+										'validation_error',
 										__( 'Session key is too long.', 'wp-pinch' ),
 										array( 'status' => 400 )
 									);
@@ -124,6 +166,19 @@ class Rest_Controller {
 					'permission_callback' => array( __CLASS__, 'check_permission' ),
 				),
 				'schema' => array( __CLASS__, 'get_status_schema' ),
+			)
+		);
+
+		// List abilities for discovery (non-MCP clients).
+		register_rest_route(
+			'wp-pinch/v1',
+			'/abilities',
+			array(
+				array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( __CLASS__, 'handle_list_abilities' ),
+					'permission_callback' => array( __CLASS__, 'check_permission' ),
+				),
 			)
 		);
 
@@ -204,7 +259,7 @@ class Rest_Controller {
 									$v = absint( $value );
 									if ( $v < 1 ) {
 										return new \WP_Error(
-											'rest_invalid_param',
+											'validation_error',
 											__( 'Post ID must be a positive integer.', 'wp-pinch' ),
 											array( 'status' => 400 )
 										);
@@ -229,6 +284,58 @@ class Rest_Controller {
 			);
 		}
 
+		// Web Clipper: token-protected one-shot capture from browser (bookmarklet).
+		register_rest_route(
+			'wp-pinch/v1',
+			'/capture',
+			array(
+				array(
+					'methods'             => \WP_REST_Server::CREATABLE,
+					'callback'            => array( __CLASS__, 'handle_web_clipper_capture' ),
+					'permission_callback' => array( __CLASS__, 'check_capture_token' ),
+					'args'                => array(
+						'text'         => array(
+							'required'          => true,
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_textarea_field',
+							'validate_callback' => function ( $value ) {
+								if ( ! is_string( $value ) || '' === trim( $value ) ) {
+									return new \WP_Error(
+										'validation_error',
+										__( 'Text cannot be empty.', 'wp-pinch' ),
+										array( 'status' => 400 )
+									);
+								}
+								if ( mb_strlen( $value ) > 50000 ) {
+									return new \WP_Error(
+										'validation_error',
+										__( 'Text is too long.', 'wp-pinch' ),
+										array( 'status' => 400 )
+									);
+								}
+								return true;
+							},
+						),
+						'url'          => array(
+							'type'              => 'string',
+							'default'           => '',
+							'sanitize_callback' => 'esc_url_raw',
+						),
+						'title'        => array(
+							'type'              => 'string',
+							'default'           => '',
+							'sanitize_callback' => 'sanitize_text_field',
+						),
+						'save_as_note' => array(
+							'type'              => 'boolean',
+							'default'           => true,
+							'sanitize_callback' => 'rest_sanitize_boolean',
+						),
+					),
+				),
+			)
+		);
+
 		// PinchDrop capture endpoint (channel-agnostic inbound ideas).
 		register_rest_route(
 			'wp-pinch/v1',
@@ -246,14 +353,14 @@ class Rest_Controller {
 							'validate_callback' => function ( $value ) {
 								if ( ! is_string( $value ) || '' === trim( $value ) ) {
 									return new \WP_Error(
-										'rest_invalid_param',
+										'validation_error',
 										__( 'Text cannot be empty.', 'wp-pinch' ),
 										array( 'status' => 400 )
 									);
 								}
 								if ( mb_strlen( $value ) > 20000 ) {
 									return new \WP_Error(
-										'rest_invalid_param',
+										'validation_error',
 										__( 'Text is too long.', 'wp-pinch' ),
 										array( 'status' => 400 )
 									);
@@ -309,14 +416,14 @@ class Rest_Controller {
 								'validate_callback' => function ( $value ) {
 									if ( ! is_string( $value ) || '' === trim( $value ) ) {
 										return new \WP_Error(
-											'rest_invalid_param',
+											'validation_error',
 											__( 'Message cannot be empty.', 'wp-pinch' ),
 											array( 'status' => 400 )
 										);
 									}
 									if ( mb_strlen( $value ) > self::MAX_MESSAGE_LENGTH ) {
 										return new \WP_Error(
-											'rest_invalid_param',
+											'validation_error',
 											__( 'Message is too long.', 'wp-pinch' ),
 											array( 'status' => 400 )
 										);
@@ -331,7 +438,7 @@ class Rest_Controller {
 								'validate_callback' => function ( $value ) {
 									if ( is_string( $value ) && mb_strlen( $value ) > self::MAX_SESSION_KEY_LENGTH ) {
 										return new \WP_Error(
-											'rest_invalid_param',
+											'validation_error',
 											__( 'Session key is too long.', 'wp-pinch' ),
 											array( 'status' => 400 )
 										);
@@ -373,14 +480,14 @@ class Rest_Controller {
 								'validate_callback' => function ( $value ) {
 									if ( ! is_string( $value ) || '' === trim( $value ) ) {
 										return new \WP_Error(
-											'rest_invalid_param',
+											'validation_error',
 											__( 'Message cannot be empty.', 'wp-pinch' ),
 											array( 'status' => 400 )
 										);
 									}
 									if ( mb_strlen( $value ) > self::MAX_MESSAGE_LENGTH ) {
 										return new \WP_Error(
-											'rest_invalid_param',
+											'validation_error',
 											__( 'Message is too long.', 'wp-pinch' ),
 											array( 'status' => 400 )
 										);
@@ -395,7 +502,7 @@ class Rest_Controller {
 								'validate_callback' => function ( $value ) {
 									if ( is_string( $value ) && mb_strlen( $value ) > self::MAX_SESSION_KEY_LENGTH ) {
 										return new \WP_Error(
-											'rest_invalid_param',
+											'validation_error',
 											__( 'Session key is too long.', 'wp-pinch' ),
 											array( 'status' => 400 )
 										);
@@ -433,7 +540,7 @@ class Rest_Controller {
 							'required'          => true,
 							'type'              => 'string',
 							'sanitize_callback' => 'sanitize_key',
-							'enum'              => array( 'execute_ability', 'run_governance', 'ping' ),
+							'enum'              => array( 'execute_ability', 'execute_batch', 'run_governance', 'ping' ),
 						),
 						'ability' => array(
 							'type'              => 'string',
@@ -444,7 +551,6 @@ class Rest_Controller {
 							'type'              => 'object',
 							'default'           => array(),
 							'sanitize_callback' => function ( $value ) {
-								// Recursively sanitize all string values in the params object.
 								if ( ! is_array( $value ) ) {
 									return array();
 								}
@@ -455,6 +561,29 @@ class Rest_Controller {
 							'type'              => 'string',
 							'default'           => '',
 							'sanitize_callback' => 'sanitize_key',
+						),
+						'batch'   => array(
+							'type'              => 'array',
+							'default'           => array(),
+							'sanitize_callback' => function ( $value ) {
+								if ( ! is_array( $value ) ) {
+									return array();
+								}
+								$max = 10;
+								$out = array();
+								foreach ( array_slice( $value, 0, $max ) as $item ) {
+									if ( ! is_array( $item ) ) {
+										continue;
+									}
+									$ability = isset( $item['ability'] ) ? sanitize_text_field( (string) $item['ability'] ) : '';
+									$params  = isset( $item['params'] ) && is_array( $item['params'] ) ? self::sanitize_params_recursive( $item['params'] ) : array();
+									$out[]   = array(
+										'ability' => $ability,
+										'params'  => $params,
+									);
+								}
+								return $out;
+							},
 						),
 					),
 				),
@@ -481,8 +610,13 @@ class Rest_Controller {
 		$route = $request->get_route();
 
 		// Only apply to our own endpoints.
-		if ( 0 !== strpos( $route, '/wp-pinch/' ) ) {
+		if ( ! str_starts_with( $route, '/wp-pinch/' ) ) {
 			return $response;
+		}
+
+		$trace_id = $request->get_header( 'X-WP-Pinch-Trace-Id' );
+		if ( ! empty( $trace_id ) ) {
+			$response->header( 'X-WP-Pinch-Trace-Id', $trace_id );
 		}
 
 		$response->header( 'X-Content-Type-Options', 'nosniff' );
@@ -626,13 +760,25 @@ class Rest_Controller {
 					'type'        => 'boolean',
 					'readonly'    => true,
 				),
+				'rate_limit' => array(
+					'description' => __( 'Rate limit config (requests per minute).', 'wp-pinch' ),
+					'type'        => 'object',
+					'readonly'    => true,
+					'properties'  => array(
+						'limit' => array( 'type' => 'integer' ),
+					),
+				),
 				'circuit'    => array(
 					'description' => __( 'Circuit breaker state.', 'wp-pinch' ),
 					'type'        => 'object',
 					'readonly'    => true,
 					'properties'  => array(
-						'state'       => array( 'type' => 'string' ),
-						'retry_after' => array( 'type' => 'integer' ),
+						'state'           => array( 'type' => 'string' ),
+						'retry_after'     => array( 'type' => 'integer' ),
+						'last_failure_at' => array(
+							'type'   => array( 'string', 'null' ),
+							'format' => 'date-time',
+						),
 					),
 				),
 				'timestamp'  => array(
@@ -653,7 +799,7 @@ class Rest_Controller {
 	public static function check_permission() {
 		if ( ! current_user_can( 'edit_posts' ) ) {
 			return new \WP_Error(
-				'rest_forbidden',
+				'capability_denied',
 				__( 'You do not have permission to use WP Pinch.', 'wp-pinch' ),
 				array( 'status' => 403 )
 			);
@@ -729,10 +875,47 @@ class Rest_Controller {
 	}
 
 	/**
+	 * Permission callback for Web Clipper capture endpoint.
+	 *
+	 * Validates token from query param `token` or header X-WP-Pinch-Capture-Token
+	 * against the option wp_pinch_capture_token.
+	 *
+	 * @param \WP_REST_Request $request REST request.
+	 * @return true|\WP_Error
+	 */
+	public static function check_capture_token( \WP_REST_Request $request ) {
+		$stored = get_option( 'wp_pinch_capture_token', '' );
+		if ( empty( $stored ) ) {
+			return new \WP_Error(
+				'capture_not_configured',
+				__( 'Web Clipper capture token is not configured.', 'wp-pinch' ),
+				array( 'status' => 503 )
+			);
+		}
+
+		$token = $request->get_param( 'token' );
+		if ( is_string( $token ) && hash_equals( $stored, $token ) ) {
+			return true;
+		}
+
+		$header = $request->get_header( 'x_wp_pinch_capture_token' );
+		if ( '' !== $header && hash_equals( $stored, $header ) ) {
+			return true;
+		}
+
+		return new \WP_Error(
+			'rest_forbidden',
+			__( 'Invalid or missing capture token.', 'wp-pinch' ),
+			array( 'status' => 401 )
+		);
+	}
+
+	/**
 	 * Handle an incoming webhook from OpenClaw.
 	 *
-	 * Supports three actions:
+	 * Supports four actions:
 	 * - execute_ability: Run a registered WordPress ability.
+	 * - execute_batch: Run up to 10 abilities in sequence; body.batch = [{ ability, params }, ...].
 	 * - run_governance: Trigger a governance task.
 	 * - ping: Health check.
 	 *
@@ -742,14 +925,18 @@ class Rest_Controller {
 	public static function handle_incoming_hook( \WP_REST_Request $request ) {
 		$action = $request->get_param( 'action' );
 
+		$trace_id = self::get_trace_id();
 		Audit_Table::insert(
 			'incoming_hook',
 			'webhook',
 			sprintf( 'Incoming hook received: %s', $action ),
-			array(
-				'action'  => $action,
-				'ability' => $request->get_param( 'ability' ),
-				'task'    => $request->get_param( 'task' ),
+			array_merge(
+				array(
+					'action'  => $action,
+					'ability' => $request->get_param( 'ability' ),
+					'task'    => $request->get_param( 'task' ),
+				),
+				array_filter( array( 'trace_id' => $trace_id ) )
 			)
 		);
 
@@ -842,17 +1029,107 @@ class Rest_Controller {
 					);
 				}
 
+				$trace_id = self::get_trace_id();
 				Audit_Table::insert(
 					'ability_executed',
 					'incoming_hook',
 					sprintf( 'Ability "%s" executed via incoming hook.', $ability_name ),
-					array( 'ability' => $ability_name )
+					array_merge(
+						array( 'ability' => $ability_name ),
+						array_filter( array( 'trace_id' => $trace_id ) )
+					)
 				);
 
 				return new \WP_REST_Response(
 					array(
 						'status' => 'ok',
 						'result' => $result,
+					),
+					200
+				);
+
+			case 'execute_batch':
+				$batch = $request->get_param( 'batch' );
+				if ( ! is_array( $batch ) || empty( $batch ) ) {
+					return new \WP_Error(
+						'validation_error',
+						__( 'The "batch" parameter must be a non-empty array of { ability, params }.', 'wp-pinch' ),
+						array( 'status' => 400 )
+					);
+				}
+
+				$admins = get_users(
+					array(
+						'role'   => 'administrator',
+						'number' => 1,
+						'fields' => 'ID',
+					)
+				);
+				if ( empty( $admins ) ) {
+					return new \WP_Error(
+						'no_admin',
+						__( 'No administrator found to run abilities.', 'wp-pinch' ),
+						array( 'status' => 503 )
+					);
+				}
+
+				$previous_user = get_current_user_id();
+				wp_set_current_user( (int) $admins[0] );
+
+				$results = array();
+				foreach ( $batch as $item ) {
+					$ability_name = isset( $item['ability'] ) ? trim( (string) $item['ability'] ) : '';
+					$params       = isset( $item['params'] ) && is_array( $item['params'] ) ? $item['params'] : array();
+
+					if ( '' === $ability_name ) {
+						$results[] = array(
+							'success' => false,
+							'error'   => __( 'Missing ability name.', 'wp-pinch' ),
+						);
+						continue;
+					}
+
+					if ( ! function_exists( 'wp_execute_ability' ) ) {
+						$results[] = array(
+							'success' => false,
+							'error'   => __( 'Abilities API not available.', 'wp-pinch' ),
+						);
+						break;
+					}
+
+					$result = wp_execute_ability( $ability_name, $params );
+
+					if ( is_wp_error( $result ) ) {
+						$results[] = array(
+							'success' => false,
+							'error'   => $result->get_error_message(),
+							'code'    => $result->get_error_code(),
+						);
+					} else {
+						$results[] = array(
+							'success' => true,
+							'result'  => $result,
+						);
+					}
+				}
+
+				wp_set_current_user( $previous_user );
+
+				$trace_id = self::get_trace_id();
+				Audit_Table::insert(
+					'batch_executed',
+					'incoming_hook',
+					sprintf( 'Batch of %d ability calls executed via incoming hook.', count( $batch ) ),
+					array_merge(
+						array( 'count' => count( $results ) ),
+						array_filter( array( 'trace_id' => $trace_id ) )
+					)
+				);
+
+				return new \WP_REST_Response(
+					array(
+						'status'  => 'ok',
+						'results' => $results,
 					),
 					200
 				);
@@ -890,11 +1167,15 @@ class Rest_Controller {
 				// Run the governance task synchronously.
 				Governance::$method();
 
+				$trace_id = self::get_trace_id();
 				Audit_Table::insert(
 					'governance_triggered',
 					'incoming_hook',
 					sprintf( 'Governance task "%s" triggered via incoming hook.', $task ),
-					array( 'task' => $task )
+					array_merge(
+						array( 'task' => $task ),
+						array_filter( array( 'trace_id' => $trace_id ) )
+					)
 				);
 
 				return new \WP_REST_Response(
@@ -1050,7 +1331,13 @@ class Rest_Controller {
 		if ( is_wp_error( $response ) ) {
 			Circuit_Breaker::record_failure();
 			// Log the real error server-side; return a generic message to the client.
-			Audit_Table::insert( 'gateway_error', 'chat', $response->get_error_message() );
+			$trace_id = self::get_trace_id();
+			Audit_Table::insert(
+				'gateway_error',
+				'chat',
+				$response->get_error_message(),
+				array_filter( array( 'trace_id' => $trace_id ) )
+			);
 			return new \WP_Error(
 				'gateway_error',
 				__( 'Unable to reach the AI gateway. Please try again later.', 'wp-pinch' ),
@@ -1091,11 +1378,15 @@ class Rest_Controller {
 		 */
 		$result = apply_filters( 'wp_pinch_chat_response', $result, $data );
 
+		$trace_id = self::get_trace_id();
 		Audit_Table::insert(
 			'chat_message',
 			'chat',
 			sprintf( 'Chat message from user #%d.', $user->ID ),
-			array( 'user_id' => $user->ID )
+			array_merge(
+				array( 'user_id' => $user->ID ),
+				array_filter( array( 'trace_id' => $trace_id ) )
+			)
 		);
 
 		$response_obj = new \WP_REST_Response( $result, 200 );
@@ -1275,11 +1566,15 @@ class Rest_Controller {
 		/** This filter is documented in class-rest-controller.php */
 		$result = apply_filters( 'wp_pinch_chat_response', $result, $data );
 
+		$trace_id = self::get_trace_id();
 		Audit_Table::insert(
 			'public_chat_message',
 			'chat',
 			'Public chat message.',
-			array( 'session_prefix' => substr( $session_key, 0, 24 ) )
+			array_merge(
+				array( 'session_prefix' => substr( $session_key, 0, 24 ) ),
+				array_filter( array( 'trace_id' => $trace_id ) )
+			)
 		);
 
 		$response_obj = new \WP_REST_Response( $result, 200 );
@@ -1317,6 +1612,107 @@ class Rest_Controller {
 	}
 
 	/**
+	 * Handle Web Clipper one-shot capture (token-protected).
+	 *
+	 * Creates a minimal draft post from text; optional url/title. Rate-limited and audit-logged.
+	 *
+	 * @param \WP_REST_Request $request REST request.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public static function handle_web_clipper_capture( \WP_REST_Request $request ) {
+		// Rate limit by IP.
+		$rate_key = 'wp_pinch_clipper_rate_' . substr( hash_hmac( 'sha256', self::get_client_ip(), wp_salt() ), 0, 16 );
+		$rate     = (int) get_transient( $rate_key );
+		if ( $rate >= 30 ) {
+			$response = new \WP_REST_Response(
+				array(
+					'code'    => 'rate_limited',
+					'message' => __( 'Too many capture requests. Please retry shortly.', 'wp-pinch' ),
+				),
+				429
+			);
+			$response->header( 'Retry-After', '60' );
+			return $response;
+		}
+		set_transient( $rate_key, $rate + 1, 60 );
+
+		$text  = trim( (string) $request->get_param( 'text' ) );
+		$url   = is_string( $request->get_param( 'url' ) ) ? $request->get_param( 'url' ) : '';
+		$title = is_string( $request->get_param( 'title' ) ) ? trim( $request->get_param( 'title' ) ) : '';
+
+		if ( '' === $title && '' !== $url ) {
+			$host  = wp_parse_url( $url, PHP_URL_HOST );
+			$title = ( is_string( $host ) && '' !== $host ) ? $host : __( 'Captured link', 'wp-pinch' );
+		}
+		if ( '' === $title ) {
+			$title = _x( 'Captured note', 'Web Clipper default post title', 'wp-pinch' );
+		}
+
+		$content = $text;
+		if ( '' !== $url ) {
+			$content = '<p><a href="' . esc_url( $url ) . '">' . esc_html( $url ) . "</a></p>\n\n" . $content;
+		}
+
+		$admins    = get_users(
+			array(
+				'role'   => 'administrator',
+				'number' => 1,
+				'fields' => 'ID',
+			)
+		);
+		$author_id = ! empty( $admins ) ? (int) $admins[0] : 0;
+		if ( 0 === $author_id ) {
+			return new \WP_Error(
+				'no_author',
+				__( 'No administrator found to create the post.', 'wp-pinch' ),
+				array( 'status' => 500 )
+			);
+		}
+
+		$post_id = wp_insert_post(
+			array(
+				'post_title'   => $title,
+				'post_content' => $content,
+				'post_status'  => 'draft',
+				'post_author'  => $author_id,
+				'post_type'    => 'post',
+			),
+			true
+		);
+
+		if ( is_wp_error( $post_id ) ) {
+			return new \WP_Error(
+				'create_failed',
+				$post_id->get_error_message(),
+				array( 'status' => 500 )
+			);
+		}
+
+		$trace_id = self::get_trace_id();
+		Audit_Table::insert(
+			'web_clipper_capture',
+			'rest',
+			sprintf( 'Web Clipper capture created post %d.', $post_id ),
+			array_merge(
+				array(
+					'post_id' => $post_id,
+					'url'     => $url,
+				),
+				array_filter( array( 'trace_id' => $trace_id ) )
+			)
+		);
+
+		return new \WP_REST_Response(
+			array(
+				'status'   => 'ok',
+				'post_id'  => $post_id,
+				'edit_url' => admin_url( 'post.php?post=' . $post_id . '&action=edit' ),
+			),
+			201
+		);
+	}
+
+	/**
 	 * Handle PinchDrop capture requests from OpenClaw channels.
 	 *
 	 * Auth is shared with hook receiver (Bearer token and optional HMAC headers).
@@ -1332,7 +1728,7 @@ class Rest_Controller {
 			return new \WP_Error(
 				'pinchdrop_disabled',
 				__( 'PinchDrop capture is currently disabled.', 'wp-pinch' ),
-				array( 'status' => 404 )
+				array( 'status' => 503 )
 			);
 		}
 
@@ -1412,13 +1808,17 @@ class Rest_Controller {
 			set_transient( $idem_key, $response_data, 15 * MINUTE_IN_SECONDS );
 		}
 
+		$trace_id = self::get_trace_id();
 		Audit_Table::insert(
 			'pinchdrop_capture',
 			'webhook',
 			sprintf( 'PinchDrop capture accepted from source "%s".', $source ),
-			array(
-				'source'     => $source,
-				'request_id' => $request_id,
+			array_merge(
+				array(
+					'source'     => $source,
+					'request_id' => $request_id,
+				),
+				array_filter( array( 'trace_id' => $trace_id ) )
 			)
 		);
 
@@ -1612,6 +2012,14 @@ class Rest_Controller {
 			'plugin_version' => WP_PINCH_VERSION,
 			'configured'     => ! empty( $gateway_url ) && ! empty( $api_token ),
 			'mcp_endpoint'   => rest_url( 'wp-pinch/mcp' ),
+			'rate_limit'     => array(
+				'limit' => max( 1, (int) get_option( 'wp_pinch_rate_limit', self::DEFAULT_RATE_LIMIT ) ),
+			),
+			'circuit'        => array(
+				'state'           => Circuit_Breaker::get_state(),
+				'retry_after'     => Circuit_Breaker::get_retry_after(),
+				'last_failure_at' => Circuit_Breaker::get_last_failure_at(),
+			),
 			'gateway'        => array(
 				'connected' => false,
 			),
@@ -1671,9 +2079,13 @@ class Rest_Controller {
 			'status'     => 'ok',
 			'version'    => WP_PINCH_VERSION,
 			'configured' => $configured,
+			'rate_limit' => array(
+				'limit' => max( 1, (int) get_option( 'wp_pinch_rate_limit', self::DEFAULT_RATE_LIMIT ) ),
+			),
 			'circuit'    => array(
-				'state'       => $circuit_state,
-				'retry_after' => $retry_after,
+				'state'           => $circuit_state,
+				'retry_after'     => $retry_after,
+				'last_failure_at' => Circuit_Breaker::get_last_failure_at(),
 			),
 			'timestamp'  => gmdate( 'c' ),
 		);
@@ -1682,6 +2094,24 @@ class Rest_Controller {
 		$response->header( 'Cache-Control', 'no-store, no-cache, must-revalidate, private' );
 
 		return $response;
+	}
+
+	/**
+	 * List WP Pinch abilities for discovery (non-MCP clients).
+	 *
+	 * Returns ability names. Full schema is available via MCP or core wp-abilities endpoint.
+	 *
+	 * @return \WP_REST_Response
+	 */
+	public static function handle_list_abilities(): \WP_REST_Response {
+		$names = function_exists( 'wp_pinch_get_ability_names' ) ? wp_pinch_get_ability_names() : array();
+		$list  = array();
+
+		foreach ( $names as $name ) {
+			$list[] = array( 'name' => $name );
+		}
+
+		return new \WP_REST_Response( array( 'abilities' => $list ), 200 );
 	}
 
 	// =========================================================================
@@ -1940,11 +2370,15 @@ class Rest_Controller {
 		}
 		flush();
 
+		$trace_id = self::get_trace_id();
 		Audit_Table::insert(
 			'chat_message',
 			'chat',
 			sprintf( 'Streamed chat message from user #%d.', $user->ID ),
-			array( 'user_id' => $user->ID )
+			array_merge(
+				array( 'user_id' => $user->ID ),
+				array_filter( array( 'trace_id' => $trace_id ) )
+			)
 		);
 
 		if ( function_exists( 'fastcgi_finish_request' ) ) {

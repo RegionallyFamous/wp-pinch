@@ -4,21 +4,21 @@ Tags: ai, agent, openclaw, mcp, automation
 Requires at least: 6.9
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 2.4.2
+Stable tag: 2.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-WordPress in your pocket. Your AI assistant runs it from the chat you never leave — 38+ abilities, Pinch Chat block, webhooks, 7 governance tasks. Self-hosted.
+WordPress in your pocket. Your AI assistant runs it from the chat you never leave — 38+ abilities, Pinch Chat block, webhooks, 8 governance tasks. Self-hosted. (We gave the AI the keys; we gave it a bouncer too.)
 
 == Description ==
 
 **Your AI assistant already lives in WhatsApp, Slack, Telegram — give it WordPress.**
 
-One plugin. [OpenClaw](https://github.com/openclaw/openclaw) (or any MCP client) gets 38+ abilities: publish, Molt (one post → nine formats), PinchDrop, What do I know, daily Tide Report. Pinch Chat block, webhooks, 7 governance tasks. Self-hosted. Your data. [Install & connect →](https://github.com/RegionallyFamous/wp-pinch/wiki/Configuration)
+One plugin. [OpenClaw](https://github.com/openclaw/openclaw) (or any MCP client) gets 38+ abilities: publish, Molt (one post → nine formats), PinchDrop, What do I know, daily Tide Report. Pinch Chat block, webhooks, 8 governance tasks. Self-hosted. Your data. No extra logins, no "I'll do it at my desk" — you talk; your assistant has the keys. [Install & connect →](https://github.com/RegionallyFamous/wp-pinch/wiki/Configuration)
 
 = 38 AI Abilities =
 
-Your assistant gets the keys to WordPress — posts, media, users, comments, settings, plugins, themes, WooCommerce — with capability checks, sanitization, and audit logging on every call. Plus PinchDrop, Ghost Writer, Molt, What do I know, site-digest, governance. 10 bonus WooCommerce abilities when your shop is active.
+Your assistant gets the keys to WordPress — posts, media, users, comments, settings, plugins, themes, WooCommerce — with capability checks, sanitization, and audit logging on every call. Plus PinchDrop, Ghost Writer, Molt, What do I know, site-digest, governance. 2 bonus WooCommerce abilities when your shop is active.
 
 = Live Chat Block =
 
@@ -26,7 +26,7 @@ Drop an AI chat widget on any page with the Pinch Chat Gutenberg block. SSE stre
 
 = Autonomous Governance =
 
-Seven background tasks patrol your site on autopilot: content freshness, SEO health, comment cleanup, broken link detection, security scanning, draft necromancy, and Tide Report (daily digest). Findings get delivered to OpenClaw automatically. Set it and forget it.
+Eight background tasks patrol your site on autopilot: content freshness, SEO health, comment cleanup, broken link detection, security scanning, draft necromancy, spaced resurfacing, and Tide Report (daily digest). Findings get delivered to OpenClaw automatically. Set it and forget it.
 
 = Real-Time Webhooks =
 
@@ -42,7 +42,7 @@ One post, nine formats. Molt repackages a single post into social (Twitter, Link
 
 = Built for Developers =
 
-12+ filters and 6+ actions. Full WP-CLI support. Customize abilities, webhook payloads, governance schedules, role allowlists, and more. If you can hook it, you can pinch it. (We like wordplay. It's in the name.)
+12+ filters and 6+ actions. Full WP-CLI support. Customize abilities, webhook payloads, governance schedules, role allowlists, and more. If you can hook it, you can pinch it. (We like wordplay. It's in the name. So is the lobster.)
 
 = Production-Ready Security =
 
@@ -61,6 +61,10 @@ Capability checks on every operation. Input sanitization. Output escaping. Nonce
 9. Sit back and let the lobster do the work.
 
 **Next:** [Configuration (wiki)](https://github.com/RegionallyFamous/wp-pinch/wiki/Configuration) for webhooks, governance, and Pinch Chat.
+
+= Compatibility =
+
+WP Pinch works with any MCP-compatible client. Connect OpenClaw (or similar) via the MCP URL below. Tested with WordPress 6.9+ and PHP 8.1+. For a minimal setup guide, see the wiki: [OpenClaw Quick Start](https://github.com/RegionallyFamous/wp-pinch/wiki/OpenClaw-Quick-Start).
 
 = Connecting OpenClaw =
 
@@ -122,6 +126,15 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 5. Audit log showing recent ability executions, webhooks, and chat messages.
 
 == Changelog ==
+
+= 2.5.0 =
+* New: Block Bindings API for Pinch Chat (agentId and placeholder bound to post meta or site options). Requires WordPress 6.5+.
+* New: Default Chat Placeholder setting for site-wide placeholder text.
+* New: Pinch Chat block supports typography.fontSize and dimensions.minHeight in the editor.
+* New: wp_pinch_block_type_metadata filter for themes/plugins to modify block registration.
+* Changed: REST route checks use str_starts_with (PHP 8). Ability cache flush wrapped in try-catch for object cache backends that don't support group flush.
+* Docs: Recipes/FAQ/Configuration links, Limits (execute_batch cap, GET /abilities), Health & status endpoints, trace ID, execute_batch recipe, wizard "Try this first," OpenClaw-Skill as default path.
+* Fixed: PHPCS empty catch in ability cache (no-op added for backends without group flush).
 
 = 2.4.2 =
 * New: First-run wizard — step indicator, copy buttons for MCP URL and CLI command, Test Connection spinner and a11y. Wizard CSS/JS in admin assets.
@@ -270,6 +283,9 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 * 12+ developer filters and 6+ action hooks for extensibility.
 
 == Upgrade Notice ==
+
+= 2.5.0 =
+Block Bindings for Pinch Chat (bind agentId/placeholder to post meta or options), default placeholder setting, block supports (font size, min height), and wp_pinch_block_type_metadata filter. Doc refresh: Recipes, Limits, health/status, trace ID, wizard "Try this first." No breaking changes.
 
 = 2.4.2 =
 UI polish: first-run wizard (step indicator, copy buttons, Test Connection spinner), settings cards and audit empty state, Pinch Chat focus and scroll-to-bottom. Lint and security hardening. No breaking changes.

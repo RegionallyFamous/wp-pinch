@@ -4,7 +4,7 @@
  *
  * Features:
  * - Listens to configurable WordPress hooks.
- * - Async dispatch via wp_remote_post with non-blocking.
+ * - Async dispatch via wp_safe_remote_post with non-blocking.
  * - Failed webhook retry via Action Scheduler with exponential backoff.
  * - Rate limiting (default 30/min).
  * - All payloads filterable.
@@ -282,7 +282,7 @@ class Webhook_Dispatcher {
 			$headers['X-WP-Pinch-Timestamp'] = (string) $timestamp;
 		}
 
-		$response = wp_remote_post(
+		$response = wp_safe_remote_post(
 			$webhook_url,
 			array(
 				'timeout'   => 5,

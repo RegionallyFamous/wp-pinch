@@ -2,6 +2,8 @@
 
 Thank you for your interest in contributing to WP Pinch. Whether you're reporting a bug, suggesting a feature, improving documentation, or writing code, your contributions are valued and appreciated. This guide outlines the process and expectations for contributing. We're glad to have another lobster in the reef.
 
+**AI coding assistants:** Read [AGENTS.md](AGENTS.md) first. It explains WP Pinch's architecture, extension points (abilities, governance, hooks), and how to add or improve features.
+
 **Website:** [wp-pinch.com](https://wp-pinch.com) | **Repository:** [GitHub](https://github.com/RegionallyFamous/wp-pinch)
 
 ## Code of Conduct

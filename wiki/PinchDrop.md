@@ -94,3 +94,22 @@ In **WP Pinch -> Features**:
 - Enable `pinchdrop_engine` feature flag
 
 Both the feature flag and settings toggle must be enabled for capture requests to run.
+
+---
+
+## Web Clipper (browser / bookmarklet capture)
+
+Because sometimes the best idea hits you in a random tab and you don't want to open WhatsApp to save it. WP Pinch provides a **token-protected** one-shot capture endpoint for saving from the browser (e.g. a bookmarklet or browser extension), without going through OpenClaw.
+
+**Endpoint:** `POST /wp-json/wp-pinch/v1/capture`
+
+**Authentication:** Token in query param `token` or header `X-WP-Pinch-Capture-Token`, validated against the **Web Clipper capture token** set in **WP Pinch → Connection**. The token is stored in the option `wp_pinch_capture_token`; it should be long-lived and secret. Because bookmarklets often put the token in the URL, **do not share the capture URL**.
+
+**Body (JSON):**
+
+- `text` (string, required) — captured text (max 50,000 characters)
+- `url` (string, optional) — source URL (prepended to content and can be used to derive title)
+- `title` (string, optional) — post title; if omitted and `url` is set, hostname is used; otherwise "Captured note"
+- `save_as_note` (boolean, optional, default true) — creates a minimal draft post (title + content only)
+
+**Response:** `201` with `post_id` and `edit_url`. Rate limit: 30 requests/minute per IP. All captures are logged in the Audit Log.

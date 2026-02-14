@@ -6,6 +6,12 @@ OpenClaw is recommended for the full experience (webhooks, chat, governance deli
 
 ---
 
+## Where can I find step-by-step workflows?
+
+See [Recipes](Recipes) for outcome-first flows (publish from chat, turn a post into social, capture ideas, etc.).
+
+---
+
 ## What WordPress version is required?
 
 6.9 or later. That's when WordPress grew its Abilities API claws.
@@ -14,7 +20,7 @@ OpenClaw is recommended for the full experience (webhooks, chat, governance deli
 
 ## Does this work with WooCommerce?
 
-Yes! WooCommerce order status changes trigger webhooks, and WP Pinch adds 10 WooCommerce-specific abilities covering products, orders, customers, coupons, inventory, and revenue summaries. Your AI agent can check inventory faster than a lobster can snap a rubber band.
+Yes! WooCommerce order status changes trigger webhooks, and WP Pinch adds 2 WooCommerce abilities (`woo-list-products`, `woo-manage-order`) for listing products and managing orders. Your AI agent can check inventory faster than a lobster can snap a rubber band.
 
 ---
 

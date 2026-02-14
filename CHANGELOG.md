@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.0] - 2026-02-14
+
+### Added
+- **Block Bindings API** — Pinch Chat block attributes `agentId` and `placeholder` can be bound to post meta (`wp_pinch_chat_agent_id`, `wp_pinch_chat_placeholder`) or site options via custom sources `wp-pinch/agent-id` and `wp-pinch/chat-placeholder`. Requires WordPress 6.5+.
+- **Default Chat Placeholder** — New setting `wp_pinch_chat_placeholder` in Chat Settings for site-wide placeholder text.
+- **Block supports** — Pinch Chat block now supports `typography.fontSize` and `dimensions.minHeight` in the editor.
+- **`wp_pinch_block_type_metadata` filter** — Themes/plugins can modify Pinch Chat block registration args.
+
+### Changed
+- **PHP** — Replaced `strpos` with `str_starts_with` in REST controller for route checks (PHP 8).
+- **Ability cache** — Wrapped `wp_cache_flush_group` in try-catch for object cache backends that do not support group flushing.
+- **Docs** — WooCommerce ability count corrected to 2 (code matches); governance task count corrected to 8 (added spaced resurfacing); Developer Guide Future Enhancements section (DataViews); Recipes, Limits, Health/status, trace ID, execute_batch recipe, Integration-and-Value; wizard "Try this first" and OpenClaw-Skill links.
+
+### Fixed
+- **PHPCS** — Empty catch statement in ability cache flush; added explicit no-op so object-cache backends that don't support group flush are handled without triggering lint.
+
 ## [2.4.2] - 2026-02-12
 
 ### Added
@@ -30,7 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **CONTRIBUTING** — E2E (Playwright) and load testing (k6) instructions; dependencies and license compliance note; CI pipeline list updated.
 
 ### Changed
-- **Best practices** — `.editorconfig`, issue/PR templates, CODEOWNERS, PHPUnit coverage docs, `make test-coverage`; `class-abilities.php` docblock updated (38+ core, 10 WooCommerce); npm audit step in CI documented as non-blocking.
+- **Best practices** — `.editorconfig`, issue/PR templates, CODEOWNERS, PHPUnit coverage docs, `make test-coverage`; `class-abilities.php` docblock updated (38+ core, 2 WooCommerce); npm audit step in CI documented as non-blocking.
 - **Dependencies** — npm packages updated; PHPUnit 9 → 11, Composer platform PHP 8.2.
 - **Lint** — PHPCS Yoda condition and quote fixes in `class-rest-controller.php` and `class-settings.php`.
 

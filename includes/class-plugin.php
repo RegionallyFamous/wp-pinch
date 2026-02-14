@@ -65,6 +65,7 @@ final class Plugin {
 	public function activate(): void {
 		Audit_Table::create_table();
 		update_option( 'wp_pinch_version', WP_PINCH_VERSION );
+		update_option( 'wp_pinch_activation_redirect', true );
 
 		/**
 		 * Fires after WP Pinch activation.
@@ -90,6 +91,7 @@ final class Plugin {
 				'wp_pinch_audit_cleanup',
 				'wp_pinch_retry_webhook',
 				'wp_pinch_governance_draft_necromancer',
+				'wp_pinch_governance_spaced_resurfacing',
 			);
 			foreach ( $hooks as $hook ) {
 				as_unschedule_all_actions( $hook );
@@ -142,6 +144,12 @@ final class Plugin {
 		// Register blocks.
 		add_action( 'init', array( $this, 'register_blocks' ) );
 
+		// Block Bindings (agentId, placeholder bindable to post meta / options).
+		Block_Bindings::init();
+
+		// Allow themes/plugins to customize block registration.
+		add_filter( 'register_block_type_args', array( $this, 'filter_block_type_args' ), 10, 2 );
+
 		/**
 		 * Fires after all WP Pinch subsystems are initialised.
 		 *
@@ -166,6 +174,20 @@ final class Plugin {
 		if ( file_exists( $block_dir . '/block.json' ) ) {
 			register_block_type( $block_dir );
 		}
+	}
+
+	/**
+	 * Filter block type registration args (enables wp_pinch_block_type_metadata).
+	 *
+	 * @param array  $args       Block type arguments.
+	 * @param string $block_type Block type name.
+	 * @return array
+	 */
+	public function filter_block_type_args( array $args, string $block_type ): array {
+		if ( 'wp-pinch/chat' === $block_type ) {
+			$args = apply_filters( 'wp_pinch_block_type_metadata', $args, $block_type );
+		}
+		return $args;
 	}
 
 	/**

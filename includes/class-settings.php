@@ -288,6 +288,17 @@ class Settings {
 
 		register_setting(
 			'wp_pinch_connection',
+			'wp_pinch_chat_placeholder',
+			array(
+				'type'              => 'string',
+				'sanitize_callback' => 'sanitize_text_field',
+				'default'           => '',
+				'show_in_rest'      => false,
+			)
+		);
+
+		register_setting(
+			'wp_pinch_connection',
 			'wp_pinch_session_idle_minutes',
 			array(
 				'type'              => 'integer',
@@ -778,6 +789,20 @@ class Settings {
 						<p>
 							<?php esc_html_e( 'Send a message from WhatsApp, Telegram, Slack, or Discord to your OpenClaw agent. Your agent can now use your WordPress site via the MCP endpoint below.', 'wp-pinch' ); ?>
 						</p>
+						<p><strong><?php esc_html_e( 'Try this first', 'wp-pinch' ); ?></strong></p>
+						<ul class="wp-pinch-wizard-list" style="margin-top: 0;">
+							<li><?php esc_html_e( 'PinchDrop: Send a sentence to your channel and ask the assistant to turn it into a draft pack.', 'wp-pinch' ); ?></li>
+							<li><?php esc_html_e( 'Molt: Say "Molt 123" (or "Turn post 123 into social and meta") to get multiple formats from one post.', 'wp-pinch' ); ?></li>
+						</ul>
+						<p class="description">
+							<?php
+							printf(
+								/* translators: %s: link to Recipes wiki */
+								esc_html__( 'Step-by-step flows: %s', 'wp-pinch' ),
+								'<a href="https://github.com/RegionallyFamous/wp-pinch/wiki/Recipes" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Recipes', 'wp-pinch' ) . ' &rarr;</a>'
+							);
+							?>
+						</p>
 						<div class="wp-pinch-copy-row">
 							<code class="wp-pinch-copy-code"><?php echo esc_html( $mcp_url ); ?></code>
 						</div>
@@ -817,6 +842,7 @@ class Settings {
 			return;
 		}
 
+		// Tab is UI state only; sanitized and allowlisted below. No sensitive action.
 		$active_tab = sanitize_key( $_GET['tab'] ?? 'connection' ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$tabs       = array(
 			'what_can_i_do' => __( 'What can I do?', 'wp-pinch' ),
@@ -832,6 +858,7 @@ class Settings {
 			<h1><?php esc_html_e( 'WP Pinch Settings', 'wp-pinch' ); ?></h1>
 
 			<?php
+			// Display-only; value compared to literal 'true'. No sensitive action.
 			if ( isset( $_GET['settings-updated'] ) && 'true' === $_GET['settings-updated'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				add_settings_error(
 					'wp_pinch_messages',
@@ -1163,6 +1190,19 @@ class Settings {
 								min="0" max="600" step="1" class="small-text" />
 						<p class="description">
 							<?php esc_html_e( '0 = gateway default. Maximum 600 seconds.', 'wp-pinch' ); ?>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="wp_pinch_chat_placeholder"><?php esc_html_e( 'Default Chat Placeholder', 'wp-pinch' ); ?></label>
+					</th>
+					<td>
+						<input type="text" id="wp_pinch_chat_placeholder" name="wp_pinch_chat_placeholder"
+								value="<?php echo esc_attr( get_option( 'wp_pinch_chat_placeholder', '' ) ); ?>"
+								class="regular-text" />
+						<p class="description">
+							<?php esc_html_e( 'Default placeholder for the chat input. Leave empty for block default. Can be overridden per post via Block Bindings (post meta wp_pinch_chat_placeholder).', 'wp-pinch' ); ?>
 						</p>
 					</td>
 				</tr>
@@ -1540,6 +1580,7 @@ class Settings {
 	 * Audit log tab with search, date filters, and CSV export.
 	 */
 	private static function render_tab_audit(): void {
+		// Filter params are sanitized; export is protected by nonce below. Admin-only (manage_options).
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
 		$page      = max( 1, absint( $_GET['audit_page'] ?? 1 ) );
 		$filter    = sanitize_key( $_GET['event_type'] ?? '' );
@@ -1701,6 +1742,7 @@ class Settings {
 			wp_die( esc_html__( 'Nonce verification failed.', 'wp-pinch' ) );
 		}
 
+		// Export already verified by nonce above; args are sanitized and scoped to export.
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
 		$args = array(
 			'event_type' => sanitize_key( $_GET['event_type'] ?? '' ),

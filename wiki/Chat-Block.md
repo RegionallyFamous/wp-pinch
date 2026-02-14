@@ -22,6 +22,8 @@ Enable via **WP Pinch > Features > Public Chat**.
 
 Each Pinch Chat block can target a different OpenClaw agent. Set the **Agent ID** in the block's sidebar settings to override the global default. This lets you have a sales assistant on one page and a support agent on another.
 
+**Block Bindings (WordPress 6.5+):** You can also bind `agentId` or `placeholder` to post meta or site options via the Block Bindings API. See [Hooks & Filters](Hooks-and-Filters#block-bindings-pinch-chat) for sources (`core/post-meta`, `wp-pinch/agent-id`, `wp-pinch/chat-placeholder`).
+
 ### Slash Commands
 
 Power-user commands typed directly in the chat input:

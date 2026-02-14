@@ -100,12 +100,12 @@ class Test_Governance extends WP_UnitTestCase {
 	// =========================================================================
 
 	/**
-	 * Test get_available_tasks returns all 7 tasks with labels.
+	 * Test get_available_tasks returns all 8 tasks with labels.
 	 */
 	public function test_get_available_tasks(): void {
 		$tasks = Governance::get_available_tasks();
 
-		$this->assertCount( 7, $tasks );
+		$this->assertCount( 8, $tasks );
 		foreach ( $tasks as $key => $label ) {
 			$this->assertIsString( $label );
 			$this->assertNotEmpty( $label );

@@ -134,6 +134,14 @@ The zip includes compiled assets, Composer production dependencies, and translat
 
 ---
 
+## Future Enhancements
+
+These areas are candidates for future development:
+
+- **DataViews / Block Editor Data APIs** — The audit log and settings tables use classic admin HTML. Migrating to block-editor-based UIs (DataViews, DataForm) would enable richer filtering, sorting, and inline editing. Relevant for a future Audit Log block or a block-editor-based settings experience.
+
+---
+
 ## Contributing
 
 See [CONTRIBUTING.md](https://github.com/RegionallyFamous/wp-pinch/blob/main/CONTRIBUTING.md) for full guidelines on pull requests, commit messages, and code style.
@@ -158,7 +166,7 @@ WP Pinch is built on many open-source projects:
 
 ### Other Projects
 
-- [OpenClaw](https://github.com/nicepkg/openclaw) -- AI agent framework
+- [OpenClaw](https://github.com/openclaw/openclaw) — Personal AI assistant (channels + MCP tools)
 - [WP-CLI](https://wp-cli.org/) -- Command-line interface (MIT)
 - [PHPUnit](https://phpunit.de/) -- Testing framework (BSD-3-Clause)
 - [PHPStan](https://phpstan.org/) -- Static analysis (MIT)

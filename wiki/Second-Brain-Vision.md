@@ -1,6 +1,8 @@
 # WordPress + OpenClaw: Second Brain Vision
 
-WP Pinch positions WordPress as a **durable knowledge store** and OpenClaw as the **conversational, multi-channel brain**. This page documents how the plugin maps to the second-brain workflow (CODE/PARA) and what exists today.
+*Optional framing:* If you think of your site as a knowledge store and your assistant as the way you capture, distill, and express it, this page maps that workflow. WP Pinch works either way — this doc is for the CODE/PARA crowd.
+
+WP Pinch positions WordPress as a **durable knowledge store** and OpenClaw as the **conversational, multi-channel brain**. Your site holds the knowledge; the lobster helps you capture, distill, and express it from anywhere. This page documents how the plugin maps to the second-brain workflow (CODE/PARA) and what exists today.
 
 **References:** Forte Labs (CODE, PARA, Progressive Summarization, Intermediate Packets), OpenClaw (memory-core, sessions, tool use). See the [vision plan](https://github.com/RegionallyFamous/wp-pinch/blob/main/.cursor/plans/) for the full roadmap.
 
@@ -37,12 +39,12 @@ WP Pinch positions WordPress as a **durable knowledge store** and OpenClaw as th
 
 | CODE pillar | WP Pinch today | Gap / nuance |
 |-------------|-----------------|--------------|
-| **Capture** | [PinchDrop](PinchDrop) (ideas → Draft Packs from channels); **Quick Drop** (`save_as_note: true`) = minimal post (title + body, no AI expansion). | Quick Drop makes capture channel-accessible. WordPress Quick Draft is admin-only. |
+| **Capture** | [PinchDrop](PinchDrop) (ideas → Draft Packs from channels); **Quick Drop** (`save_as_note: true`) = minimal post; **Web Clipper** = token-protected one-shot capture from browser (bookmarklet). | Quick Drop and Web Clipper make capture channel- and browser-accessible. WordPress Quick Draft is admin-only. |
 | **Organize** | Posts, pages, taxonomies, meta; [search-content](Abilities-Reference), [export-data](Abilities-Reference), [recent-activity](Abilities-Reference). | PARA via categories. [Echo Net (related-posts)](Abilities-Reference) adds backlinks + shared-taxonomy discovery. |
 | **Distill** | [Molt](Abilities-Reference) (post → social, FAQ, summary, etc.); [Ghost Writer](Ghost-Writer) (finish drafts); Governance (stale, SEO, drafts). | Molt = first pass; human refinement still valuable. Progressive Summarization (bold/highlight layers) is manual. |
 | **Express** | Create/update abilities; Molt outputs = **Intermediate Packets**; [Pinch Chat](Chat-Block); multi-channel. [Weave (synthesize)](Abilities-Reference): search → payload for LLM synthesis (first draft; human refines). | Strong fit. |
 
-**Agent context:** [Memory Bait (site-digest)](Abilities-Reference) gives OpenClaw memory-core a compact snapshot (recent posts, key terms). [Tide Report](Configuration) bundles governance findings into one daily webhook so the agent knows "what needs attention."
+**Agent context:** [Memory Bait (site-digest)](Abilities-Reference) gives OpenClaw memory-core a compact snapshot (recent posts, key terms, optional TL;DR). [Tide Report](Configuration) bundles governance findings into one daily webhook so the agent knows "what needs attention." **What do I know?** — natural-language query over your content with synthesized answers and source IDs — is the flagship retrieval experience.
 
 ---
 

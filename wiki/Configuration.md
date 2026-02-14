@@ -1,6 +1,6 @@
 # Configuration
 
-Get your lobster in the water. This page covers installation, OpenClaw connection, and every setting in the admin.
+Get your lobster in the water. This page covers installation, OpenClaw connection, and every setting in the admin. First time? Activate the plugin and you'll be whisked to a short onboarding wizard — connect, test, try it. No swimming in the dark.
 
 ## Installation
 
@@ -50,9 +50,11 @@ Point OpenClaw at your site's MCP endpoint:
 npx openclaw connect --mcp-url https://your-site.com/wp-json/wp-pinch/v1/mcp
 ```
 
-OpenClaw will discover available abilities and begin routing messages from your configured channels (WhatsApp, Telegram, Slack, Discord, etc.) to your WordPress site. Two commands and you're pinching.
+OpenClaw will discover available abilities and begin routing messages from your configured channels (WhatsApp, Telegram, Slack, Discord, etc.) to your WordPress site. Two commands and you're pinching. For a ready-made skill (when to use which ability, example prompts), see [OpenClaw Skill](OpenClaw-Skill).
 
 You can also add your Gateway URL directly in the WP Pinch settings for webhook-based integration — ideal for sites that want real-time push notifications when content changes. Your site and OpenClaw, holding claws.
+
+For step-by-step workflows (publish from chat, Molt, PinchDrop, etc.), see [Recipes](Recipes).
 
 ---
 
@@ -64,7 +66,7 @@ You can also add your Gateway URL directly in the WP Pinch settings for webhook-
 |---|---|
 | **Gateway URL** | Your OpenClaw gateway endpoint |
 | **API Token** | Authentication token for the gateway |
-| **Rate Limit** | Maximum requests per minute (default: 30) |
+| **Rate Limit** | Maximum requests per minute for outbound webhooks (default: 30). REST uses a lower default (10/min per user) when unset. See [Limits](Limits) for full details. |
 | **Agent ID** | Default agent to route messages to |
 
 ### Webhook Settings
@@ -85,6 +87,7 @@ You can also add your Gateway URL directly in the WP Pinch settings for webhook-
 | **Chat Model** | AI model for interactive chat (e.g., `anthropic/claude-sonnet-4-5`). Empty = gateway default |
 | **Chat Thinking Level** | Off / Low / Medium / High. Empty = gateway decides |
 | **Chat Timeout** | Request timeout in seconds (0-600). 0 = gateway default |
+| **Default Chat Placeholder** | Default placeholder text for the Pinch Chat input. Empty = block default. Can be overridden per post via Block Bindings (post meta `wp_pinch_chat_placeholder`) |
 | **Session Idle Timeout** | Minutes of inactivity before a new session starts. 0 = gateway default |
 
 ### PinchDrop Settings
@@ -180,3 +183,12 @@ WP Pinch adds two tests to the WordPress Site Health screen:
 - **Configuration Check** -- Are all required settings filled in?
 
 Both show green checks when properly configured.
+
+### Health & status endpoints
+
+REST endpoints for uptime and debugging:
+
+- **Health** (`GET /wp-pinch/v1/health`, no auth): Returns `rate_limit.limit`, `circuit.last_failure_at`, and other public fields. Use for uptime checks and load balancers.
+- **Status** (`GET /wp-pinch/v1/status`, requires `manage_options`): Same rate limit and circuit info plus operational details (e.g. circuit state). Use for admin dashboards and support.
+
+Both responses include `rate_limit` and `circuit` (including `last_failure_at`) for debugging gateway connectivity and rate limiting.

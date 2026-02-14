@@ -1,50 +1,71 @@
 # WP Pinch Documentation
 
-**The AI agent plugin that grabs your WordPress site with both claws.**
+**WordPress in your pocket. Your AI assistant runs it from the chat you never leave.**
 
-WP Pinch bridges WordPress and [OpenClaw](https://github.com/nicepkg/openclaw), exposing your entire site as a set of AI-accessible tools through the Abilities API and Model Context Protocol (MCP) introduced in WordPress 6.9. Manage your site from WhatsApp, Telegram, Slack, Discord — or any platform OpenClaw supports. All self-hosted. No third-party SaaS middlemen getting their claws on your data. Think of it as giving your WordPress site a brain, a mouth, and a pair of very capable pincers.
+One plugin. Connect [OpenClaw](https://github.com/openclaw/openclaw) (or any MCP client); your site is in the same chat — 38+ abilities, Molt, PinchDrop, What do I know, daily Tide Report (8 governance tasks), Pinch Chat block, webhooks. Self-hosted. Your data.
+
+**One line:** Your site isn't another tab — it's in the same chat. You talk; your assistant has the keys. [Install & connect →](Configuration)
+
+---
+
+## Why WP Pinch?
+
+- **You're already in the chat.** Your assistant lives in WhatsApp, Slack, Telegram. WP Pinch gives it the keys to WordPress — no tab-switching to wp-admin.
+- **Real actions, not just "access."** Publish, Molt (one post → nine formats), PinchDrop (idea → draft pack), Ghost Writer (finish drafts in your voice), What do I know (query your content), governance (stale, SEO, comments, Tide Report). [Abilities Reference](Abilities-Reference)
+- **Capture anywhere.** PinchDrop from any channel; Web Clipper from the browser (token-protected). Ideas land in WordPress without opening the admin.
+- **Your site can chat.** Pinch Chat block: visitors talk to an AI that knows your content. Streaming, slash commands, optional public mode.
+- **Governance on autopilot.** Stale posts, SEO gaps, comments, broken links, abandoned drafts — Tide Report bundles one daily summary to your channel.
+
+**Who it's for:** Solo creators, small teams, anyone who talks to an AI in chat and wants their WordPress site *there* — not in another app.
+
+**What we're not:** A replacement for WordPress, a hosted AI product, or a full PKM app. We're the bridge — the lobster runs the trap; you run the conversation. Your data stays on your server; any MCP client can use the abilities. For the knowledge-store / second-brain framing (CODE, PARA), see [Second Brain Vision](Second-Brain-Vision).
 
 ---
 
 ## Quick Links
 
-Core abilities (38+) cover standard WordPress operations; Tools cover PinchDrop, Ghost Writer, Molt (content repackager), and context/discovery (site-digest, related-posts, synthesize). Seven governance tasks including Tide Report (daily digest).
+**New here?** [Configuration](Configuration) (install, connect OpenClaw, wizard) then [Recipes](Recipes) (outcome-first workflows) or [Abilities Reference](Abilities-Reference).
 
 | Page | What's Inside |
-|---|---|
-| [Abilities Reference](Abilities-Reference) | Core abilities by category and Tools (PinchDrop, Ghost Writer, Molt, Memory Bait, Echo Net, Weave) with parameters and examples |
-| [PinchDrop](PinchDrop) | Capture ideas from any OpenClaw channel and auto-create Draft Packs; Quick Drop for minimal notes |
-| [Ghost Writer](Ghost-Writer) | Voice profiles, abandoned-draft completion, slash command, Draft Necromancer |
-| [Molt](Molt) | Repackage one post into social, FAQ, summary, and more; `/molt` slash command |
-| [Chat Block](Chat-Block) | SSE streaming, slash commands, public mode, agent overrides, accessibility |
-| [Architecture](Architecture) | How the pieces fit together -- diagram and subsystem overview |
-| [Second Brain Vision](Second-Brain-Vision) | CODE/PARA mapping, Capture → Distill → Express, Memory Bait, Echo Net, Weave |
-| [Configuration](Configuration) | Installation, OpenClaw connection, admin settings, feature flags |
-| [Hooks & Filters](Hooks-and-Filters) | 12+ filters and 6+ actions with code examples |
-| [Security](Security) | The full security model -- 20+ defense layers |
-| [Iconick Best Practices Audit](Iconick-Best-Practices-Audit) | Comparison against Iconick WordPress resources |
-| [WP-CLI](WP-CLI) | Command reference with examples and output formats |
-| [Developer Guide](Developer-Guide) | Contributing, local setup, testing, quality system |
-| [FAQ](FAQ) | Common questions answered |
+|------|----------------|
+| [Recipes](Recipes) | **Start here for value.** Outcome-first flows: publish from chat, Molt, PinchDrop, What do I know, Web Clipper, Tide Report, Ghost Writer |
+| [Abilities Reference](Abilities-Reference) | Every ability and tool: core (content, media, users, …), PinchDrop, Ghost Writer, Molt, What do I know, Project Assembly, Spaced Resurfacing, Find Similar, Knowledge Graph, Web Clipper |
+| [Configuration](Configuration) | Installation, OpenClaw connection, onboarding wizard, settings |
+| [PinchDrop](PinchDrop) | Capture from channels + Web Clipper (browser bookmarklet) |
+| [Chat Block](Chat-Block) | Streaming chat on your site, slash commands, public mode |
+| [Molt](Molt) | One post → nine formats |
+| [Ghost Writer](Ghost-Writer) | Voice profiles, abandoned drafts, Draft Necromancer |
+| [Architecture](Architecture) | How the pieces fit together |
+| [Second Brain Vision](Second-Brain-Vision) | CODE/PARA, knowledge store, capture → distill → express |
+| [Security](Security) | Trust model, hardening, Web Clipper token |
+| [OpenClaw Quick Start](OpenClaw-Quick-Start) | OpenClaw + WordPress in 5 minutes |
+| [OpenClaw Skill](OpenClaw-Skill) | Agent prompt/skill: when to use which ability |
+| [Webhook Payload](Webhook-Payload) | Event types and JSON shape (WordPress → OpenClaw) |
+| [Session and Identity](Session-And-Identity) | How gateway/token/session map to WordPress users |
+| [Error Codes](Error-Codes) | REST/MCP error codes and how to handle them |
+| [Limits](Limits) | Rate limits, pagination, and max sizes |
+| [Hooks & Filters](Hooks-and-Filters) | Extend and customize |
+| [WP-CLI](WP-CLI) | Commands and output formats |
+| [FAQ](FAQ) | Common questions |
+| [PKM Import](PKM-Import) | Roadmap: Obsidian / Notion import |
+| [Integration and Value](Integration-and-Value) | Strategy: integration vs. value, what to build next |
 
 ---
 
 ## Requirements
 
 | Requirement | Minimum | Notes |
-|---|---|---|
-| WordPress | 6.9+ | For the Abilities API |
-| PHP | 8.1+ | For type hints and enums |
-| MCP Adapter plugin | Recommended | For full MCP integration |
-| Action Scheduler | Required | Ships with WooCommerce, or install standalone |
+|-------------|---------|-------|
+| WordPress | 6.9+ | Abilities API |
+| PHP | 8.1+ | Type hints, enums |
+| Action Scheduler | Required | Ships with WooCommerce or install standalone |
+| OpenClaw (or MCP client) | For chat/channel integration | Abilities work with any MCP client |
 
 ---
 
 ## Getting Help
 
-- **Bug reports and feature requests:** [GitHub Issues](https://github.com/RegionallyFamous/wp-pinch/issues)
-- **Security vulnerabilities:** See [SECURITY.md](https://github.com/RegionallyFamous/wp-pinch/blob/main/SECURITY.md)
-- **Contributing:** See [CONTRIBUTING.md](https://github.com/RegionallyFamous/wp-pinch/blob/main/CONTRIBUTING.md)
+- **Issues and features:** [GitHub Issues](https://github.com/RegionallyFamous/wp-pinch/issues)
+- **Security:** [SECURITY.md](https://github.com/RegionallyFamous/wp-pinch/blob/main/SECURITY.md)
+- **Contributing:** [CONTRIBUTING.md](https://github.com/RegionallyFamous/wp-pinch/blob/main/CONTRIBUTING.md)
 - **Website:** [wp-pinch.com](https://wp-pinch.com)
-
-*In a world full of plugins that promise the ocean... this one actually delivers the whole lobster.*

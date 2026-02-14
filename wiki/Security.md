@@ -1,6 +1,6 @@
 # Security
 
-WP Pinch takes security seriously — more seriously than a lobster takes its territory. This page documents every defense layer in the plugin.
+WP Pinch takes security seriously — more seriously than a lobster takes its territory. (Have you ever tried to take a lobster's food? Don't.) This page documents every defense layer in the plugin. We gave the AI keys; we also gave it a very strict bouncer.
 
 ---
 
@@ -46,14 +46,19 @@ WP Pinch takes security seriously — more seriously than a lobster takes its te
 - **Existence checks** before modifying posts, comments, terms, and media
 - **Audit CSV export** capped at 5,000 rows (DoS mitigation); **Content-Disposition** filename stripped of CRLF and quotes to prevent header injection
 
+### Web Clipper (token-protected capture)
+
+- **Capture token** is stored in the option `wp_pinch_capture_token` (not exposed in REST). It should be a **long-lived secret**; treat it like a password. The **bookmarklet URL may contain the token** in the query string — do not share the URL. Use a strong random value (e.g. 32+ characters). Rate limit: 30 requests per minute per IP. All captures are audit-logged.
+
 ### Network & API
 
 - **Fixed-duration rate limiting** that doesn't slide (no gaming the window)
 - **Rate limit headers** (`X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`) on all REST responses
 - **`Retry-After` headers** on all 429 responses
+- **`X-WP-Pinch-Trace-Id`** — REST and webhook responses may include this header for request/response correlation and support
 - **HMAC-SHA256 webhook signatures** with timestamp replay protection (5-minute window)
 - **Circuit breaker** for gateway failures — auto-recovery with half-open probe
-- **SSRF prevention** — **Gateway URL validated** with `wp_http_validate_url()` before every outbound request (chat, status, webhook, Ghost Writer, Molt, admin test connection, stream). Internal/private URLs are rejected at request time
+- **SSRF prevention** — **Gateway URL validated** with `wp_http_validate_url()` before every outbound request (chat, status, webhook, Ghost Writer, Molt, admin test connection, stream). Internal/private URLs are rejected at request time. Webhooks use `wp_safe_remote_post()` for defense in depth.
 - **SSRF prevention** in broken link checker — private IP blocking, DNS resolution check, SSL verification
 - **Media upload restricted** to HTTP/HTTPS URL schemes only; **upload-media** URL validated with `wp_http_validate_url()` before `download_url()` to prevent SSRF (no internal/private URLs)
 - **Public chat endpoint isolation** with separate rate limiting and session key validation
@@ -67,6 +72,15 @@ WP Pinch takes security seriously — more seriously than a lobster takes its te
 - **Multisite cleanup** on uninstall
 - **Constant redefinition guards**
 - **GDPR-ready** — full integration with WordPress privacy export and erasure
+
+### OpenClaw integration (one-pager)
+
+- **API token** — Stored in options; used for outbound webhooks (Bearer) and to validate incoming webhooks. Treat as a secret; mask in UI.
+- **Incoming webhook** — Authenticated by Bearer token or (when enabled) HMAC-SHA256 signature with timestamp; abilities run as a plugin-chosen WordPress admin.
+- **Audit log** — All ability runs, webhook sends/failures, and governance events are logged (source, event type, optional context). Use for compliance and debugging.
+- **Rate limits** — REST per user (default 10/min), webhooks outbound (default 30/min), public chat per IP (3/min). Configurable in settings.
+- **Circuit breaker** — When enabled, gateway failures trip a breaker and block further outbound calls until recovery; prevents cascade failures.
+- **HMAC webhooks** — Optional `webhook_signatures` feature: outbound payloads signed with `X-WP-Pinch-Signature` and `X-WP-Pinch-Timestamp`; verify on the OpenClaw side to ensure payloads are from your site.
 
 ---
 

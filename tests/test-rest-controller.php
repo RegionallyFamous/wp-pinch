@@ -90,7 +90,7 @@ class Test_Rest_Controller extends WP_UnitTestCase {
 		wp_set_current_user( $this->subscriber_id );
 		$result = Rest_Controller::check_permission();
 		$this->assertInstanceOf( WP_Error::class, $result );
-		$this->assertEquals( 'rest_forbidden', $result->get_error_code() );
+		$this->assertEquals( 'capability_denied', $result->get_error_code() );
 	}
 
 	/**
@@ -199,7 +199,7 @@ class Test_Rest_Controller extends WP_UnitTestCase {
 		$this->assertSame( 400, $response->get_status() );
 		$data = $response->get_data();
 		$this->assertArrayHasKey( 'code', $data );
-		$this->assertSame( 'rest_invalid_param', $data['code'] );
+		$this->assertSame( 'validation_error', $data['code'] );
 	}
 
 	// =========================================================================
@@ -229,6 +229,7 @@ class Test_Rest_Controller extends WP_UnitTestCase {
 
 		$this->assertArrayHasKey( '/wp-pinch/v1/chat', $routes, 'Chat route should be registered.' );
 		$this->assertArrayHasKey( '/wp-pinch/v1/status', $routes, 'Status route should be registered.' );
+		$this->assertArrayHasKey( '/wp-pinch/v1/capture', $routes, 'Web Clipper capture route should be registered.' );
 		$this->assertArrayHasKey( '/wp-pinch/v1/pinchdrop/capture', $routes, 'PinchDrop route should be registered.' );
 	}
 
