@@ -10,6 +10,8 @@ Get your lobster in the water. This page covers installation, OpenClaw connectio
 wp plugin install https://github.com/RegionallyFamous/wp-pinch/releases/latest/download/wp-pinch.zip --activate
 ```
 
+> **Note:** WP Pinch is distributed via GitHub (not yet on wordpress.org). The zip above is built from source for each release.
+
 ### Upload via Admin
 
 1. Download the latest `.zip` from the [Releases page](https://github.com/RegionallyFamous/wp-pinch/releases)
@@ -32,6 +34,18 @@ wp plugin activate wp-pinch
 
 ---
 
+## Don't have OpenClaw yet?
+
+WP Pinch needs an OpenClaw gateway to send webhooks and connect your chat channels. If you're new:
+
+1. **Install OpenClaw** — See [OpenClaw docs](https://docs.openclaw.ai/) and [GitHub](https://github.com/openclaw/openclaw). Quick start: `npx openclaw@latest` (or follow the official install guide).
+2. **Start the gateway** — Run OpenClaw and note your Gateway URL and API Token (or create one in the OpenClaw admin).
+3. **Copy into WP Pinch** — Enter Gateway URL and API Token in **WP Pinch → Connection**, then **Test Connection**.
+
+Without OpenClaw, the MCP server and abilities still work with any MCP-compatible client (e.g. another AI agent). Webhooks and chat channels require OpenClaw or a compatible gateway.
+
+---
+
 ## Initial Setup
 
 1. Navigate to **WP Pinch** in your admin sidebar
@@ -50,13 +64,31 @@ Point OpenClaw at your site's MCP endpoint:
 npx openclaw connect --mcp-url https://your-site.com/wp-json/wp-pinch/v1/mcp
 ```
 
-OpenClaw will discover available abilities and begin routing messages from your configured channels (WhatsApp, Telegram, Slack, Discord, etc.) to your WordPress site. Two commands and you're pinching. For a ready-made skill (when to use which ability, example prompts), see [OpenClaw Skill](OpenClaw-Skill).
+OpenClaw will discover available abilities and begin routing messages from your configured channels (WhatsApp, Telegram, Slack, Discord, etc.) to your WordPress site. Two commands and you're pinching. For a ready-made skill (when to use which ability, example prompts), install from ClawHub: `clawhub install nickhamze/pinch-to-post` — or see [OpenClaw Skill](OpenClaw-Skill) to copy manually.
 
 **Which WordPress site does the skill use?** Set environment variables on your OpenClaw instance: **`WP_SITE_URL`** (e.g. `https://mysite.com`) is the main one — that's how you choose which site to connect to. Also set `WP_USERNAME` and `WP_APP_PASSWORD` for REST auth. For multiple sites, use different workspaces or env configs with different `WP_SITE_URL` values. MCP users: the MCP server config (or `--mcp-url`) determines which site the tools connect to.
 
 You can also add your Gateway URL directly in the WP Pinch settings for webhook-based integration — ideal for sites that want real-time push notifications when content changes. Your site and OpenClaw, holding claws.
 
 For step-by-step workflows (publish from chat, Molt, PinchDrop, etc.), see [Recipes](Recipes).
+
+**MCP command syntax** may vary by OpenClaw version. See [OpenClaw CLI docs](https://docs.openclaw.ai/cli) for the current command.
+
+---
+
+## Recommended features to enable after install
+
+Several features are off by default and controlled via feature flags. After installing, consider enabling in **WP Pinch → Features**:
+
+| Feature | What it unlocks |
+|---------|-----------------|
+| **Streaming** | Pinch Chat block streams responses in real time instead of waiting for full reply |
+| **Slash commands** | `/molt 123`, `/pinchdrop`, etc. in chat |
+| **Molt** | Turn one post into 10 formats (social, thread, FAQ, meta description, etc.) |
+| **Ghost Writer** | Complete abandoned drafts in your writing voice |
+| **Public chat** | Let visitors use the Pinch Chat block without logging in |
+
+Without these, the Chat block and abilities still work — you just get a simpler experience. Enable what you need.
 
 ---
 

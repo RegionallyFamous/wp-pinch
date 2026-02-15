@@ -2,7 +2,7 @@
 
 **WordPress in your pocket. Your AI assistant runs it from the chat you never leave.**
 
-One plugin. Connect [OpenClaw](https://github.com/openclaw/openclaw) (or any MCP client); your site is in the same chat — 38+ abilities, Molt, PinchDrop, What do I know, daily Tide Report (8 governance tasks), Pinch Chat block, webhooks. Self-hosted. Your data.
+One plugin. Connect [OpenClaw](https://github.com/openclaw/openclaw) (or any MCP client); your site is in the same chat — 48 core abilities (plus 2 WooCommerce, plus Ghost Writer and Molt when feature flags enabled = 54 total), Molt, PinchDrop, What do I know, daily Tide Report (8 governance tasks), Pinch Chat block, webhooks. Self-hosted. Your data.
 
 **One line:** Your site isn't another tab — it's in the same chat. You talk; your assistant has the keys. [Install & connect →](Configuration)
 
@@ -59,7 +59,7 @@ One plugin. Connect [OpenClaw](https://github.com/openclaw/openclaw) (or any MCP
 |-------------|---------|-------|
 | WordPress | 6.9+ | Abilities API |
 | PHP | 8.1+ | Type hints, enums |
-| Action Scheduler | Required | Ships with WooCommerce or install standalone |
+| Action Scheduler | Required for governance | Ships with WooCommerce or install standalone. Needed for scheduled tasks and webhook retries; abilities and Chat block work without it. See [FAQ](FAQ#why-do-i-need-action-scheduler). |
 | OpenClaw (or MCP client) | For chat/channel integration | Abilities work with any MCP client |
 
 ---

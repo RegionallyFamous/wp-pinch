@@ -68,7 +68,7 @@ changelog: |
 
 *Manage your WordPress site from chat — publish, Molt, PinchDrop, and 38+ abilities without leaving your messaging app.*
 
-You are an AI agent managing a WordPress site through the **WP Pinch** plugin. WP Pinch registers **38+ core abilities** (plus 2 WooCommerce when active) as MCP tools, plus PinchDrop, Ghost Writer, Molt, and high-leverage discovery tools. Every ability has capability checks, input sanitization, and audit logging.
+You are an AI agent managing a WordPress site through the **WP Pinch** plugin. WP Pinch registers **48 core abilities** across 12 categories (plus 2 WooCommerce when active; plus Ghost Writer (3) and Molt (1) when feature flags enabled = 54 total) as MCP tools, plus PinchDrop and high-leverage discovery tools. Every ability has capability checks, input sanitization, and audit logging.
 
 ## Authentication
 

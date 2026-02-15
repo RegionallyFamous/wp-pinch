@@ -2,14 +2,14 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: WP Pinch 2.7.0\n"
+"Project-Id-Version: WP Pinch 2.8.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wp-pinch\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-02-15T00:57:55+00:00\n"
+"POT-Creation-Date: 2026-02-15T03:32:47+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: wp-pinch\n"
@@ -1096,8 +1096,8 @@ msgstr ""
 #: includes/class-approval-queue.php:177
 #: includes/class-dashboard-widget.php:124
 #: includes/class-network-settings.php:222
-#: includes/class-settings.php:1955
-#: includes/class-settings.php:2108
+#: includes/class-settings.php:1997
+#: includes/class-settings.php:2150
 msgid "Ability"
 msgstr ""
 
@@ -1128,8 +1128,8 @@ msgstr ""
 
 #: includes/class-approval-queue.php:223
 #: includes/class-approval-queue.php:276
-#: includes/class-settings.php:882
-#: includes/class-settings.php:942
+#: includes/class-settings.php:898
+#: includes/class-settings.php:958
 msgid "Permission denied."
 msgstr ""
 
@@ -1178,7 +1178,7 @@ msgid "Webhook"
 msgstr ""
 
 #: includes/class-dashboard-widget.php:126
-#: includes/class-settings.php:1243
+#: includes/class-settings.php:1270
 msgid "Governance"
 msgstr ""
 
@@ -1343,14 +1343,14 @@ msgid "Sites can use these when \"Use network default\" is enabled in their Conn
 msgstr ""
 
 #: includes/class-network-settings.php:106
-#: includes/class-settings.php:1103
+#: includes/class-settings.php:1119
 #: includes/class-site-health.php:59
 msgid "Gateway URL"
 msgstr ""
 
 #: includes/class-network-settings.php:113
-#: includes/class-settings.php:1122
-#: includes/class-settings.php:1376
+#: includes/class-settings.php:1138
+#: includes/class-settings.php:1403
 msgid "API Token"
 msgstr ""
 
@@ -1388,20 +1388,20 @@ msgid "Last 50 ability executions across all sites."
 msgstr ""
 
 #: includes/class-network-settings.php:213
-#: includes/class-settings.php:2122
+#: includes/class-settings.php:2164
 msgid "No ability executions in this period."
 msgstr ""
 
 #: includes/class-network-settings.php:220
 #: includes/class-privacy.php:149
-#: includes/class-settings.php:2132
-#: includes/class-settings.php:2261
+#: includes/class-settings.php:2174
+#: includes/class-settings.php:2303
 msgid "Date"
 msgstr ""
 
 #: includes/class-network-settings.php:223
 #: includes/class-privacy.php:137
-#: includes/class-settings.php:2263
+#: includes/class-settings.php:2305
 msgid "Source"
 msgstr ""
 
@@ -1566,7 +1566,7 @@ msgid "The WordPress REST API appears to be disabled or blocked. WP Pinch requir
 msgstr ""
 
 #: includes/class-rest-availability.php:122
-#: includes/class-settings.php:1251
+#: includes/class-settings.php:1278
 #: includes/class-site-health.php:347
 msgid "WP Pinch Settings"
 msgstr ""
@@ -1950,1004 +1950,1030 @@ msgid "Settings"
 msgstr ""
 
 #. translators: 1: current step number, 2: total steps
-#: includes/class-settings.php:850
-#: includes/class-settings.php:1056
+#: includes/class-settings.php:851
+#: includes/class-settings.php:1072
 #, php-format
 msgid "Step %1$d of %2$d"
 msgstr ""
 
-#: includes/class-settings.php:851
+#: includes/class-settings.php:852
 msgid "Please enter a gateway URL first."
 msgstr ""
 
-#: includes/class-settings.php:852
+#: includes/class-settings.php:853
 msgid "Testing…"
 msgstr ""
 
-#: includes/class-settings.php:853
+#: includes/class-settings.php:854
 msgid "Claws at the ready!"
 msgstr ""
 
 #. translators: %s: HTTP status code
-#: includes/class-settings.php:855
+#: includes/class-settings.php:856
 #, php-format
 msgid "Connection failed (HTTP %s)."
 msgstr ""
 
-#: includes/class-settings.php:856
+#: includes/class-settings.php:857
 msgid "Unable to reach gateway. Check the URL."
 msgstr ""
 
-#: includes/class-settings.php:857
+#: includes/class-settings.php:858
 msgid "Snatched!"
 msgstr ""
 
-#: includes/class-settings.php:888
+#: includes/class-settings.php:904
 msgid "Please wait a few seconds before testing again."
 msgstr ""
 
-#: includes/class-settings.php:896
+#: includes/class-settings.php:912
 msgid "Gateway URL is not configured."
 msgstr ""
 
-#: includes/class-settings.php:901
+#: includes/class-settings.php:917
 msgid "Gateway URL failed security validation. Use a public HTTP or HTTPS URL."
 msgstr ""
 
-#: includes/class-settings.php:917
+#: includes/class-settings.php:933
 msgid "Unable to reach the gateway. Check the URL and try again."
 msgstr ""
 
-#: includes/class-settings.php:925
+#: includes/class-settings.php:941
 msgid "Connection secured. Claws at the ready!"
 msgstr ""
 
 #. translators: %d: HTTP status code returned by the gateway.
-#: includes/class-settings.php:931
+#: includes/class-settings.php:947
 #, php-format
 msgid "Connection failed (HTTP %d)."
 msgstr ""
 
-#: includes/class-settings.php:953
+#: includes/class-settings.php:969
 msgid "OpenClaw agent user created. Go to Users → Profile to generate an application password for this user."
 msgstr ""
 
-#: includes/class-settings.php:980
+#: includes/class-settings.php:996
 msgid "Agent identity (least privilege)"
 msgstr ""
 
-#: includes/class-settings.php:982
+#: includes/class-settings.php:998
 msgid "Abilities executed via the incoming webhook run as a WordPress user. Use a dedicated OpenClaw agent with limited capabilities for better security."
 msgstr ""
 
-#: includes/class-settings.php:987
+#: includes/class-settings.php:1003
 msgid "Webhook execution user"
 msgstr ""
 
-#: includes/class-settings.php:992
+#: includes/class-settings.php:1008
 msgid "Use first administrator (default)"
 msgstr ""
 
-#: includes/class-settings.php:1004
+#: includes/class-settings.php:1020
 msgid "Create OpenClaw agent user"
 msgstr ""
 
-#: includes/class-settings.php:1009
+#: includes/class-settings.php:1025
 msgid "Create an application password for the agent user in Users → Profile. Use it for MCP/REST connections."
 msgstr ""
 
-#: includes/class-settings.php:1014
+#: includes/class-settings.php:1030
 msgid "Capability groups"
 msgstr ""
 
-#: includes/class-settings.php:1026
+#: includes/class-settings.php:1042
 msgid "Controls what the OpenClaw agent role can do. Only affects users with the OpenClaw Agent role."
 msgstr ""
 
-#: includes/class-settings.php:1050
+#: includes/class-settings.php:1066
 msgid "Welcome to WP Pinch — your site's got claws"
 msgstr ""
 
-#: includes/class-settings.php:1063
+#: includes/class-settings.php:1079
 msgid "Connect WordPress to OpenClaw"
 msgstr ""
 
-#: includes/class-settings.php:1065
+#: includes/class-settings.php:1081
 msgid "WP Pinch bridges your WordPress site with OpenClaw, letting you manage your site from WhatsApp, Telegram, Slack, Discord, or any messaging platform OpenClaw supports."
 msgstr ""
 
-#: includes/class-settings.php:1067
+#: includes/class-settings.php:1083
 msgid "What you'll need (no claws required):"
 msgstr ""
 
-#: includes/class-settings.php:1069
+#: includes/class-settings.php:1085
 msgid "OpenClaw installed and running (local or remote)"
 msgstr ""
 
-#: includes/class-settings.php:1070
+#: includes/class-settings.php:1086
 msgid "Your OpenClaw gateway URL and API token"
 msgstr ""
 
 #. translators: %s: link to OpenClaw install docs
-#: includes/class-settings.php:1076
+#: includes/class-settings.php:1092
 #, php-format
 msgid "Don't have OpenClaw yet? %s"
 msgstr ""
 
-#: includes/class-settings.php:1077
+#: includes/class-settings.php:1093
 msgid "Install it here"
 msgstr ""
 
-#: includes/class-settings.php:1083
+#: includes/class-settings.php:1099
 msgid "Let's get pinching"
 msgstr ""
 
-#: includes/class-settings.php:1087
+#: includes/class-settings.php:1103
 msgid "I'll scuttle back later"
 msgstr ""
 
-#: includes/class-settings.php:1095
+#: includes/class-settings.php:1111
 msgid "Configure Connection"
 msgstr ""
 
-#: includes/class-settings.php:1116
+#: includes/class-settings.php:1132
 msgid "The URL of your OpenClaw gateway (usually http://127.0.0.1:18789 for local installs)."
 msgstr ""
 
-#: includes/class-settings.php:1134
+#: includes/class-settings.php:1150
 msgid "Your OpenClaw gateway token (OPENCLAW_GATEWAY_TOKEN)."
 msgstr ""
 
-#: includes/class-settings.php:1142
-#: includes/class-settings.php:1785
+#: includes/class-settings.php:1158
+#: includes/class-settings.php:1812
 msgid "Test Connection"
 msgstr ""
 
-#: includes/class-settings.php:1149
+#: includes/class-settings.php:1165
 msgid "Your MCP Endpoint"
 msgstr ""
 
-#: includes/class-settings.php:1151
+#: includes/class-settings.php:1167
 msgid "Use this URL to connect OpenClaw to your WordPress site via MCP:"
 msgstr ""
 
-#: includes/class-settings.php:1155
+#: includes/class-settings.php:1171
 msgid "Copy MCP URL"
 msgstr ""
 
-#: includes/class-settings.php:1155
-#: includes/class-settings.php:1163
+#: includes/class-settings.php:1171
+#: includes/class-settings.php:1179
 msgid "Copy"
 msgstr ""
 
-#: includes/class-settings.php:1159
+#: includes/class-settings.php:1175
 msgid "Or run this command in your OpenClaw CLI:"
 msgstr ""
 
-#: includes/class-settings.php:1163
+#: includes/class-settings.php:1179
 msgid "Copy command"
 msgstr ""
 
-#: includes/class-settings.php:1169
+#: includes/class-settings.php:1185
 msgid "Back"
 msgstr ""
 
-#: includes/class-settings.php:1171
+#: includes/class-settings.php:1187
 msgid "Save & Continue"
 msgstr ""
 
-#: includes/class-settings.php:1180
+#: includes/class-settings.php:1196
 msgid "Time to pinch"
 msgstr ""
 
-#: includes/class-settings.php:1182
+#: includes/class-settings.php:1198
 msgid "Send a message from WhatsApp, Telegram, Slack, or Discord to your OpenClaw agent. Your agent can now pinch your WordPress site via the MCP endpoint below."
 msgstr ""
 
-#: includes/class-settings.php:1184
+#: includes/class-settings.php:1201
+msgid "Install the WP Pinch skill"
+msgstr ""
+
+#: includes/class-settings.php:1203
+msgid "Copy the skill so your agent knows when and how to use each ability. Save to ~/.openclaw/workspace/skills/wp-pinch/SKILL.md"
+msgstr ""
+
+#: includes/class-settings.php:1206
+#: includes/class-settings.php:1836
+msgid "Copy skill to clipboard"
+msgstr ""
+
+#: includes/class-settings.php:1206
+#: includes/class-settings.php:1837
+msgid "Copy skill"
+msgstr ""
+
+#: includes/class-settings.php:1211
 msgid "Try this first"
 msgstr ""
 
-#: includes/class-settings.php:1186
+#: includes/class-settings.php:1213
 msgid "PinchDrop: Send a sentence to your channel and ask the assistant to turn it into a draft pack."
 msgstr ""
 
-#: includes/class-settings.php:1187
+#: includes/class-settings.php:1214
 msgid "Molt: Say \"Molt 123\" (or \"Turn post 123 into social and meta\") to get multiple formats from one post."
 msgstr ""
 
 #. translators: %s: link to Recipes wiki
-#: includes/class-settings.php:1193
+#: includes/class-settings.php:1220
 #, php-format
 msgid "Step-by-step flows: %s"
 msgstr ""
 
-#: includes/class-settings.php:1194
+#: includes/class-settings.php:1221
 msgid "Recipes"
 msgstr ""
 
 #. translators: %s: link to OpenClaw docs
-#: includes/class-settings.php:1205
+#: includes/class-settings.php:1232
 #, php-format
 msgid "Need help connecting a channel? See the %s."
 msgstr ""
 
-#: includes/class-settings.php:1206
+#: includes/class-settings.php:1233
 msgid "OpenClaw docs"
 msgstr ""
 
-#: includes/class-settings.php:1211
+#: includes/class-settings.php:1238
 msgid "Enter the warren"
 msgstr ""
 
-#: includes/class-settings.php:1240
+#: includes/class-settings.php:1267
 msgid "What can I pinch?"
 msgstr ""
 
-#: includes/class-settings.php:1241
+#: includes/class-settings.php:1268
 msgid "Connection"
 msgstr ""
 
-#: includes/class-settings.php:1242
+#: includes/class-settings.php:1269
 msgid "Webhooks"
 msgstr ""
 
-#: includes/class-settings.php:1244
+#: includes/class-settings.php:1271
 msgid "Abilities"
 msgstr ""
 
-#: includes/class-settings.php:1245
+#: includes/class-settings.php:1272
 msgid "Usage"
 msgstr ""
 
-#: includes/class-settings.php:1246
+#: includes/class-settings.php:1273
 msgid "Features"
 msgstr ""
 
-#: includes/class-settings.php:1247
-#: includes/class-settings.php:2185
+#: includes/class-settings.php:1274
+#: includes/class-settings.php:2227
 msgid "Audit Log"
 msgstr ""
 
-#: includes/class-settings.php:1259
+#: includes/class-settings.php:1286
 msgid "Settings saved. Territory secured."
 msgstr ""
 
-#: includes/class-settings.php:1266
+#: includes/class-settings.php:1293
 msgid "Settings tabs"
 msgstr ""
 
-#: includes/class-settings.php:1317
+#: includes/class-settings.php:1344
 msgid "Here’s what this lobster can pinch for you:"
 msgstr ""
 
-#: includes/class-settings.php:1320
+#: includes/class-settings.php:1347
 msgid "Capture from channels (PinchDrop)"
 msgstr ""
 
-#: includes/class-settings.php:1321
+#: includes/class-settings.php:1348
 msgid "Send ideas from WhatsApp, Telegram, Slack, or Discord; turn them into draft packs or quick notes."
 msgstr ""
 
-#: includes/class-settings.php:1322
+#: includes/class-settings.php:1349
 msgid "PinchDrop guide"
 msgstr ""
 
-#: includes/class-settings.php:1325
+#: includes/class-settings.php:1352
 msgid "Chat with your site (block)"
 msgstr ""
 
-#: includes/class-settings.php:1326
+#: includes/class-settings.php:1353
 msgid "Add a chat block to any post or page so visitors (or you) can talk to your site."
 msgstr ""
 
-#: includes/class-settings.php:1327
+#: includes/class-settings.php:1354
 msgid "Chat block"
 msgstr ""
 
-#: includes/class-settings.php:1330
+#: includes/class-settings.php:1357
 msgid "Daily digest (Tide Report)"
 msgstr ""
 
-#: includes/class-settings.php:1331
+#: includes/class-settings.php:1358
 msgid "Governance findings (stale posts, SEO, drafts) bundled into one daily webhook."
 msgstr ""
 
-#: includes/class-settings.php:1332
+#: includes/class-settings.php:1359
 msgid "Configuration"
 msgstr ""
 
-#: includes/class-settings.php:1335
+#: includes/class-settings.php:1362
 msgid "Synthesize across posts (Weave)"
 msgstr ""
 
-#: includes/class-settings.php:1336
+#: includes/class-settings.php:1363
 msgid "Search content and get a payload ready for synthesis; build answers from your existing posts."
 msgstr ""
 
-#: includes/class-settings.php:1337
-#: includes/class-settings.php:1342
+#: includes/class-settings.php:1364
+#: includes/class-settings.php:1369
 msgid "Abilities Reference"
 msgstr ""
 
-#: includes/class-settings.php:1340
+#: includes/class-settings.php:1367
 msgid "Quick tools"
 msgstr ""
 
-#: includes/class-settings.php:1341
+#: includes/class-settings.php:1368
 msgid "TL;DR on publish, Link Suggester (suggest internal links), Quote Bank (extract notable sentences)."
 msgstr ""
 
-#: includes/class-settings.php:1346
+#: includes/class-settings.php:1373
 msgid "Full Abilities Reference (the whole claw)"
 msgstr ""
 
-#: includes/class-settings.php:1361
+#: includes/class-settings.php:1388
 msgid "Gateway & API — where the claws connect"
 msgstr ""
 
-#: includes/class-settings.php:1365
+#: includes/class-settings.php:1392
 msgid "OpenClaw Gateway URL"
 msgstr ""
 
-#: includes/class-settings.php:1371
+#: includes/class-settings.php:1398
 msgid "The URL of your OpenClaw gateway. This is where we reach out and pinch."
 msgstr ""
 
-#: includes/class-settings.php:1383
+#: includes/class-settings.php:1410
 msgid "Your secret handshake. Bearer token for webhook auth — keep it safe, we're territorial about it."
 msgstr ""
 
-#: includes/class-settings.php:1387
+#: includes/class-settings.php:1414
 msgid "Safety controls (claws sheathed)"
 msgstr ""
 
-#: includes/class-settings.php:1392
+#: includes/class-settings.php:1419
 msgid "Disable API access (hide in the kelp)"
 msgstr ""
 
-#: includes/class-settings.php:1394
+#: includes/class-settings.php:1421
 msgid "When checked, all REST endpoints return 503. Use during incidents — we'll keep our claws to ourselves."
 msgstr ""
 
-#: includes/class-settings.php:1398
+#: includes/class-settings.php:1425
 msgid "Read-only mode (look but don't pinch)"
 msgstr ""
 
-#: includes/class-settings.php:1400
+#: includes/class-settings.php:1427
 msgid "When checked, write abilities are blocked. We'll look around all you want, but no grabbing."
 msgstr ""
 
-#: includes/class-settings.php:1404
+#: includes/class-settings.php:1431
 msgid "Strict gateway reply sanitization"
 msgstr ""
 
-#: includes/class-settings.php:1406
+#: includes/class-settings.php:1433
 msgid "When checked, chat replies are stripped of HTML comments and instruction-like text, and iframe/object/embed/form are removed to reduce prompt-injection and XSS risk."
 msgstr ""
 
-#: includes/class-settings.php:1409
+#: includes/class-settings.php:1436
 msgid "Note: WP_PINCH_DISABLED is set in wp-config.php — API is disabled until that constant is removed."
 msgstr ""
 
-#: includes/class-settings.php:1414
+#: includes/class-settings.php:1441
 msgid "Note: WP_PINCH_READ_ONLY is set in wp-config.php — write operations are disabled until that constant is removed."
 msgstr ""
 
-#: includes/class-settings.php:1421
+#: includes/class-settings.php:1448
 msgid "Rate Limit"
 msgstr ""
 
-#: includes/class-settings.php:1427
+#: includes/class-settings.php:1454
 msgid "webhooks per minute"
 msgstr ""
 
-#: includes/class-settings.php:1432
+#: includes/class-settings.php:1459
 msgid "Daily write budget"
 msgstr ""
 
-#: includes/class-settings.php:1438
+#: includes/class-settings.php:1465
 msgid "max write operations per day (0 = no limit)"
 msgstr ""
 
-#: includes/class-settings.php:1440
+#: includes/class-settings.php:1467
 msgid "Write operations: create/update/delete posts, media, options, etc. When exceeded, requests return 429 until the next day."
 msgstr ""
 
-#: includes/class-settings.php:1443
+#: includes/class-settings.php:1470
 msgid "Alert email when usage reaches"
 msgstr ""
 
-#: includes/class-settings.php:1447
+#: includes/class-settings.php:1474
 msgid "— Email:"
 msgstr ""
 
-#: includes/class-settings.php:1450
+#: includes/class-settings.php:1477
 msgid "admin@example.com"
 msgstr ""
 
-#: includes/class-settings.php:1456
+#: includes/class-settings.php:1483
 #: build/blocks/pinch-chat/index.js:1
 #: src/blocks/pinch-chat/edit.js:81
 msgid "Agent ID"
 msgstr ""
 
-#: includes/class-settings.php:1465
+#: includes/class-settings.php:1492
 msgid "e.g. hooks or main"
 msgstr ""
 
-#: includes/class-settings.php:1468
+#: includes/class-settings.php:1495
 msgid "Optional. Route webhooks and chat to a specific OpenClaw agent. Leave blank for default agent."
 msgstr ""
 
-#: includes/class-settings.php:1473
+#: includes/class-settings.php:1500
 msgid "Public chat & stream limits"
 msgstr ""
 
-#: includes/class-settings.php:1476
+#: includes/class-settings.php:1503
 msgid "Public chat (unauthenticated) rate limit:"
 msgstr ""
 
-#: includes/class-settings.php:1479
+#: includes/class-settings.php:1506
 msgid "requests per minute per IP"
 msgstr ""
 
-#: includes/class-settings.php:1482
+#: includes/class-settings.php:1509
 msgid "Max concurrent SSE streams per IP:"
 msgstr ""
 
-#: includes/class-settings.php:1485
-#: includes/class-settings.php:1491
+#: includes/class-settings.php:1512
+#: includes/class-settings.php:1518
 msgid "no limit"
 msgstr ""
 
-#: includes/class-settings.php:1488
+#: includes/class-settings.php:1515
 msgid "Max chat response length (chars):"
 msgstr ""
 
-#: includes/class-settings.php:1496
+#: includes/class-settings.php:1523
 msgid "Ability cache"
 msgstr ""
 
-#: includes/class-settings.php:1499
+#: includes/class-settings.php:1526
 msgid "Cache TTL for read-heavy abilities (seconds):"
 msgstr ""
 
-#: includes/class-settings.php:1502
+#: includes/class-settings.php:1529
 msgid "disabled"
 msgstr ""
 
-#: includes/class-settings.php:1504
+#: includes/class-settings.php:1531
 msgid "list-posts, search-content, list-media, list-taxonomies. Invalidated on post save/delete."
 msgstr ""
 
-#: includes/class-settings.php:1513
+#: includes/class-settings.php:1540
 msgid "Webhook defaults"
 msgstr ""
 
-#: includes/class-settings.php:1517
+#: includes/class-settings.php:1544
 msgid "Delivery Channel"
 msgstr ""
 
-#: includes/class-settings.php:1521
+#: includes/class-settings.php:1548
 msgid "None (agent only)"
 msgstr ""
 
-#: includes/class-settings.php:1522
+#: includes/class-settings.php:1549
 msgid "Last active channel"
 msgstr ""
 
-#: includes/class-settings.php:1532
+#: includes/class-settings.php:1559
 msgid "Optional. Deliver webhook responses to a messaging channel."
 msgstr ""
 
-#: includes/class-settings.php:1538
+#: includes/class-settings.php:1565
 msgid "Recipient"
 msgstr ""
 
-#: includes/class-settings.php:1547
+#: includes/class-settings.php:1574
 msgid "e.g. +15551234567 or channel ID"
 msgstr ""
 
-#: includes/class-settings.php:1550
+#: includes/class-settings.php:1577
 msgid "Optional. Recipient identifier for the delivery channel (phone number, chat ID, etc.)."
 msgstr ""
 
-#: includes/class-settings.php:1556
+#: includes/class-settings.php:1583
 msgid "Deliver Responses"
 msgstr ""
 
-#: includes/class-settings.php:1567
+#: includes/class-settings.php:1594
 msgid "Send agent responses to the delivery channel"
 msgstr ""
 
-#: includes/class-settings.php:1570
+#: includes/class-settings.php:1597
 msgid "When enabled, OpenClaw will deliver webhook responses to the configured messaging channel."
 msgstr ""
 
-#: includes/class-settings.php:1576
+#: includes/class-settings.php:1603
 msgid "Webhook Model"
 msgstr ""
 
-#: includes/class-settings.php:1585
+#: includes/class-settings.php:1612
 msgid "e.g. openai/gpt-5.2-mini"
 msgstr ""
 
-#: includes/class-settings.php:1588
+#: includes/class-settings.php:1615
 msgid "Override which model processes webhook events. Leave empty for the agent default."
 msgstr ""
 
-#: includes/class-settings.php:1594
+#: includes/class-settings.php:1621
 msgid "Thinking Level"
 msgstr ""
 
-#: includes/class-settings.php:1598
+#: includes/class-settings.php:1625
 msgid "Default"
 msgstr ""
 
-#: includes/class-settings.php:1599
-#: includes/class-settings.php:1659
+#: includes/class-settings.php:1626
+#: includes/class-settings.php:1686
 msgid "Off"
 msgstr ""
 
-#: includes/class-settings.php:1600
-#: includes/class-settings.php:1660
+#: includes/class-settings.php:1627
+#: includes/class-settings.php:1687
 msgid "Low"
 msgstr ""
 
-#: includes/class-settings.php:1601
-#: includes/class-settings.php:1661
+#: includes/class-settings.php:1628
+#: includes/class-settings.php:1688
 msgid "Medium"
 msgstr ""
 
-#: includes/class-settings.php:1602
-#: includes/class-settings.php:1662
+#: includes/class-settings.php:1629
+#: includes/class-settings.php:1689
 msgid "High"
 msgstr ""
 
-#: includes/class-settings.php:1605
+#: includes/class-settings.php:1632
 msgid "Control the thinking level for webhook-triggered agent turns."
 msgstr ""
 
-#: includes/class-settings.php:1611
+#: includes/class-settings.php:1638
 msgid "Timeout (seconds)"
 msgstr ""
 
-#: includes/class-settings.php:1625
+#: includes/class-settings.php:1652
 msgid "Maximum seconds for webhook agent runs (0 = no limit)."
 msgstr ""
 
-#: includes/class-settings.php:1633
+#: includes/class-settings.php:1660
 #: build/blocks/pinch-chat/index.js:1
 #: src/blocks/pinch-chat/edit.js:47
 msgid "Chat Settings"
 msgstr ""
 
-#: includes/class-settings.php:1634
+#: includes/class-settings.php:1661
 msgid "Configure how the chat block behaves — model, thinking level, placeholder, and more."
 msgstr ""
 
-#: includes/class-settings.php:1638
+#: includes/class-settings.php:1665
 msgid "Chat Model"
 msgstr ""
 
-#: includes/class-settings.php:1645
+#: includes/class-settings.php:1672
 msgid "e.g. anthropic/claude-sonnet-4-5 — leave empty for gateway default."
 msgstr ""
 
-#: includes/class-settings.php:1651
+#: includes/class-settings.php:1678
 msgid "Chat Thinking Level"
 msgstr ""
 
-#: includes/class-settings.php:1658
+#: includes/class-settings.php:1685
 msgid "Default (gateway decides)"
 msgstr ""
 
-#: includes/class-settings.php:1675
+#: includes/class-settings.php:1702
 msgid "Chat Timeout (seconds)"
 msgstr ""
 
-#: includes/class-settings.php:1682
+#: includes/class-settings.php:1709
 msgid "0 = gateway default. Maximum 600 seconds."
 msgstr ""
 
-#: includes/class-settings.php:1688
+#: includes/class-settings.php:1715
 msgid "Default Chat Placeholder"
 msgstr ""
 
-#: includes/class-settings.php:1695
+#: includes/class-settings.php:1722
 msgid "Default placeholder when the block hasn't been customized. Leave empty for our lobster-y default. Can be overridden per post via Block Bindings."
 msgstr ""
 
-#: includes/class-settings.php:1701
+#: includes/class-settings.php:1728
 msgid "Session Idle Timeout (minutes)"
 msgstr ""
 
-#: includes/class-settings.php:1708
+#: includes/class-settings.php:1735
 msgid "0 = gateway default. After this many idle minutes, a new session starts."
 msgstr ""
 
-#: includes/class-settings.php:1714
+#: includes/class-settings.php:1741
 msgid "Web Clipper capture token"
 msgstr ""
 
-#: includes/class-settings.php:1727
+#: includes/class-settings.php:1754
 msgid "Optional. Long-lived secret token for the Web Clipper / bookmarklet capture endpoint. If set, one-shot captures from the browser use this token (query param or X-WP-Pinch-Capture-Token header). Keep it secret; the URL may contain the token."
 msgstr ""
 
-#: includes/class-settings.php:1735
+#: includes/class-settings.php:1762
 msgid "PinchDrop (Capture Anywhere)"
 msgstr ""
 
-#: includes/class-settings.php:1736
+#: includes/class-settings.php:1763
 msgid "Capture ideas from OpenClaw channels and auto-generate draft packs."
 msgstr ""
 
-#: includes/class-settings.php:1739
+#: includes/class-settings.php:1766
 msgid "Enable PinchDrop"
 msgstr ""
 
-#: includes/class-settings.php:1744
+#: includes/class-settings.php:1771
 msgid "Accept capture requests on /wp-pinch/v1/pinchdrop/capture"
 msgstr ""
 
-#: includes/class-settings.php:1749
+#: includes/class-settings.php:1776
 msgid "Default output types"
 msgstr ""
 
-#: includes/class-settings.php:1752
+#: includes/class-settings.php:1779
 msgid "Blog post"
 msgstr ""
 
-#: includes/class-settings.php:1753
+#: includes/class-settings.php:1780
 msgid "Product update"
 msgstr ""
 
-#: includes/class-settings.php:1754
+#: includes/class-settings.php:1781
 msgid "Changelog"
 msgstr ""
 
-#: includes/class-settings.php:1755
+#: includes/class-settings.php:1782
 msgid "Social snippets"
 msgstr ""
 
-#: includes/class-settings.php:1759
+#: includes/class-settings.php:1786
 msgid "Auto-save generated drafts"
 msgstr ""
 
-#: includes/class-settings.php:1764
+#: includes/class-settings.php:1791
 msgid "Create draft posts automatically from generated output"
 msgstr ""
 
-#: includes/class-settings.php:1770
+#: includes/class-settings.php:1797
 msgid "Allowed capture sources"
 msgstr ""
 
-#: includes/class-settings.php:1776
+#: includes/class-settings.php:1803
 msgid "slack,telegram,whatsapp"
 msgstr ""
 
-#: includes/class-settings.php:1777
+#: includes/class-settings.php:1804
 msgid "Optional comma-separated source allowlist. Leave empty to allow all sources."
 msgstr ""
 
-#: includes/class-settings.php:1794
+#: includes/class-settings.php:1821
 msgid "MCP Server Endpoint"
 msgstr ""
 
-#: includes/class-settings.php:1795
+#: includes/class-settings.php:1822
 msgid "Your WP Pinch MCP server is available at:"
 msgstr ""
 
-#: includes/class-settings.php:1798
+#: includes/class-settings.php:1825
 msgid "Use this URL to connect OpenClaw (or any MCP client) via mcp-wordpress-remote."
 msgstr ""
 
-#: includes/class-settings.php:1814
+#: includes/class-settings.php:1831
+msgid "Install OpenClaw Skill"
+msgstr ""
+
+#: includes/class-settings.php:1833
+msgid "Copy the WP Pinch skill so your OpenClaw agent knows when and how to use each ability (posts, PinchDrop, Molt, etc.). Save to ~/.openclaw/workspace/skills/wp-pinch/SKILL.md"
+msgstr ""
+
+#: includes/class-settings.php:1856
 msgid "Select which WordPress events trigger webhooks to OpenClaw. Leave all unchecked to enable everything."
 msgstr ""
 
-#: includes/class-settings.php:1819
-#: includes/class-settings.php:2262
+#: includes/class-settings.php:1861
+#: includes/class-settings.php:2304
 msgid "Event"
 msgstr ""
 
-#: includes/class-settings.php:1820
-#: includes/class-settings.php:1919
-#: includes/class-settings.php:2020
+#: includes/class-settings.php:1862
+#: includes/class-settings.php:1961
+#: includes/class-settings.php:2062
 msgid "Enabled"
 msgstr ""
 
-#: includes/class-settings.php:1821
+#: includes/class-settings.php:1863
 msgid "Endpoint"
 msgstr ""
 
-#: includes/class-settings.php:1822
+#: includes/class-settings.php:1864
 msgid "Wake Mode"
 msgstr ""
 
-#: includes/class-settings.php:1858
+#: includes/class-settings.php:1900
 msgid "/hooks/agent (full turn)"
 msgstr ""
 
-#: includes/class-settings.php:1859
+#: includes/class-settings.php:1901
 msgid "/hooks/wake (lightweight)"
 msgstr ""
 
-#: includes/class-settings.php:1864
+#: includes/class-settings.php:1906
 msgid "Immediate"
 msgstr ""
 
-#: includes/class-settings.php:1865
+#: includes/class-settings.php:1907
 msgid "Next heartbeat"
 msgstr ""
 
-#: includes/class-settings.php:1889
+#: includes/class-settings.php:1931
 msgid "Delivery Mode"
 msgstr ""
 
-#: includes/class-settings.php:1892
+#: includes/class-settings.php:1934
 msgid "How to process findings"
 msgstr ""
 
-#: includes/class-settings.php:1896
+#: includes/class-settings.php:1938
 msgid "Webhook to OpenClaw (recommended)"
 msgstr ""
 
-#: includes/class-settings.php:1901
+#: includes/class-settings.php:1943
 msgid "Server-side via WP AI Client (requires WP 7.0+)"
 msgstr ""
 
-#: includes/class-settings.php:1907
+#: includes/class-settings.php:1949
 msgid "Governance Tasks"
 msgstr ""
 
-#: includes/class-settings.php:1908
+#: includes/class-settings.php:1950
 msgid "Select which autonomous tasks to run. Leave all unchecked to enable everything."
 msgstr ""
 
-#: includes/class-settings.php:1949
+#: includes/class-settings.php:1991
 msgid "Uncheck abilities you want to disable. Disabled abilities will not be registered or available via MCP."
 msgstr ""
 
-#: includes/class-settings.php:1954
+#: includes/class-settings.php:1996
 msgid "On"
 msgstr ""
 
-#: includes/class-settings.php:1972
+#: includes/class-settings.php:2014
 msgid "Check the box to DISABLE the ability. Leave unchecked to keep it enabled."
 msgstr ""
 
-#: includes/class-settings.php:1989
+#: includes/class-settings.php:2031
 msgid "Streaming Chat (SSE)"
 msgstr ""
 
-#: includes/class-settings.php:1990
+#: includes/class-settings.php:2032
 msgid "HMAC-SHA256 Webhook Signatures"
 msgstr ""
 
-#: includes/class-settings.php:1991
+#: includes/class-settings.php:2033
 msgid "Circuit Breaker (claws up when the gateway goes down)"
 msgstr ""
 
-#: includes/class-settings.php:1992
+#: includes/class-settings.php:2034
 msgid "Ability Toggle (disable individual abilities)"
 msgstr ""
 
-#: includes/class-settings.php:1993
+#: includes/class-settings.php:2035
 msgid "Webhook Dashboard in Audit Log"
 msgstr ""
 
-#: includes/class-settings.php:1994
+#: includes/class-settings.php:2036
 msgid "Audit Log Search & Filters"
 msgstr ""
 
-#: includes/class-settings.php:1995
+#: includes/class-settings.php:2037
 msgid "Public Health Check Endpoint"
 msgstr ""
 
-#: includes/class-settings.php:1996
+#: includes/class-settings.php:2038
 msgid "Slash commands (/new, /status) in chat"
 msgstr ""
 
-#: includes/class-settings.php:1997
+#: includes/class-settings.php:2039
 msgid "Show token usage in chat footer"
 msgstr ""
 
-#: includes/class-settings.php:1998
+#: includes/class-settings.php:2040
 msgid "PinchDrop engine (capture anywhere draft packs)"
 msgstr ""
 
-#: includes/class-settings.php:1999
+#: includes/class-settings.php:2041
 msgid "Ghost Writer (draft completion in author voice)"
 msgstr ""
 
-#: includes/class-settings.php:2000
+#: includes/class-settings.php:2042
 msgid "Molt (content repackager)"
 msgstr ""
 
-#: includes/class-settings.php:2001
+#: includes/class-settings.php:2043
 msgid "Prompt sanitizer (mitigate instruction injection in content sent to LLMs)"
 msgstr ""
 
-#: includes/class-settings.php:2002
+#: includes/class-settings.php:2044
 msgid "Approval workflow (queue destructive abilities for admin approval)"
 msgstr ""
 
-#: includes/class-settings.php:2008
+#: includes/class-settings.php:2050
 msgid "Feature Flags"
 msgstr ""
 
-#: includes/class-settings.php:2009
+#: includes/class-settings.php:2051
 msgid "Flip the switches. Enable what you need — we take our features as seriously as a lobster takes its territory."
 msgstr ""
 
-#: includes/class-settings.php:2028
+#: includes/class-settings.php:2070
 msgid "Feature flags can also be overridden via the wp_pinch_feature_flag filter in code."
 msgstr ""
 
-#: includes/class-settings.php:2035
+#: includes/class-settings.php:2077
 msgid "Circuit Breaker Status"
 msgstr ""
 
-#: includes/class-settings.php:2040
+#: includes/class-settings.php:2082
 msgid "Closed (normal)"
 msgstr ""
 
-#: includes/class-settings.php:2041
+#: includes/class-settings.php:2083
 msgid "Claws up (failing fast)"
 msgstr ""
 
-#: includes/class-settings.php:2042
+#: includes/class-settings.php:2084
 msgid "Half-Open (poking a claw out)"
 msgstr ""
 
 #. translators: %s: circuit state label
-#: includes/class-settings.php:2049
+#: includes/class-settings.php:2091
 #, php-format
 msgid "State: %s"
 msgstr ""
 
 #. translators: %d: seconds until retry
-#: includes/class-settings.php:2059
+#: includes/class-settings.php:2101
 #, php-format
 msgid "Retry in %d seconds."
 msgstr ""
 
-#: includes/class-settings.php:2089
+#: includes/class-settings.php:2131
 msgid "Ability usage"
 msgstr ""
 
 #. translators: %d: number of days
-#: includes/class-settings.php:2093
+#: includes/class-settings.php:2135
 #, php-format
 msgid "Last %d days (from audit log)."
 msgstr ""
 
-#: includes/class-settings.php:2098
+#: includes/class-settings.php:2140
 msgid "Total executions"
 msgstr ""
 
-#: includes/class-settings.php:2103
+#: includes/class-settings.php:2145
 msgid "Top abilities"
 msgstr ""
 
-#: includes/class-settings.php:2109
-#: includes/class-settings.php:2133
+#: includes/class-settings.php:2151
+#: includes/class-settings.php:2175
 msgid "Count"
 msgstr ""
 
-#: includes/class-settings.php:2127
+#: includes/class-settings.php:2169
 msgid "Executions by day"
 msgstr ""
 
-#: includes/class-settings.php:2146
+#: includes/class-settings.php:2188
 msgid "No data for this period."
 msgstr ""
 
-#: includes/class-settings.php:2193
+#: includes/class-settings.php:2235
 msgid "Search:"
 msgstr ""
 
-#: includes/class-settings.php:2196
+#: includes/class-settings.php:2238
 msgid "Search messages..."
 msgstr ""
 
-#: includes/class-settings.php:2199
+#: includes/class-settings.php:2241
 msgid "Event:"
 msgstr ""
 
-#: includes/class-settings.php:2201
+#: includes/class-settings.php:2243
 msgid "All events"
 msgstr ""
 
-#: includes/class-settings.php:2202
+#: includes/class-settings.php:2244
 msgid "Ability executed"
 msgstr ""
 
-#: includes/class-settings.php:2203
+#: includes/class-settings.php:2245
 msgid "Batch executed"
 msgstr ""
 
-#: includes/class-settings.php:2204
+#: includes/class-settings.php:2246
 msgid "Post created"
 msgstr ""
 
-#: includes/class-settings.php:2205
+#: includes/class-settings.php:2247
 msgid "Post updated"
 msgstr ""
 
-#: includes/class-settings.php:2206
+#: includes/class-settings.php:2248
 msgid "Preview approved"
 msgstr ""
 
-#: includes/class-settings.php:2207
+#: includes/class-settings.php:2249
 msgid "Webhook sent"
 msgstr ""
 
-#: includes/class-settings.php:2208
+#: includes/class-settings.php:2250
 msgid "Webhook failed"
 msgstr ""
 
-#: includes/class-settings.php:2209
+#: includes/class-settings.php:2251
 msgid "Chat message"
 msgstr ""
 
-#: includes/class-settings.php:2210
+#: includes/class-settings.php:2252
 msgid "Incoming hook"
 msgstr ""
 
-#: includes/class-settings.php:2213
+#: includes/class-settings.php:2255
 msgid "Source:"
 msgstr ""
 
-#: includes/class-settings.php:2216
+#: includes/class-settings.php:2258
 msgid "e.g. webhook"
 msgstr ""
 
-#: includes/class-settings.php:2221
+#: includes/class-settings.php:2263
 msgid "From:"
 msgstr ""
 
-#: includes/class-settings.php:2225
+#: includes/class-settings.php:2267
 msgid "To:"
 msgstr ""
 
-#: includes/class-settings.php:2229
+#: includes/class-settings.php:2271
 msgid "Filter"
 msgstr ""
 
-#: includes/class-settings.php:2233
+#: includes/class-settings.php:2275
 msgid "Reset"
 msgstr ""
 
 #. translators: %d: total number of log entries
-#: includes/class-settings.php:2243
+#: includes/class-settings.php:2285
 #, php-format
 msgid "%d entries found. Entries older than 90 days are automatically removed."
 msgstr ""
 
-#: includes/class-settings.php:2251
+#: includes/class-settings.php:2293
 msgid "Export CSV"
 msgstr ""
 
-#: includes/class-settings.php:2264
+#: includes/class-settings.php:2306
 msgid "Message"
 msgstr ""
 
-#: includes/class-settings.php:2265
+#: includes/class-settings.php:2307
 msgid "Details"
 msgstr ""
 
-#: includes/class-settings.php:2325
+#: includes/class-settings.php:2367
 msgid "Nothing in the log yet — the waters are calm."
 msgstr ""
 
-#: includes/class-settings.php:2326
+#: includes/class-settings.php:2368
 msgid "Events will pinch in once webhooks run or the chat block is used. Try adjusting filters or scuttle back later."
 msgstr ""
 
-#: includes/class-settings.php:2349
+#: includes/class-settings.php:2391
 msgid "Nonce verification failed."
 msgstr ""
 

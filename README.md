@@ -4,7 +4,7 @@
 
 One plugin. Connect OpenClaw (or any MCP client), and your site is in the same chat — publish, Molt, PinchDrop, Tide Report, from WhatsApp, Slack, or Telegram.
 
-[OpenClaw](https://github.com/openclaw/openclaw) is the personal AI on those channels; it *does* things. **WP Pinch is the WordPress tool:** 38+ abilities so it can manage your site from there.
+[OpenClaw](https://github.com/openclaw/openclaw) is the personal AI on those channels; it *does* things. **WP Pinch is the WordPress tool:** 48 core abilities (plus 2 WooCommerce when active; plus Ghost Writer and Molt when feature flags enabled = 54 total).
 
 **[wp-pinch.com](https://wp-pinch.com)** · [Wiki](https://github.com/RegionallyFamous/wp-pinch/wiki) · [Releases](https://github.com/RegionallyFamous/wp-pinch/releases) · [ClawHub](https://clawhub.ai/nickhamze/pinch-to-post) · **[Install in 60 seconds →](https://github.com/RegionallyFamous/wp-pinch/wiki/Configuration)**
 
@@ -21,14 +21,16 @@ One plugin. Connect OpenClaw (or any MCP client), and your site is in the same c
 
 **OpenClaw** = your assistant (WhatsApp, Telegram, Slack, Discord, and more). Memory, sessions, webhooks, and a **tools** layer — you connect MCP servers like WP Pinch.
 
-**WP Pinch** = WordPress as tools for that assistant. So:
+**WP Pinch** = WordPress as tools for that assistant. Key features:
 
-- *"Publish the Q3 recap."* → Done. No wp-admin.
-- *"Turn post 123 into a Twitter thread, LinkedIn post, and meta description."* → Molt: one call, nine formats.
-- Paste a rough idea in Slack → PinchDrop turns it into a draft pack (blog + social).
-- *"What have I written about pricing?"* → What do I know: answer + source post IDs.
-- Hit a bookmarklet on any webpage → Web Clipper saves it to WordPress. No chat needed.
-- Your site runs governance on a schedule; Tide Report pings one daily summary to your channel (stale posts, SEO, comments, broken links, abandoned drafts).
+- **Molt** — Turn one post into 10 formats: social (Twitter, LinkedIn), thread, FAQ block, email snippet, meta description, pull quote, key takeaways, CTA variants. One call, many outputs.
+- **PinchDrop** — Turn rough text into a draft pack (post, product_update, changelog, social). Quick Drop mode for minimal notes. Send an idea from Slack; get a draft back.
+- **What do I know** — Natural-language query → search + synthesis → answer with source post IDs. *"What have I written about pricing?"* → answer + sources.
+- **Ghost Writer** — Complete abandoned drafts in your writing voice. List drafts ranked by resurrection potential, then `ghostwrite` to finish in your style.
+- **Tide Report** — Governance runs on a schedule (stale posts, SEO health, comments, broken links, abandoned drafts); Tide Report bundles findings into one daily webhook to your channel.
+- **Web Clipper** — Token-protected bookmarklet. Hit any webpage; save snippet to WordPress as draft. No chat needed.
+
+So: *"Publish the Q3 recap."* → Done. *"Turn post 123 into a Twitter thread and meta description."* → Molt. Paste an idea in Slack → PinchDrop.
 
 No extra logins. No "I'll do it at my desk." You talk; your assistant has the keys. Your site isn't another tab — it's in the same chat. Self-hosted. Your data. (We gave the AI the keys; we gave it a bouncer too. More in [Security](https://github.com/RegionallyFamous/wp-pinch/wiki/Security).)
 
@@ -40,7 +42,7 @@ No extra logins. No "I'll do it at my desk." You talk; your assistant has the ke
 
 **OpenClaw** ([openclaw.ai](https://openclaw.ai), [GitHub](https://github.com/openclaw/openclaw)): open-source personal AI. You run it. It connects to WhatsApp, Telegram, Slack, Discord, and more — and *does* things via MCP tools, skills, and code.
 
-**WP Pinch** plugs WordPress in. Your site becomes an MCP server: 38+ abilities (posts, media, users, search, governance), plus PinchDrop, Molt (one post → nine formats), Ghost Writer, What do I know. Bonus: **Pinch Chat** block and **webhooks** (publish/comment → OpenClaw). One plugin.
+**WP Pinch** plugs WordPress in. Your site becomes an MCP server: 48 core abilities across 12 categories (content, media, users, comments, settings, plugins, themes, menus, meta, revisions, cron), plus 2 WooCommerce when active, plus PinchDrop, Molt, Ghost Writer when feature flags enabled. Bonus: **Pinch Chat** block and **webhooks** (publish/comment → OpenClaw). One plugin.
 
 ---
 
@@ -57,7 +59,7 @@ No extra logins. No "I'll do it at my desk." You talk; your assistant has the ke
 | Have your site report what needs attention (stale posts, SEO, comments) | Governance tasks run on a schedule; Tide Report bundles findings into one daily webhook to OpenClaw. You see it in your channel. |
 | Let visitors chat with an AI that knows your content | Pinch Chat block on any page. Streaming, slash commands, optional public mode. |
 
-Plus: 38+ core abilities (content, media, users, comments, settings, plugins, themes, menus, meta, revisions, cron) and 2 more for WooCommerce when active. [Full abilities reference →](https://github.com/RegionallyFamous/wp-pinch/wiki/Abilities-Reference)
+Plus: 48 core abilities (content, media, users, comments, settings, plugins, themes, menus, meta, revisions, cron), 2 WooCommerce when active, and Ghost Writer (3) + Molt (1) when feature flags enabled — 54 total. [Full abilities reference →](https://github.com/RegionallyFamous/wp-pinch/wiki/Abilities-Reference)
 
 ---
 
@@ -69,12 +71,14 @@ Yes, we said claws. The lobster theme is non-negotiable — and neither is the 6
 wp plugin install https://github.com/RegionallyFamous/wp-pinch/releases/latest/download/wp-pinch.zip --activate
 ```
 
+> **Note:** WP Pinch is distributed via GitHub (not yet on wordpress.org). The zip above is built from source for each release.
+
 1. Open **WP Pinch** in your admin sidebar.
 2. Enter your **OpenClaw Gateway URL** and **API Token**.
 3. Click **Test Connection**.
-4. In OpenClaw: `npx openclaw connect --mcp-url https://your-site.com/wp-json/wp-pinch/v1/mcp`
+4. In OpenClaw: connect to the MCP endpoint. Command syntax may vary by version — see [OpenClaw CLI docs](https://docs.openclaw.ai/cli). Example: `npx openclaw connect --mcp-url https://your-site.com/wp-json/wp-pinch/v1/mcp`
 
-**Done.** Manage your site from WhatsApp, Slack, or Telegram — or add the **Pinch Chat** block so visitors can chat with an AI that knows your content. To give your agent WordPress-specific behavior (when to use which ability, example prompts), see the [OpenClaw Skill](https://github.com/RegionallyFamous/wp-pinch/wiki/OpenClaw-Skill) guide.
+**Done.** Manage your site from WhatsApp, Slack, or Telegram — or add the **Pinch Chat** block so visitors can chat with an AI that knows your content. To give your agent WordPress-specific behavior, install the skill from ClawHub: `clawhub install nickhamze/pinch-to-post` — or see the [OpenClaw Skill](https://github.com/RegionallyFamous/wp-pinch/wiki/OpenClaw-Skill) guide.
 
 **Next:** [Configuration](https://github.com/RegionallyFamous/wp-pinch/wiki/Configuration) (webhooks, governance) · [Abilities Reference](https://github.com/RegionallyFamous/wp-pinch/wiki/Abilities-Reference)
 
@@ -100,7 +104,7 @@ Capability checks, sanitization, audit logging, HMAC webhooks, rate limiting, ci
 |-------------|---------|
 | WordPress | 6.9+ (Abilities API) |
 | PHP | 8.1+ |
-| Action Scheduler | Optional — required for recurring governance, webhook retries, and audit log cleanup. Install from [WooCommerce](https://wordpress.org/plugins/woocommerce/) or [standalone](https://github.com/woocommerce/action-scheduler/releases). |
+| Action Scheduler | Required for governance (scheduled tasks, webhook retries). Abilities and Chat block work without it. Install from [WooCommerce](https://wordpress.org/plugins/woocommerce/) or [standalone](https://github.com/woocommerce/action-scheduler/releases). See [FAQ](https://github.com/RegionallyFamous/wp-pinch/wiki/FAQ#why-do-i-need-action-scheduler). |
 | OpenClaw | For chat/channel integration; any MCP client can use the abilities |
 
 **Multisite:** On WordPress Multisite, network admins get **Network → Settings → WP Pinch** to set shared Gateway URL and API Token. Sites can inherit network defaults or override per site. See [Configuration](https://github.com/RegionallyFamous/wp-pinch/wiki/Configuration#multisite-network).

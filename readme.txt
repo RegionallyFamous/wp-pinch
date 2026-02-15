@@ -4,19 +4,19 @@ Tags: ai, agent, openclaw, mcp, automation
 Requires at least: 6.9
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 2.7.0
+Stable tag: 2.8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-OpenClaw + WordPress. 38+ abilities, Pinch Chat block, webhooks, governance. Your AI runs your site from WhatsApp, Slack, or Telegram. Self-hosted.
+OpenClaw + WordPress. 48 core abilities (54 with WooCommerce + Ghost Writer + Molt), Pinch Chat block, webhooks, governance. Your AI runs your site from WhatsApp, Slack, or Telegram. Self-hosted.
 
 == Description ==
 
 **Your AI assistant already lives in WhatsApp, Slack, Telegram — give it WordPress.**
 
-One plugin. [OpenClaw](https://github.com/openclaw/openclaw) (or any MCP client) gets 38+ abilities: publish, Molt (one post → nine formats), PinchDrop, What do I know, daily Tide Report. Pinch Chat block, webhooks, 8 governance tasks. Self-hosted. Your data. No extra logins, no "I'll do it at my desk" — you talk; your assistant has the keys. [Install & connect →](https://github.com/RegionallyFamous/wp-pinch/wiki/Configuration)
+One plugin. [OpenClaw](https://github.com/openclaw/openclaw) (or any MCP client) gets 48 core abilities (plus 2 WooCommerce, plus Ghost Writer and Molt when feature flags enabled = 54 total): publish, Molt (one post → 10 formats), PinchDrop, What do I know, daily Tide Report. Pinch Chat block, webhooks, 8 governance tasks. Self-hosted. Your data. No extra logins, no "I'll do it at my desk" — you talk; your assistant has the keys. [Install & connect →](https://github.com/RegionallyFamous/wp-pinch/wiki/Configuration)
 
-= 38 AI Abilities =
+= 48+ AI Abilities =
 
 Your assistant gets the keys to WordPress — posts, media, users, comments, settings, plugins, themes, WooCommerce — with capability checks, sanitization, and audit logging on every call. Plus PinchDrop, Ghost Writer, Molt, What do I know, site-digest, governance. 2 bonus WooCommerce abilities when your shop is active.
 
@@ -38,7 +38,7 @@ Drop rough ideas from any OpenClaw channel and WP Pinch turns them into a Draft 
 
 = Molt (Content Repackager) =
 
-One post, nine formats. Molt repackages a single post into social (Twitter, LinkedIn), email snippet, FAQ block, thread, summary, meta description, pull quote, key takeaways, and CTA variants. Use `/molt 123` in chat or the `wp-pinch/molt` ability. Enable via the `molt` feature flag.
+One post, 10 formats. Molt repackages a single post into social (Twitter, LinkedIn), email snippet, FAQ block, faq_blocks (Gutenberg), thread, summary, meta description, pull quote, key takeaways, and CTA variants. Use `/molt 123` in chat or the `wp-pinch/molt` ability. Enable via the `molt` feature flag.
 
 = Built for Developers =
 
@@ -126,6 +126,14 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 5. Audit log showing recent ability executions, webhooks, and chat messages.
 
 == Changelog ==
+
+= 2.8.0 =
+* New: Capability manifest on GET /abilities (post types, taxonomies, plugins, features).
+* New: Daily write budget with optional cap and email alert (Connection tab).
+* New: Draft-first: preview_url in create/update-post, POST /preview-approve to publish.
+* New: content-health-report and suggest-terms abilities; block JSON in create/update-post.
+* New: Strict gateway reply sanitization option for chat.
+* Docs: Ability count standardized (48 core, 54 total). SKILL v5.2 ClawHub metadata, setup (Which site?). ClawHub install: clawhub install nickhamze/pinch-to-post. Don't have OpenClaw yet? Action Scheduler FAQ. Recommended features after install. FAQ troubleshooting. GitHub distribution note.
 
 = 2.7.0 =
 * New: Autoload audit — migration sets autoload=no on all WP Pinch options.

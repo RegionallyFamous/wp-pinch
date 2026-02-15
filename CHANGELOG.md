@@ -26,6 +26,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **OpenClaw Gateway Vision (Phase B)** — Content health report ability (`content-health-report`: missing alt, broken internal links, thin content, orphaned media). Suggest terms ability (`suggest-terms`: categories/tags for draft by content similarity). Block JSON in create/update-post: optional `blocks` array (blockName, attrs, innerContent, innerBlocks). Strict gateway reply sanitization option: strip HTML comments and instruction-like lines, disallow iframe/object/embed/form in chat replies.
 - **Tests** — PHPUnit coverage for Phase A/B: manifest, daily write 429, preview-approve, sanitize_gateway_reply, content-health-report, suggest-terms, create/update preview_url and blocks, audit diff/context, governance content health helpers.
 
+### Documentation
+- **Ability count** — Standardized to 48 core, 54 total (with WooCommerce, Ghost Writer, Molt) across README, wiki, SKILL, readme.txt.
+- **SKILL v5.2** — ClawHub metadata (homepage, user-invocable, openclaw.emoji, changelog), Setup section (Which site? with WP_SITE_URL), error handling, security note, preview-approve.
+- **ClawHub install** — `clawhub install nickhamze/pinch-to-post` added to README, Configuration, OpenClaw-Skill.
+- **Don't have OpenClaw yet?** — 3-step quickstart in Configuration wiki.
+- **Action Scheduler FAQ** — Why required, what works without it; link from Requirements.
+- **Recommended features** — Section in Configuration (streaming, slash commands, Molt, Ghost Writer, public chat).
+- **FAQ troubleshooting** — Connection test fails, Chat block no response, Governance not running, Webhooks not firing.
+- **Install notes** — GitHub distribution (not wordpress.org); MCP command syntax may vary (link to OpenClaw CLI).
+
 ## [2.7.0] - 2026-02-11
 
 ### Added

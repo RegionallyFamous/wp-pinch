@@ -2,7 +2,13 @@
 
 **Part of [WP Pinch](https://wp-pinch.com)** — a WordPress plugin that connects your site to OpenClaw. [ClawHub](https://clawhub.ai/nickhamze/pinch-to-post) · [GitHub](https://github.com/RegionallyFamous/wp-pinch) · [Configuration](https://github.com/RegionallyFamous/wp-pinch/wiki/Configuration)
 
-Copy this into your OpenClaw workspace skills (e.g. `~/.openclaw/workspace/skills/wp-pinch/SKILL.md` or use as a tools/prompt snippet) so the agent knows when and how to use WP Pinch abilities.
+**Install via ClawHub** (easiest):
+
+```bash
+clawhub install nickhamze/pinch-to-post
+```
+
+Or copy this page into your OpenClaw workspace skills (e.g. `~/.openclaw/workspace/skills/wp-pinch/SKILL.md` or use as a tools/prompt snippet) so the agent knows when and how to use WP Pinch abilities.
 
 ---
 

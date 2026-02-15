@@ -1,6 +1,6 @@
 # Abilities Reference
 
-WP Pinch provides **core abilities** (standard WordPress operations the AI can perform) and **tools** (PinchDrop, Ghost Writer, Molt, and a whole claw-full of quick-win and high-leverage abilities). You get **38 core abilities** across 10 categories, plus PinchDrop, Ghost Writer, Molt, TL;DR, Link Suggester, Quote Bank, What do I know, Project Assembly, Spaced Resurfacing, Find Similar, Knowledge Graph — and **2 WooCommerce abilities** when WooCommerce is active. Every ability has built-in security guards: capability checks, input sanitization, existence validation, and audit logging. We don't let AI agents run around your site like unsupervised lobsters in a kitchen. *Someone* has to be the bouncer.
+WP Pinch provides **core abilities** (standard WordPress operations the AI can perform) and **tools** (PinchDrop, Ghost Writer, Molt, and quick-win/high-leverage abilities). You get **48 core abilities** across 12 categories (content, media, users, comments, settings, plugins, themes, analytics, quick-win, high-leverage, advanced, menus/meta/revisions/cron), plus **PinchDrop** (1), plus **2 WooCommerce** when WooCommerce is active, plus **Ghost Writer** (3) and **Molt** (1) when feature flags enabled — **54 total** when all enabled. Every ability has built-in security guards: capability checks, input sanitization, existence validation, and audit logging. We don't let AI agents run around your site like unsupervised lobsters in a kitchen. *Someone* has to be the bouncer.
 
 ---
 

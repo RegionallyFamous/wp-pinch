@@ -183,7 +183,7 @@ class Test_Plugin extends WP_UnitTestCase {
 
 		Plugin::instance()->boot();
 
-		$this->assertSame( '2.7.0', get_option( 'wp_pinch_version' ), 'Version should be updated to 2.7.0.' );
+		$this->assertSame( WP_PINCH_VERSION, get_option( 'wp_pinch_version' ), 'Version should be updated to current.' );
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$autoload = $wpdb->get_var(
