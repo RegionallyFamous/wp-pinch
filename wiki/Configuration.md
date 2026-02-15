@@ -52,6 +52,8 @@ npx openclaw connect --mcp-url https://your-site.com/wp-json/wp-pinch/v1/mcp
 
 OpenClaw will discover available abilities and begin routing messages from your configured channels (WhatsApp, Telegram, Slack, Discord, etc.) to your WordPress site. Two commands and you're pinching. For a ready-made skill (when to use which ability, example prompts), see [OpenClaw Skill](OpenClaw-Skill).
 
+**Which WordPress site does the skill use?** Set environment variables on your OpenClaw instance: **`WP_SITE_URL`** (e.g. `https://mysite.com`) is the main one — that's how you choose which site to connect to. Also set `WP_USERNAME` and `WP_APP_PASSWORD` for REST auth. For multiple sites, use different workspaces or env configs with different `WP_SITE_URL` values. MCP users: the MCP server config (or `--mcp-url`) determines which site the tools connect to.
+
 You can also add your Gateway URL directly in the WP Pinch settings for webhook-based integration — ideal for sites that want real-time push notifications when content changes. Your site and OpenClaw, holding claws.
 
 For step-by-step workflows (publish from chat, Molt, PinchDrop, etc.), see [Recipes](Recipes).

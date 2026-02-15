@@ -1,6 +1,14 @@
 # OpenClaw Skill for WP Pinch
 
+**Part of [WP Pinch](https://wp-pinch.com)** — a WordPress plugin that connects your site to OpenClaw. [ClawHub](https://clawhub.ai/nickhamze/pinch-to-post) · [GitHub](https://github.com/RegionallyFamous/wp-pinch) · [Configuration](https://github.com/RegionallyFamous/wp-pinch/wiki/Configuration)
+
 Copy this into your OpenClaw workspace skills (e.g. `~/.openclaw/workspace/skills/wp-pinch/SKILL.md` or use as a tools/prompt snippet) so the agent knows when and how to use WP Pinch abilities.
+
+---
+
+## Which WordPress site?
+
+Set **`WP_SITE_URL`** (e.g. `https://mysite.com`) on your OpenClaw instance — that's how you choose which WordPress site the skill uses. Also set `WP_USERNAME` and `WP_APP_PASSWORD` for REST auth. For multiple sites, use different workspaces or env configs. See [Configuration](https://github.com/RegionallyFamous/wp-pinch/wiki/Configuration) for the full setup.
 
 ---
 
@@ -35,6 +43,8 @@ Copy this into your OpenClaw workspace skills (e.g. `~/.openclaw/workspace/skill
 | “What do I know about X?” | `what-do-i-know` | `query` |
 | Stale posts | `spaced-resurfacing` | `days`, optional `category`, `tag`, `limit` |
 | Complete abandoned draft | `list-abandoned-drafts` then `ghostwrite` | `post_id` for ghostwrite |
+| Content health report | `content-health-report` | Structure, readability, etc. |
+| Suggest taxonomy terms | `suggest-terms` | `post_id` or `content` |
 | Media | `list-media`, `upload-media`, `delete-media` | |
 | Users / comments / settings | `list-users`, `get-user`, `list-comments`, `moderate-comment`, `get-option`, `update-option` | See Abilities Reference |
 

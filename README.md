@@ -6,7 +6,7 @@ One plugin. Connect OpenClaw (or any MCP client), and your site is in the same c
 
 [OpenClaw](https://github.com/openclaw/openclaw) is the personal AI on those channels; it *does* things. **WP Pinch is the WordPress tool:** 38+ abilities so it can manage your site from there.
 
-**[wp-pinch.com](https://wp-pinch.com)** · [Wiki](https://github.com/RegionallyFamous/wp-pinch/wiki) · [Releases](https://github.com/RegionallyFamous/wp-pinch/releases) · **[Install in 60 seconds →](https://github.com/RegionallyFamous/wp-pinch/wiki/Configuration)**
+**[wp-pinch.com](https://wp-pinch.com)** · [Wiki](https://github.com/RegionallyFamous/wp-pinch/wiki) · [Releases](https://github.com/RegionallyFamous/wp-pinch/releases) · [ClawHub](https://clawhub.ai/nickhamze/pinch-to-post) · **[Install in 60 seconds →](https://github.com/RegionallyFamous/wp-pinch/wiki/Configuration)**
 
 [![WordPress 6.9+](https://img.shields.io/badge/WordPress-6.9%2B-blue.svg)](https://wordpress.org/)
 [![PHP 8.1+](https://img.shields.io/badge/PHP-8.1%2B-purple.svg)](https://www.php.net/)
