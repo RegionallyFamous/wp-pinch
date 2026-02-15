@@ -33,7 +33,7 @@ Set **`WP_SITE_URL`** (e.g. `https://mysite.com`) on your OpenClaw instance — 
 ## Ability naming
 
 - **MCP tool names** are under the `wp-pinch/` namespace, e.g. `wp-pinch/list-posts`, `wp-pinch/get-post`, `wp-pinch/pinchdrop-generate`, `wp-pinch/molt`.
-- **REST** abilities are invoked via the incoming webhook: `POST /wp-json/wp-pinch/v1/hooks/receive` with `action: execute_ability` and `ability: <name>` (e.g. `list-posts`, `get-post`). Use `action: execute_batch` with `batch: [{ "ability": "...", "params": {} }, ...]` to run up to 10 abilities in one request. The plugin maps these to the same abilities as MCP.
+- **Skill usage:** Use MCP tools only. Do not execute raw HTTP, curl, or fetch requests. The skill operates exclusively through MCP.
 
 ---
 
