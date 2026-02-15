@@ -238,6 +238,16 @@ class Privacy {
 		);
 		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
+		if ( $deleted ) {
+			wp_cache_delete( 'audit_table_status', 'wp_pinch_site_health' );
+			if ( function_exists( 'wp_cache_flush_group' ) ) {
+				try {
+					wp_cache_flush_group( 'wp_pinch_audit' );
+				} catch ( \Throwable $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch -- Object cache may not support flush_group.
+				}
+			}
+		}
+
 		$remaining = $count - (int) $deleted;
 
 		return array(

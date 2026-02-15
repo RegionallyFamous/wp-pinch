@@ -51,6 +51,11 @@ function wp_pinch_cleanup_site() {
 		'wp_pinch_chat_timeout',
 		'wp_pinch_chat_placeholder',
 		'wp_pinch_session_idle_minutes',
+		'wp_pinch_public_chat_rate_limit',
+		'wp_pinch_sse_max_connections_per_ip',
+		'wp_pinch_chat_max_response_length',
+		'wp_pinch_ability_cache_ttl',
+		'wp_pinch_ability_cache_generation',
 
 		// Governance settings.
 		'wp_pinch_governance_tasks',
@@ -83,26 +88,36 @@ function wp_pinch_cleanup_site() {
 	delete_transient( 'wp_pinch_webhook_counter' );
 
 	// Clean up per-user REST rate-limit transients.
-	$wpdb->query(
+	$like  = $wpdb->esc_like( '_transient_wp_pinch_rest_rate_' ) . '%';
+	$names = $wpdb->get_col(
 		$wpdb->prepare(
-			"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
-			$wpdb->esc_like( '_transient_wp_pinch_rest_rate_' ) . '%',
-			$wpdb->esc_like( '_transient_timeout_wp_pinch_rest_rate_' ) . '%'
+			"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s",
+			$like
 		)
 	);
+	foreach ( (array) $names as $option_name ) {
+		if ( str_starts_with( $option_name, '_transient_' ) && ! str_starts_with( $option_name, '_transient_timeout_' ) ) {
+			delete_transient( str_replace( '_transient_', '', $option_name ) );
+		}
+	}
 
 	// Clean up ability cache transients.
-	$wpdb->query(
+	$like  = $wpdb->esc_like( '_transient_wp_pinch_' ) . '%';
+	$names = $wpdb->get_col(
 		$wpdb->prepare(
-			"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
-			$wpdb->esc_like( '_transient_wp_pinch_' ) . '%',
-			$wpdb->esc_like( '_transient_timeout_wp_pinch_' ) . '%'
+			"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s",
+			$like
 		)
 	);
+	foreach ( (array) $names as $option_name ) {
+		if ( str_starts_with( $option_name, '_transient_' ) && ! str_starts_with( $option_name, '_transient_timeout_' ) ) {
+			delete_transient( str_replace( '_transient_', '', $option_name ) );
+		}
+	}
 
 	// Drop the audit log table.
 	$wp_pinch_table = $wpdb->prefix . 'wp_pinch_audit_log';
-	$wpdb->query( "DROP TABLE IF EXISTS {$wp_pinch_table}" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+	$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $wp_pinch_table ) );
 
 	// Clean up user meta (dismissible notice state + voice profiles).
 	delete_metadata( 'user', 0, 'wp_pinch_dismissed_config_notice', '', true );

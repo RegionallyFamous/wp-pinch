@@ -12,7 +12,6 @@
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       wp-pinch
  * Domain Path:       /languages
- * Update URI:        false
  *
  * @package WP_Pinch
  *

@@ -61,7 +61,7 @@ class CLI {
 	 */
 	public static function status( array $args, array $assoc_args ): void {
 		$gateway_url = get_option( 'wp_pinch_gateway_url', '' );
-		$api_token   = get_option( 'wp_pinch_api_token', '' );
+		$api_token   = \WP_Pinch\Settings::get_api_token();
 		$format      = $assoc_args['format'] ?? 'table';
 
 		$connected = false;

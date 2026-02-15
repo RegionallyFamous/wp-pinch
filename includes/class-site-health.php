@@ -38,7 +38,7 @@ class Site_Health {
 	 */
 	public static function add_debug_info( array $info ): array {
 		$gateway_url      = get_option( 'wp_pinch_gateway_url', '' );
-		$api_token        = get_option( 'wp_pinch_api_token', '' );
+		$api_token        = \WP_Pinch\Settings::get_api_token();
 		$webhook_events   = get_option( 'wp_pinch_webhook_events', array() );
 		$governance_tasks = get_option( 'wp_pinch_governance_tasks', array() );
 		$governance_mode  = get_option( 'wp_pinch_governance_mode', 'webhook' );
@@ -123,28 +123,36 @@ class Site_Health {
 	/**
 	 * Get audit table status info.
 	 *
+	 * Cached for 60 seconds to reduce direct DB queries.
+	 *
 	 * @return string
 	 */
 	private static function get_audit_table_status(): string {
-		global $wpdb;
+		$cache_key = 'audit_table_status';
+		$cached    = wp_cache_get( $cache_key, 'wp_pinch_site_health' );
+		if ( false !== $cached ) {
+			return $cached;
+		}
 
+		global $wpdb;
 		$table = Audit_Table::table_name();
 
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) );
 
 		if ( ! $exists ) {
-			return __( 'Table does not exist', 'wp-pinch' );
+			$result = __( 'Table does not exist', 'wp-pinch' );
+		} else {
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table is from Audit_Table::table_name(), not user input.
+			$count  = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}`" );
+			$result = sprintf(
+				/* translators: %d: number of entries */
+				__( '%d entries', 'wp-pinch' ),
+				$count
+			);
 		}
-
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table is from Audit_Table::table_name(), not user input.
-		$count = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}`" );
-
-		return sprintf(
-			/* translators: %d: number of entries */
-			__( '%d entries', 'wp-pinch' ),
-			$count
-		);
+		wp_cache_set( $cache_key, $result, 'wp_pinch_site_health', 60 );
+		return $result;
 	}
 
 	// =========================================================================
@@ -183,7 +191,7 @@ class Site_Health {
 	 */
 	public static function test_gateway_connectivity(): array {
 		$gateway_url = get_option( 'wp_pinch_gateway_url', '' );
-		$api_token   = get_option( 'wp_pinch_api_token', '' );
+		$api_token   = \WP_Pinch\Settings::get_api_token();
 
 		$result = array(
 			'label'       => __( 'WP Pinch can reach the AI gateway', 'wp-pinch' ),

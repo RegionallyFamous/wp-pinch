@@ -11,7 +11,7 @@ WP Pinch takes security seriously — more seriously than a lobster takes its te
 - **Capability checks** on every ability execution, including **per-post verification** on meta operations (`current_user_can( 'edit_post', $post_id )`)
 - **Per-post checks on revisions** — `list-revisions` and `restore-revision` verify `edit_post` on the (parent) post before listing or restoring
 - **Per-attachment check on delete-media** — `delete-media` verifies `current_user_can( 'delete_post', $id )` before deleting the attachment
-- **Nonce verification** on all REST and AJAX endpoints
+- **Nonce verification** on all REST and AJAX endpoints. The admin settings forms use WordPress’ Options API (`options.php` and `settings_fields()`), which verifies the option-group nonce on save.
 - **Role escalation prevention** — AI agents cannot promote users to administrator or assign roles with dangerous capabilities (`manage_options`, `edit_users`, etc.)
 - **Self-role-change prevention** — the current user cannot modify their own role via AI
 - **Self-deactivation guard** — WP Pinch cannot be deactivated by its own abilities
@@ -80,7 +80,7 @@ When the incoming hook endpoint executes abilities (`execute_ability` or `execut
 - **SSRF prevention** — **Gateway URL validated** with `wp_http_validate_url()` before every outbound request (chat, status, webhook, Ghost Writer, Molt, admin test connection, stream). Internal/private URLs are rejected at request time. Webhooks use `wp_safe_remote_post()` for defense in depth.
 - **SSRF prevention** in broken link checker — private IP blocking, DNS resolution check, SSL verification
 - **Media upload restricted** to HTTP/HTTPS URL schemes only; **upload-media** URL validated with `wp_http_validate_url()` before `download_url()` to prevent SSRF (no internal/private URLs)
-- **Public chat endpoint isolation** with separate rate limiting and session key validation
+- **Public chat endpoint isolation** with separate rate limiting and session key validation. The public chat rate limit is configurable (default 3/min per IP). Concurrent SSE streams per IP are capped (configurable; default 5). Session keys are generated per connection; reconnecting or clearing client state effectively rotates the key. Chat responses are capped in length (configurable) to limit resource exhaustion.
 - **REST security headers** — `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy`, `Cross-Origin-Opener-Policy: same-origin`, `Cross-Origin-Resource-Policy: same-origin`, `Content-Security-Policy: frame-ancestors 'none'`, `Cache-Control: no-store`; **HSTS** (`Strict-Transport-Security: max-age=31536000; includeSubDomains; preload`) when the request is HTTPS
 - **CSV export** — `Cache-Control: no-store`, `X-Content-Type-Options: nosniff`, `Content-Security-Policy: default-src 'none'`, nonce-verified
 
@@ -95,6 +95,10 @@ When the incoming hook endpoint executes abilities (`execute_ability` or `execut
 ### Token Logging Hygiene
 
 Never log full API or capture tokens. Use `Utils::mask_token( $token )` for debugging — returns `****` + last 4 chars. The Site Health debug info uses masked tokens. Audit log context must never include raw tokens.
+
+### API token storage
+
+The WP Pinch API token is **encrypted at rest** in `wp_options` using `sodium_crypto_secretbox()` with a key derived from WordPress `AUTH_KEY` and `AUTH_SALT`. Legacy plaintext tokens are migrated to encrypted form on first read. If you rotate `AUTH_KEY` or `AUTH_SALT` in wp-config.php, re-enter and save the API token once in **WP Pinch → Connection** so it can be re-encrypted with the new key.
 
 ### Credential Management
 

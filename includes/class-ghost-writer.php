@@ -230,7 +230,7 @@ class Ghost_Writer {
 	 */
 	private static function request_voice_analysis( \WP_User $user, array $samples, array $metrics ) {
 		$gateway_url = get_option( 'wp_pinch_gateway_url', '' );
-		$api_token   = get_option( 'wp_pinch_api_token', '' );
+		$api_token   = \WP_Pinch\Settings::get_api_token();
 
 		if ( empty( $gateway_url ) || empty( $api_token ) ) {
 			return new \WP_Error(
@@ -586,7 +586,7 @@ class Ghost_Writer {
 	 */
 	private static function request_ghostwrite( \WP_Post $post, array $profile ) {
 		$gateway_url = get_option( 'wp_pinch_gateway_url', '' );
-		$api_token   = get_option( 'wp_pinch_api_token', '' );
+		$api_token   = \WP_Pinch\Settings::get_api_token();
 
 		if ( empty( $gateway_url ) || empty( $api_token ) ) {
 			return new \WP_Error(

@@ -121,6 +121,15 @@ final class Plugin {
 	}
 
 	/**
+	 * Whether Action Scheduler is available (optional dependency for governance, webhook retry, audit cleanup).
+	 *
+	 * @return bool
+	 */
+	public static function has_action_scheduler(): bool {
+		return function_exists( 'as_has_scheduled_action' );
+	}
+
+	/**
 	 * Whether read-only mode is active (blocks all write abilities).
 	 *
 	 * Checks WP_PINCH_READ_ONLY constant first, then wp_pinch_read_only_mode option.
@@ -167,11 +176,9 @@ final class Plugin {
 			Rest_Availability::init();
 			Dashboard_Widget::init();
 			add_action( 'admin_notices', array( $this, 'configuration_notices' ) );
+			add_action( 'admin_notices', array( $this, 'action_scheduler_notice' ) );
 			add_action( 'admin_notices', array( $this, 'circuit_breaker_notice' ) );
 		}
-
-		// Load translations.
-		add_action( 'init', array( $this, 'load_textdomain' ) );
 
 		// Register blocks.
 		add_action( 'init', array( $this, 'register_blocks' ) );
@@ -188,13 +195,6 @@ final class Plugin {
 		 * @since 1.0.0
 		 */
 		do_action( 'wp_pinch_loaded' );
-	}
-
-	/**
-	 * Load plugin text domain for translations.
-	 */
-	public function load_textdomain(): void {
-		load_plugin_textdomain( 'wp-pinch', false, dirname( plugin_basename( WP_PINCH_FILE ) ) . '/languages' );
 	}
 
 	/**
@@ -220,6 +220,13 @@ final class Plugin {
 			$args = apply_filters( 'wp_pinch_block_type_metadata', $args, $block_type );
 		}
 		return $args;
+	}
+
+	/**
+	 * Invalidate ability cache when content changes (save_post / deleted_post).
+	 */
+	public function invalidate_ability_cache_on_post_change(): void {
+		Abilities::invalidate_ability_cache();
 	}
 
 	/**
@@ -306,12 +313,18 @@ final class Plugin {
 
 		// Clear stale ability caches so new abilities are picked up.
 		global $wpdb;
-		$wpdb->query(
+		$like  = $wpdb->esc_like( '_transient_wp_pinch_' ) . '%';
+		$names = $wpdb->get_col(
 			$wpdb->prepare(
-				"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s",
-				$wpdb->esc_like( '_transient_wp_pinch_' ) . '%'
+				"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s",
+				$like
 			)
 		);
+		foreach ( (array) $names as $option_name ) {
+			if ( str_starts_with( $option_name, '_transient_' ) && ! str_starts_with( $option_name, '_transient_timeout_' ) ) {
+				delete_transient( str_replace( '_transient_', '', $option_name ) );
+			}
+		}
 	}
 
 	/**
@@ -338,8 +351,6 @@ final class Plugin {
 	 * - Sets autoload=no on all WP Pinch options to avoid options table bloat.
 	 */
 	private function migrate_2_7_0(): void {
-		global $wpdb;
-
 		$options = array(
 			'wp_pinch_gateway_url',
 			'wp_pinch_api_token',
@@ -363,6 +374,11 @@ final class Plugin {
 			'wp_pinch_chat_timeout',
 			'wp_pinch_chat_placeholder',
 			'wp_pinch_session_idle_minutes',
+			'wp_pinch_public_chat_rate_limit',
+			'wp_pinch_sse_max_connections_per_ip',
+			'wp_pinch_chat_max_response_length',
+			'wp_pinch_ability_cache_ttl',
+			'wp_pinch_ability_cache_generation',
 			'wp_pinch_governance_tasks',
 			'wp_pinch_governance_mode',
 			'wp_pinch_governance_schedule_hash',
@@ -382,13 +398,11 @@ final class Plugin {
 		);
 
 		foreach ( $options as $option ) {
-			$wpdb->update(
-				$wpdb->options,
-				array( 'autoload' => 'no' ),
-				array( 'option_name' => $option ),
-				array( '%s' ),
-				array( '%s' )
-			);
+			$value = get_option( $option );
+			if ( false !== $value ) {
+				// @phpstan-ignore argument.type (WordPress update_option accepts 'yes'|'no' for autoload)
+				update_option( $option, $value, 'no' );
+			}
 		}
 	}
 
@@ -424,7 +438,7 @@ final class Plugin {
 		}
 
 		$gateway_url = get_option( 'wp_pinch_gateway_url', '' );
-		$api_token   = get_option( 'wp_pinch_api_token', '' );
+		$api_token   = Settings::get_api_token();
 
 		if ( empty( $gateway_url ) || empty( $api_token ) ) {
 			$settings_url = admin_url( 'admin.php?page=wp-pinch' );
@@ -446,6 +460,58 @@ final class Plugin {
 			);
 			echo '</p></div>';
 		}
+	}
+
+	/**
+	 * Show a dismissible admin notice when Action Scheduler is not available.
+	 *
+	 * Governance schedules, webhook retries, and audit log cleanup require Action Scheduler.
+	 * Only shown on WP Pinch settings page and dashboard.
+	 */
+	public function action_scheduler_notice(): void {
+		if ( self::has_action_scheduler() ) {
+			return;
+		}
+
+		$screen = get_current_screen();
+		if ( ! $screen || ! in_array( $screen->id, array( 'toplevel_page_wp-pinch', 'dashboard' ), true ) ) {
+			return;
+		}
+
+		$dismissed = get_user_meta( get_current_user_id(), 'wp_pinch_dismissed_as_notice', true );
+		if ( $dismissed && version_compare( $dismissed, WP_PINCH_VERSION, '>=' ) ) {
+			return;
+		}
+
+		// Handle dismissal.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( isset( $_GET['wp_pinch_dismiss_as_notice'] ) && '1' === $_GET['wp_pinch_dismiss_as_notice'] ) {
+			if ( wp_verify_nonce( sanitize_key( $_GET['_wpnonce'] ?? '' ), 'wp_pinch_dismiss_as_notice' ) ) {
+				update_user_meta( get_current_user_id(), 'wp_pinch_dismissed_as_notice', WP_PINCH_VERSION );
+				return;
+			}
+		}
+
+		$standalone_url = 'https://github.com/woocommerce/action-scheduler/releases';
+		$dismiss_url    = wp_nonce_url(
+			add_query_arg( 'wp_pinch_dismiss_as_notice', '1' ),
+			'wp_pinch_dismiss_as_notice'
+		);
+
+		echo '<div class="notice notice-warning is-dismissible"><p>';
+		printf(
+			'<strong>%s</strong> %s <a href="%s" target="_blank" rel="noopener">%s</a>. ',
+			esc_html__( 'WP Pinch:', 'wp-pinch' ),
+			esc_html__( 'Governance schedules, webhook retries, and audit log cleanup require the Action Scheduler plugin. Install it from WooCommerce or', 'wp-pinch' ),
+			esc_url( $standalone_url ),
+			esc_html__( 'standalone', 'wp-pinch' )
+		);
+		printf(
+			'<a href="%s" class="wp-pinch-dismiss-as">%s</a>',
+			esc_url( $dismiss_url ),
+			esc_html__( 'Dismiss', 'wp-pinch' )
+		);
+		echo '</p></div>';
 	}
 
 	/**

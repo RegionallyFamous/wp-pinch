@@ -83,7 +83,7 @@ wp_interactivity_state(
 );
 ?>
 <div
-	<?php echo get_block_wrapper_attributes( array( 'class' => 'wp-pinch-chat' ) ); ?>
+	<?php echo get_block_wrapper_attributes( array( 'class' => 'wp-pinch-chat' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_block_wrapper_attributes returns safe HTML attributes. ?>
 	data-wp-interactive="wp-pinch/chat"
 	data-wp-init="callbacks.init"
 	<?php echo wp_interactivity_data_wp_context( array( 'id' => $unique_id ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>

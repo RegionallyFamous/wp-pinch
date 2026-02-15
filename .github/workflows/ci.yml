@@ -266,6 +266,45 @@ jobs:
         run: npm test -- --passWithNoTests
 
   # ──────────────────────────────────────────────────────────────────────────
+  # WordPress.org Plugin Check
+  # ──────────────────────────────────────────────────────────────────────────
+  plugin-check:
+    name: Plugin Check (WordPress.org)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer:v2
+          coverage: none
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm run build
+          composer install --no-dev --prefer-dist --no-progress
+
+      - name: Run Plugin Check
+        uses: WordPress/plugin-check-action@v1
+        with:
+          slug: wp-pinch
+          wp-version: latest
+          ignore-warnings: true
+          ignore-codes: PluginCheck.Info.trademarked_term
+          exclude-directories: tests,bin,.github,.cursor,plans,releases,dist,node_modules,src
+          exclude-files: .wp-env.json,.editorconfig,.gitignore,.eslintignore,.phpunit.result.cache,.DS_Store,languages/.gitkeep,phpstan.neon.dist,phpcs.xml.dist,phpcs-tests.xml.dist,phpunit.xml.dist,infection.json.dist,CODE_OF_CONDUCT.md,RELEASE.md,SKILL.md,AGENTS.md,wp-pinch-2.5.0.zip,wp-pinch-2.7.0.zip
+
+  # ──────────────────────────────────────────────────────────────────────────
   # Security audits
   # ──────────────────────────────────────────────────────────────────────────
   security:

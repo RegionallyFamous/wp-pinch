@@ -98,6 +98,26 @@ class Abilities {
 	);
 
 	/**
+	 * Default ability names that use the configurable transient cache (TTL and invalidation on post changes).
+	 *
+	 * @return string[]
+	 */
+	public static function get_cacheable_ability_names(): array {
+		$default = array( 'list-posts', 'search-content', 'list-media', 'list-taxonomies' );
+		return (array) apply_filters( 'wp_pinch_cacheable_abilities', $default );
+	}
+
+	/**
+	 * Invalidate ability cache (e.g. on save_post / deleted_post).
+	 *
+	 * Bumps the cache generation so all existing ability result transients become stale.
+	 */
+	public static function invalidate_ability_cache(): void {
+		$gen = (int) get_option( 'wp_pinch_ability_cache_generation', 0 );
+		update_option( 'wp_pinch_ability_cache_generation', $gen + 1, false );
+	}
+
+	/**
 	 * Flush all read-only ability caches for the current user.
 	 *
 	 * Called after any mutation ability executes so that subsequent
@@ -127,14 +147,18 @@ class Abilities {
 		global $wpdb;
 
 		$prefix = 'wp_pinch_' . md5( get_current_user_id() . ':' );
-
-		$wpdb->query(
+		$like   = $wpdb->esc_like( '_transient_' . $prefix ) . '%';
+		$names  = $wpdb->get_col(
 			$wpdb->prepare(
-				"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
-				$wpdb->esc_like( '_transient_' . $prefix ) . '%',
-				$wpdb->esc_like( '_transient_timeout_' . $prefix ) . '%'
+				"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s",
+				$like
 			)
 		);
+		foreach ( (array) $names as $option_name ) {
+			if ( str_starts_with( $option_name, '_transient_' ) && ! str_starts_with( $option_name, '_transient_timeout_' ) ) {
+				delete_transient( str_replace( '_transient_', '', $option_name ) );
+			}
+		}
 	}
 
 	/**
@@ -1760,11 +1784,13 @@ class Abilities {
 						return array( 'error' => __( 'API is in read-only mode. Write operations are disabled.', 'wp-pinch' ) );
 					}
 
-					// Cache for read-only abilities (scoped per user).
-					// Prefer object cache when a persistent backend is available.
-					if ( $readonly ) {
-						$cache_key = 'wp_pinch_' . md5( get_current_user_id() . ':' . $name . wp_json_encode( $input ) );
+					// Configurable cache for selected read-only abilities (TTL + invalidation on post save/delete).
+					$cache_ttl    = (int) get_option( 'wp_pinch_ability_cache_ttl', 300 );
+					$cacheable    = $readonly && $cache_ttl > 0 && in_array( $name, self::get_cacheable_ability_names(), true );
+					$gen          = $cacheable ? (int) get_option( 'wp_pinch_ability_cache_generation', 0 ) : 0;
+					$cache_key    = $cacheable ? 'wp_pinch_ab_' . $gen . '_' . md5( get_current_user_id() . ':' . $name . wp_json_encode( $input ) ) : '';
 
+					if ( $cacheable ) {
 						if ( wp_using_ext_object_cache() ) {
 							$cached = wp_cache_get( $cache_key, 'wp-pinch-abilities' );
 							if ( false !== $cached ) {
@@ -1791,13 +1817,13 @@ class Abilities {
 					 */
 					$result = apply_filters( 'wp_pinch_ability_result', $result, $name, $input );
 
-					if ( $readonly ) {
+					if ( $cacheable ) {
 						if ( wp_using_ext_object_cache() ) {
-							wp_cache_set( $cache_key, $result, 'wp-pinch-abilities', self::CACHE_TTL );
+							wp_cache_set( $cache_key, $result, 'wp-pinch-abilities', $cache_ttl );
 						} else {
-							set_transient( $cache_key, $result, self::CACHE_TTL );
+							set_transient( $cache_key, $result, $cache_ttl );
 						}
-					} else {
+					} elseif ( ! $readonly ) {
 						// Mutation ability — flush all read-only caches for the current user
 						// so subsequent reads reflect the change immediately.
 						self::flush_user_cache();
@@ -2983,6 +3009,13 @@ class Abilities {
 	public static function execute_site_health( array $input ): array {
 		global $wpdb;
 
+		$table_count_cache_key = 'site_health_tables_' . $wpdb->prefix;
+		$table_count           = wp_cache_get( $table_count_cache_key, 'wp_pinch_abilities' );
+		if ( false === $table_count ) {
+			$table_count = count( $wpdb->get_results( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $wpdb->prefix ) . '%' ) ) );
+			wp_cache_set( $table_count_cache_key, $table_count, 'wp_pinch_abilities', 300 );
+		}
+
 		return array(
 			'wordpress' => array(
 				'version'    => get_bloginfo( 'version' ),
@@ -2997,7 +3030,7 @@ class Abilities {
 			'database'  => array(
 				'server' => $wpdb->db_server_info(),
 				'prefix' => $wpdb->prefix,
-				'tables' => count( $wpdb->get_results( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $wpdb->prefix ) . '%' ) ) ),
+				'tables' => $table_count,
 			),
 			'content'   => array(
 				'posts'    => (int) wp_count_posts()->publish,
@@ -3724,7 +3757,7 @@ class Abilities {
 	 */
 	private static function request_gateway_message( string $message, string $session_key = 'wp-pinch-ability' ) {
 		$gateway_url = get_option( 'wp_pinch_gateway_url', '' );
-		$api_token   = get_option( 'wp_pinch_api_token', '' );
+		$api_token   = \WP_Pinch\Settings::get_api_token();
 		if ( '' === $gateway_url || '' === $api_token ) {
 			return new \WP_Error( 'not_configured', __( 'Gateway is not configured.', 'wp-pinch' ), array( 'status' => 503 ) );
 		}

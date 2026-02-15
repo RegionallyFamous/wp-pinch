@@ -877,7 +877,7 @@ class Rest_Controller {
 	 * @return true|\WP_Error
 	 */
 	public static function check_hook_token( \WP_REST_Request $request ) {
-		$api_token = get_option( 'wp_pinch_api_token', '' );
+		$api_token = \WP_Pinch\Settings::get_api_token();
 
 		if ( empty( $api_token ) ) {
 			return new \WP_Error(
@@ -1471,7 +1471,7 @@ class Rest_Controller {
 		}
 
 		$gateway_url = get_option( 'wp_pinch_gateway_url', '' );
-		$api_token   = get_option( 'wp_pinch_api_token', '' );
+		$api_token   = \WP_Pinch\Settings::get_api_token();
 
 		if ( empty( $gateway_url ) || empty( $api_token ) ) {
 			return new \WP_Error(
@@ -1613,6 +1613,7 @@ class Rest_Controller {
 
 		// Only return expected string responses; never forward raw gateway body.
 		$reply  = $data['response'] ?? $data['message'] ?? null;
+		$reply  = is_string( $reply ) ? self::cap_chat_reply( $reply ) : null;
 		$result = array(
 			'reply'       => is_string( $reply ) ? self::sanitize_gateway_reply( $reply ) : __( 'Received an unexpected response from the gateway.', 'wp-pinch' ),
 			'session_key' => $session_key,
@@ -1670,7 +1671,7 @@ class Rest_Controller {
 		}
 
 		$gateway_url = get_option( 'wp_pinch_gateway_url', '' );
-		$api_token   = get_option( 'wp_pinch_api_token', '' );
+		$api_token   = \WP_Pinch\Settings::get_api_token();
 
 		if ( empty( $gateway_url ) || empty( $api_token ) ) {
 			return new \WP_Error(
@@ -1693,13 +1694,13 @@ class Rest_Controller {
 			return $response;
 		}
 
-		// Strict rate limiting for public endpoint: 3 requests per minute per IP.
+		// Configurable rate limiting for public endpoint (requests per minute per IP).
 		// Placed after config/circuit-breaker checks so unavailable states don't consume rate limit.
-		// Uses HMAC-SHA256 with wp_salt() to avoid MD5 weaknesses and prevent key prediction.
+		$limit   = max( 1, min( 60, (int) get_option( 'wp_pinch_public_chat_rate_limit', 3 ) ) );
 		$ip_hash = 'wp_pinch_pub_rate_' . substr( hash_hmac( 'sha256', self::get_client_ip(), wp_salt() ), 0, 16 );
 		$count   = (int) get_transient( $ip_hash );
 
-		if ( $count >= 3 ) {
+		if ( $count >= $limit ) {
 			$response = new \WP_REST_Response(
 				array(
 					'code'    => 'rate_limited',
@@ -1818,6 +1819,7 @@ class Rest_Controller {
 		Circuit_Breaker::record_success();
 
 		$reply  = $data['response'] ?? $data['message'] ?? null;
+		$reply  = is_string( $reply ) ? self::cap_chat_reply( $reply ) : null;
 		$result = array(
 			'reply'       => is_string( $reply ) ? self::sanitize_gateway_reply( $reply ) : __( 'No response received.', 'wp-pinch' ),
 			'session_key' => $session_key,
@@ -2239,6 +2241,20 @@ class Rest_Controller {
 	}
 
 	/**
+	 * Cap chat reply length to the configured maximum (resource exhaustion protection).
+	 *
+	 * @param string $reply Raw reply from gateway.
+	 * @return string Reply, possibly truncated with a notice.
+	 */
+	private static function cap_chat_reply( string $reply ): string {
+		$max = (int) get_option( 'wp_pinch_chat_max_response_length', 200000 );
+		if ( $max <= 0 || strlen( $reply ) <= $max ) {
+			return $reply;
+		}
+		return substr( $reply, 0, $max ) . "\n\n[" . __( 'Response truncated for length.', 'wp-pinch' ) . ']';
+	}
+
+	/**
 	 * Get the client IP address, respecting common proxy headers.
 	 *
 	 * @return string Client IP address.
@@ -2290,7 +2306,7 @@ class Rest_Controller {
 		}
 
 		$gateway_url = get_option( 'wp_pinch_gateway_url', '' );
-		$api_token   = get_option( 'wp_pinch_api_token', '' );
+		$api_token   = \WP_Pinch\Settings::get_api_token();
 
 		$result = array(
 			'plugin_version' => WP_PINCH_VERSION,
@@ -2367,7 +2383,7 @@ class Rest_Controller {
 		}
 
 		$configured = ! empty( get_option( 'wp_pinch_gateway_url', '' ) )
-			&& ! empty( get_option( 'wp_pinch_api_token', '' ) );
+			&& ! empty( \WP_Pinch\Settings::get_api_token() );
 
 		$circuit_state = Circuit_Breaker::get_state();
 		$retry_after   = Circuit_Breaker::get_retry_after();
@@ -2418,15 +2434,20 @@ class Rest_Controller {
 		$out['plugin_updates_count'] = is_array( $plugin_updates ) ? count( $plugin_updates ) : 0;
 		$out['theme_updates_count']  = is_array( $theme_updates ) ? count( $theme_updates ) : 0;
 
-		// Database size estimate.
+		// Database size estimate (cached 5 minutes).
 		global $wpdb;
 		if ( ! empty( $wpdb->dbname ) ) {
-			$size                 = $wpdb->get_var(
-				$wpdb->prepare(
-					'SELECT SUM(data_length + index_length) FROM information_schema.TABLES WHERE table_schema = %s',
-					$wpdb->dbname
-				)
-			);
+			$cache_key = 'db_size_' . $wpdb->dbname;
+			$size      = wp_cache_get( $cache_key, 'wp_pinch_diagnostics' );
+			if ( false === $size ) {
+				$size = $wpdb->get_var(
+					$wpdb->prepare(
+						'SELECT SUM(data_length + index_length) FROM information_schema.TABLES WHERE table_schema = %s',
+						$wpdb->dbname
+					)
+				);
+				wp_cache_set( $cache_key, $size, 'wp_pinch_diagnostics', 300 );
+			}
 			$out['db_size_bytes'] = $size ? (int) $size : null;
 		}
 
@@ -2608,7 +2629,7 @@ class Rest_Controller {
 		}
 
 		$gateway_url = get_option( 'wp_pinch_gateway_url', '' );
-		$api_token   = get_option( 'wp_pinch_api_token', '' );
+		$api_token   = \WP_Pinch\Settings::get_api_token();
 
 		if ( empty( $gateway_url ) || empty( $api_token ) ) {
 			return new \WP_Error(
@@ -2671,6 +2692,29 @@ class Rest_Controller {
 
 		/** This filter is documented in class-rest-controller.php */
 		$payload = apply_filters( 'wp_pinch_chat_payload', $payload, $request );
+
+		// Optional: cap concurrent SSE streams per IP to prevent connection flooding.
+		$sse_max_per_ip = (int) get_option( 'wp_pinch_sse_max_connections_per_ip', 5 );
+		if ( $sse_max_per_ip > 0 ) {
+			$sse_key   = 'wp_pinch_sse_' . substr( hash_hmac( 'sha256', self::get_client_ip(), wp_salt() ), 0, 16 );
+			$sse_count = (int) get_transient( $sse_key );
+			if ( $sse_count >= $sse_max_per_ip ) {
+				return new \WP_REST_Response(
+					array(
+						'code'    => 'rate_limited',
+						'message' => __( 'Too many streaming connections. Please close other chat windows and try again.', 'wp-pinch' ),
+					),
+					429
+				);
+			}
+			set_transient( $sse_key, $sse_count + 1, 120 );
+			register_shutdown_function(
+				function () use ( $sse_key ) {
+					$n = (int) get_transient( $sse_key );
+					set_transient( $sse_key, max( 0, $n - 1 ), 120 );
+				}
+			);
+		}
 
 		// Set SSE headers and flush.
 		header( 'Content-Type: text/event-stream' );
@@ -2764,6 +2808,10 @@ class Rest_Controller {
 		$full_response    = '';
 		$forwarded_events = false;
 		$sse_buffer       = '';
+		$max_response_len = (int) get_option( 'wp_pinch_chat_max_response_length', 200000 );
+		if ( $max_response_len <= 0 ) {
+			$max_response_len = 0;
+		}
 
 		while ( ! feof( $stream ) ) {
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fread
@@ -2772,6 +2820,11 @@ class Rest_Controller {
 				break;
 			}
 			$full_response .= $chunk;
+			if ( $max_response_len > 0 && strlen( $full_response ) > $max_response_len ) {
+				echo "event: error\n";
+				echo 'data: ' . wp_json_encode( array( 'message' => __( 'Response too large. Try a shorter message.', 'wp-pinch' ) ) ) . "\n\n";
+				break;
+			}
 
 			// Strip NUL and control chars, then process line-by-line and sanitize reply in data payloads.
 			$clean                    = preg_replace( '/[\x00-\x08\x0B\x0C\x0E-\x1F]/', '', $chunk );

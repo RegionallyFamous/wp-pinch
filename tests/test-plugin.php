@@ -192,7 +192,8 @@ class Test_Plugin extends WP_UnitTestCase {
 				'wp_pinch_rate_limit'
 			)
 		);
-		$this->assertSame( 'no', $autoload, 'WP Pinch options should have autoload=no after 2.7.0 migration.' );
+		// Both 'no' and 'off' mean "don't autoload" depending on WordPress/DB version.
+		$this->assertContains( $autoload, array( 'no', 'off' ), 'WP Pinch options should have autoload=no/off after 2.7.0 migration.' );
 	}
 
 	// =========================================================================
@@ -200,11 +201,16 @@ class Test_Plugin extends WP_UnitTestCase {
 	// =========================================================================
 
 	/**
-	 * Test textdomain loading does not produce errors.
+	 * Test plugin header has Text Domain and Domain Path (WP 4.6+ auto-loads for .org-hosted plugins).
 	 */
-	public function test_load_textdomain(): void {
-		Plugin::instance()->load_textdomain();
-		$this->assertTrue( true, 'load_textdomain should not produce errors.' );
+	public function test_translation_setup(): void {
+		$headers = get_file_data(
+			WP_PINCH_FILE,
+			array( 'Text Domain' => 'Text Domain', 'Domain Path' => 'Domain Path' ),
+			'plugin'
+		);
+		$this->assertSame( 'wp-pinch', $headers['Text Domain'], 'Text domain should be wp-pinch' );
+		$this->assertSame( '/languages', $headers['Domain Path'], 'Domain path should be /languages' );
 	}
 
 	// =========================================================================

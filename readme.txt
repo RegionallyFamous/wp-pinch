@@ -8,7 +8,7 @@ Stable tag: 2.7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-WordPress in your pocket. Your AI assistant runs it from the chat you never leave — 38+ abilities, Pinch Chat block, webhooks, 8 governance tasks. Self-hosted. (We gave the AI the keys; we gave it a bouncer too.)
+OpenClaw + WordPress. 38+ abilities, Pinch Chat block, webhooks, governance. Your AI runs your site from WhatsApp, Slack, or Telegram. Self-hosted.
 
 == Description ==
 
@@ -294,7 +294,7 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 == Upgrade Notice ==
 
 = 2.5.0 =
-Block Bindings for Pinch Chat (bind agentId/placeholder to post meta or options), default placeholder setting, block supports (font size, min height), and wp_pinch_block_type_metadata filter. Doc refresh: Recipes, Limits, health/status, trace ID, wizard "Try this first." No breaking changes.
+Block Bindings for Pinch Chat, default placeholder, block supports. Doc refresh. No breaking changes.
 
 = 2.4.2 =
 UI polish: first-run wizard (step indicator, copy buttons, Test Connection spinner), settings cards and audit empty state, Pinch Chat focus and scroll-to-bottom. Lint and security hardening. No breaking changes.
@@ -309,10 +309,10 @@ Feature release: Quick Drop (save as note), Memory Bait (site-digest), Tide Repo
 Documentation update: "Six reasons" and six governance tasks in README/readme.txt. No code changes from 2.3.0.
 
 = 2.3.0 =
-Feature release: Ghost Writer learns your writing voice and resurrects abandoned drafts. New /ghostwrite slash command, Draft Necromancer governance task, 3 new abilities, and the ghost_writer feature flag. Also includes PinchDrop Capture Anywhere with signed inbound capture, idempotency, source allowlisting, and structured draft-pack generation. No breaking changes from 2.2.0.
+Ghost Writer, PinchDrop Capture. New /ghostwrite slash command and abilities. No breaking changes.
 
 = 2.1.0 =
-Feature release: Circuit breaker, feature flags, webhook signatures, SSE streaming, health endpoint, admin ability toggle, audit log search/export, chat UX overhaul (character counter, clear chat, copy button, Markdown, typing indicator, nonce refresh, keyboard shortcuts), WP-CLI format support, rate limit headers, and much more. No breaking changes from 2.0.0.
+Circuit breaker, feature flags, webhook signatures, SSE streaming, audit search/export, chat UX overhaul. No breaking changes.
 
 = 2.0.0 =
 Major security hardening: 38 fixes for access control, privilege escalation, SSRF, PII exposure, XSS, and more. Breaking changes: user emails removed from ability responses, bulk delete now trashes, administrator role unconditionally blocked. Please review the full changelog before upgrading.

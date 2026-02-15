@@ -88,6 +88,8 @@ Feature suggestions are welcome. To propose a new feature, [open a feature reque
 
    Open [http://localhost:8888](http://localhost:8888) in your browser. The default admin credentials are `admin` / `password`.
 
+6. **Multisite development (optional):** To test network settings and cross-site features, enable multisite in wp-env by adding `"config": { "WP_MULTISITE": true }` to `.wp-env.json` and re-running `npx wp-env start`. The network admin is at `http://localhost:8888/wp-admin/network/`. Network settings tests (`tests/test-network-settings.php`) run only when multisite is active.
+
 ## Quality System
 
 WP Pinch uses a multi-layer quality system that automatically catches issues before they reach `main`. Nothing merges unless every check passes.

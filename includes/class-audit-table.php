@@ -133,6 +133,16 @@ class Audit_Table {
 			array( '%s', '%s', '%s', '%s', '%s' )
 		);
 
+		if ( $result ) {
+			wp_cache_delete( 'audit_table_status', 'wp_pinch_site_health' );
+			if ( function_exists( 'wp_cache_flush_group' ) ) {
+				try {
+					wp_cache_flush_group( 'wp_pinch_audit' );
+				} catch ( \Throwable $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch -- Object cache may not support flush_group.
+				}
+			}
+		}
+
 		return $result ? (int) $wpdb->insert_id : false;
 	}
 
@@ -200,13 +210,19 @@ class Audit_Table {
 		$per_page = absint( $args['per_page'] );
 		$offset   = ( absint( $args['page'] ) - 1 ) * $per_page;
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table and $where_sql are built from sanitized values above.
+		$cache_key = 'query_' . md5( wp_json_encode( array_intersect_key( $args, array_flip( array( 'event_type', 'source', 'search', 'date_from', 'date_to', 'per_page', 'page', 'orderby', 'order' ) ) ) ) );
+		$cached    = wp_cache_get( $cache_key, 'wp_pinch_audit' );
+		if ( false !== $cached ) {
+			return $cached;
+		}
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- $table, $orderby, $order from whitelist; $where_sql from prepare().
 		$total = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}` WHERE {$where_sql}" );
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$items = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT * FROM {$table} WHERE {$where_sql} ORDER BY {$orderby} {$order} LIMIT %d OFFSET %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table, $orderby, $order whitelisted; $where_sql from prepare().
+				"SELECT * FROM `{$table}` WHERE {$where_sql} ORDER BY {$orderby} {$order} LIMIT %d OFFSET %d",
 				$per_page,
 				$offset
 			),
@@ -218,9 +234,60 @@ class Audit_Table {
 			$item['context'] = json_decode( $item['context'] ?? '{}', true );
 		}
 
-		return array(
+		$result = array(
 			'items' => ! empty( $items ) ? $items : array(),
 			'total' => $total,
+		);
+		wp_cache_set( $cache_key, $result, 'wp_pinch_audit', 60 );
+		return $result;
+	}
+
+	/**
+	 * Get ability usage stats for the analytics dashboard.
+	 *
+	 * Aggregates ability_executed events: counts by ability name and by day.
+	 *
+	 * @param int $days Number of days to include. Default 30.
+	 * @param int $max_rows Maximum rows to scan. Default 5000.
+	 * @return array{by_ability: array<string, int>, by_day: array<string, int>, total: int}
+	 */
+	public static function get_ability_usage_stats( int $days = 30, int $max_rows = 5000 ): array {
+		global $wpdb;
+
+		$table     = self::table_name();
+		$date_from = gmdate( 'Y-m-d 00:00:00', strtotime( "-{$days} days" ) );
+
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table from table_name().
+				"SELECT context, created_at FROM `{$table}` WHERE event_type = %s AND created_at >= %s ORDER BY created_at DESC LIMIT %d",
+				'ability_executed',
+				$date_from,
+				$max_rows
+			),
+			ARRAY_A
+		);
+
+		$by_ability = array();
+		$by_day     = array();
+		$total      = 0;
+
+		foreach ( (array) $rows as $row ) {
+			$context = json_decode( $row['context'] ?? '{}', true );
+			$ability = isset( $context['ability'] ) && is_string( $context['ability'] ) ? $context['ability'] : __( '(unknown)', 'wp-pinch' );
+			$date    = substr( $row['created_at'], 0, 10 );
+
+			$by_ability[ $ability ] = ( $by_ability[ $ability ] ?? 0 ) + 1;
+			$by_day[ $date ]        = ( $by_day[ $date ] ?? 0 ) + 1;
+			++$total;
+		}
+
+		arsort( $by_ability, SORT_NUMERIC );
+
+		return array(
+			'by_ability' => $by_ability,
+			'by_day'     => $by_day,
+			'total'      => $total,
 		);
 	}
 
@@ -277,9 +344,18 @@ class Audit_Table {
 
 		$wpdb->query(
 			$wpdb->prepare(
-				"DELETE FROM {$table} WHERE created_at < %s", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				'DELETE FROM %i WHERE created_at < %s',
+				$table,
 				$days_ago
 			)
 		);
+
+		wp_cache_delete( 'audit_table_status', 'wp_pinch_site_health' );
+		if ( function_exists( 'wp_cache_flush_group' ) ) {
+			try {
+				wp_cache_flush_group( 'wp_pinch_audit' );
+			} catch ( \Throwable $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch -- Object cache may not support flush_group.
+			}
+		}
 	}
 }

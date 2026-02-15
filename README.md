@@ -98,8 +98,10 @@ Capability checks, sanitization, audit logging, HMAC webhooks, rate limiting, ci
 |-------------|---------|
 | WordPress | 6.9+ (Abilities API) |
 | PHP | 8.1+ |
-| Action Scheduler | Required (ships with WooCommerce or standalone) |
+| Action Scheduler | Optional — required for recurring governance, webhook retries, and audit log cleanup. Install from [WooCommerce](https://wordpress.org/plugins/woocommerce/) or [standalone](https://github.com/woocommerce/action-scheduler/releases). |
 | OpenClaw | For chat/channel integration; any MCP client can use the abilities |
+
+**Multisite:** On WordPress Multisite, network admins get **Network → Settings → WP Pinch** to set shared Gateway URL and API Token. Sites can inherit network defaults or override per site. See [Configuration](https://github.com/RegionallyFamous/wp-pinch/wiki/Configuration#multisite-network).
 
 **Quick answers:** Don't have OpenClaw yet? The abilities and MCP server work with any MCP-compatible client. Your data stays on your server; we don't send content to third parties. [FAQ](https://github.com/RegionallyFamous/wp-pinch/wiki/FAQ)
 

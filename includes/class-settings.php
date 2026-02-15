@@ -18,6 +18,11 @@ defined( 'ABSPATH' ) || exit;
 class Settings {
 
 	/**
+	 * Prefix for encrypted API token in wp_options (encrypted at rest).
+	 */
+	private const TOKEN_ENC_PREFIX = 'wp_pinch_enc_v1:';
+
+	/**
 	 * Wire hooks.
 	 */
 	public static function init(): void {
@@ -35,6 +40,129 @@ class Settings {
 			'plugin_action_links_' . plugin_basename( WP_PINCH_FILE ),
 			array( __CLASS__, 'add_action_links' )
 		);
+	}
+
+	/**
+	 * Get the API token (decrypted if stored encrypted). Migrates legacy plaintext to encrypted on first read.
+	 *
+	 * @return string
+	 */
+	public static function get_api_token(): string {
+		$raw = get_option( 'wp_pinch_api_token', '' );
+		if ( '' === $raw ) {
+			return '';
+		}
+		if ( str_starts_with( $raw, self::TOKEN_ENC_PREFIX ) ) {
+			$decrypted = self::decrypt_token( $raw );
+			return is_string( $decrypted ) ? $decrypted : '';
+		}
+		// Legacy plaintext: migrate to encrypted and return plaintext.
+		self::set_api_token( $raw );
+		return $raw;
+	}
+
+	/**
+	 * Set the API token (stored encrypted at rest). Use for migration or programmatic set.
+	 *
+	 * @param string $token Plaintext token.
+	 * @return bool
+	 */
+	public static function set_api_token( string $token ): bool {
+		if ( '' === $token ) {
+			return update_option( 'wp_pinch_api_token', '' );
+		}
+		$encrypted = self::encrypt_token( $token );
+		return null !== $encrypted && update_option( 'wp_pinch_api_token', $encrypted );
+	}
+
+	/**
+	 * Get the network-wide API token (multisite only).
+	 *
+	 * @return string
+	 */
+	public static function get_network_api_token(): string {
+		if ( ! is_multisite() ) {
+			return '';
+		}
+		$raw = get_site_option( 'wp_pinch_network_api_token', '' );
+		if ( '' === $raw ) {
+			return '';
+		}
+		if ( str_starts_with( $raw, self::TOKEN_ENC_PREFIX ) ) {
+			$decrypted = self::decrypt_token( $raw );
+			return is_string( $decrypted ) ? $decrypted : '';
+		}
+		// Legacy plaintext: migrate to encrypted and return plaintext.
+		self::set_network_api_token( $raw );
+		return $raw;
+	}
+
+	/**
+	 * Set the network-wide API token (multisite only). Stored encrypted at rest.
+	 *
+	 * @param string $token Plaintext token.
+	 * @return bool
+	 */
+	public static function set_network_api_token( string $token ): bool {
+		if ( ! is_multisite() ) {
+			return false;
+		}
+		if ( '' === $token ) {
+			return update_site_option( 'wp_pinch_network_api_token', '' );
+		}
+		$encrypted = self::encrypt_token( $token );
+		return null !== $encrypted && update_site_option( 'wp_pinch_network_api_token', $encrypted );
+	}
+
+	/**
+	 * Derive a 32-byte key from WordPress auth salts for token encryption.
+	 *
+	 * @return string
+	 */
+	private static function get_encryption_key(): string {
+		$key  = defined( 'AUTH_KEY' ) ? AUTH_KEY : '';
+		$salt = defined( 'AUTH_SALT' ) ? AUTH_SALT : '';
+		return hash( 'sha256', $key . $salt, true );
+	}
+
+	/**
+	 * Encrypt the API token for storage.
+	 *
+	 * @param string $token Plaintext token.
+	 * @return string|null Encrypted blob with prefix, or null on failure.
+	 */
+	private static function encrypt_token( string $token ): ?string {
+		if ( ! function_exists( 'sodium_crypto_secretbox' ) ) {
+			return null;
+		}
+		$key        = self::get_encryption_key();
+		$nonce      = random_bytes( SODIUM_CRYPTO_SECRETBOX_NONCEBYTES );
+		$ciphertext = sodium_crypto_secretbox( $token, $nonce, $key );
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- Used for token encryption storage.
+		return self::TOKEN_ENC_PREFIX . base64_encode( $nonce . $ciphertext );
+	}
+
+	/**
+	 * Decrypt the API token from storage.
+	 *
+	 * @param string $stored Value from wp_options (must start with TOKEN_ENC_PREFIX).
+	 * @return string|null Plaintext token or null on failure.
+	 */
+	private static function decrypt_token( string $stored ): ?string {
+		if ( ! function_exists( 'sodium_crypto_secretbox_open' ) ) {
+			return null;
+		}
+		$payload = substr( $stored, strlen( self::TOKEN_ENC_PREFIX ) );
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode -- Used for token decryption.
+		$decoded = base64_decode( $payload, true );
+		if ( false === $decoded || strlen( $decoded ) < SODIUM_CRYPTO_SECRETBOX_NONCEBYTES ) {
+			return null;
+		}
+		$nonce      = substr( $decoded, 0, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES );
+		$ciphertext = substr( $decoded, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES );
+		$key        = self::get_encryption_key();
+		$plain      = sodium_crypto_secretbox_open( $ciphertext, $nonce, $key );
+		return false !== $plain ? $plain : null;
 	}
 
 	/**
@@ -151,9 +279,14 @@ class Settings {
 				'sanitize_callback' => function ( $value ) {
 					// If the placeholder mask is submitted, keep the existing token.
 					if ( str_repeat( "\u{2022}", 8 ) === $value || '' === $value ) {
-						return get_option( 'wp_pinch_api_token', '' );
+						return self::get_api_token();
 					}
-					return sanitize_text_field( $value );
+					$plain = sanitize_text_field( $value );
+					if ( '' === $plain ) {
+						return '';
+					}
+					$encrypted = self::encrypt_token( $plain );
+					return null !== $encrypted ? $encrypted : $plain;
 				},
 				'default'           => '',
 				'show_in_rest'      => false,
@@ -403,6 +536,61 @@ class Settings {
 				'type'              => 'integer',
 				'sanitize_callback' => 'absint',
 				'default'           => 0,
+				'show_in_rest'      => false,
+			)
+		);
+
+		register_setting(
+			'wp_pinch_connection',
+			'wp_pinch_public_chat_rate_limit',
+			array(
+				'type'              => 'integer',
+				'sanitize_callback' => function ( $v ) {
+					return max( 1, min( 60, absint( $v ) ) );
+				},
+				'default'           => 3,
+				'show_in_rest'      => false,
+			)
+		);
+
+		register_setting(
+			'wp_pinch_connection',
+			'wp_pinch_sse_max_connections_per_ip',
+			array(
+				'type'              => 'integer',
+				'sanitize_callback' => function ( $v ) {
+					$v = absint( $v );
+					return $v <= 0 ? 0 : max( 1, min( 20, $v ) );
+				},
+				'default'           => 5,
+				'show_in_rest'      => false,
+			)
+		);
+
+		register_setting(
+			'wp_pinch_connection',
+			'wp_pinch_chat_max_response_length',
+			array(
+				'type'              => 'integer',
+				'sanitize_callback' => function ( $v ) {
+					$v = absint( $v );
+					return $v < 0 ? 0 : min( 2000000, $v );
+				},
+				'default'           => 200000,
+				'show_in_rest'      => false,
+			)
+		);
+
+		register_setting(
+			'wp_pinch_connection',
+			'wp_pinch_ability_cache_ttl',
+			array(
+				'type'              => 'integer',
+				'sanitize_callback' => function ( $v ) {
+					$v = absint( $v );
+					return $v < 0 ? 0 : min( 86400, $v );
+				},
+				'default'           => 300,
 				'show_in_rest'      => false,
 			)
 		);
@@ -702,7 +890,7 @@ class Settings {
 		set_transient( $cooldown_key, 1, 5 );
 
 		$url   = get_option( 'wp_pinch_gateway_url', '' );
-		$token = get_option( 'wp_pinch_api_token', '' );
+		$token = self::get_api_token();
 
 		if ( empty( $url ) ) {
 			wp_send_json_error( __( 'Gateway URL is not configured.', 'wp-pinch' ) );
@@ -852,7 +1040,7 @@ class Settings {
 	public static function render_wizard( int $initial_step = 1 ): void {
 		$mcp_url    = rest_url( 'wp-pinch/v1/mcp' );
 		$gateway    = get_option( 'wp_pinch_gateway_url', '' );
-		$token      = get_option( 'wp_pinch_api_token', '' );
+		$token      = self::get_api_token();
 		$show_s1    = ( 1 === $initial_step ) ? 'block' : 'none';
 		$show_s2    = ( 2 === $initial_step ) ? 'block' : 'none';
 		$show_s3    = ( 3 === $initial_step ) ? 'block' : 'none';
@@ -1040,7 +1228,7 @@ class Settings {
 		// Show onboarding wizard for first-time setup.
 		if ( ! get_option( 'wp_pinch_wizard_completed', false ) ) {
 			$gateway     = get_option( 'wp_pinch_gateway_url', '' );
-			$token       = get_option( 'wp_pinch_api_token', '' );
+			$token       = self::get_api_token();
 			$wizard_step = ( '' !== $gateway && '' !== $token ) ? 3 : 1;
 			self::render_wizard( $wizard_step );
 			return;
@@ -1054,6 +1242,7 @@ class Settings {
 			'webhooks'      => __( 'Webhooks', 'wp-pinch' ),
 			'governance'    => __( 'Governance', 'wp-pinch' ),
 			'abilities'     => __( 'Abilities', 'wp-pinch' ),
+			'usage'         => __( 'Usage', 'wp-pinch' ),
 			'features'      => __( 'Features', 'wp-pinch' ),
 			'audit'         => __( 'Audit Log', 'wp-pinch' ),
 		);
@@ -1100,6 +1289,9 @@ class Settings {
 						break;
 					case 'features':
 						self::render_tab_features();
+						break;
+					case 'usage':
+						self::render_tab_usage();
 						break;
 					case 'audit':
 						self::render_tab_audit();
@@ -1184,7 +1376,7 @@ class Settings {
 							<label for="wp_pinch_api_token"><?php esc_html_e( 'API Token', 'wp-pinch' ); ?></label>
 						</th>
 						<td>
-						<?php $has_token = ! empty( get_option( 'wp_pinch_api_token' ) ); ?>
+						<?php $has_token = ! empty( self::get_api_token() ); ?>
 						<input type="password" id="wp_pinch_api_token" name="wp_pinch_api_token"
 								value="<?php echo $has_token ? esc_attr( str_repeat( "\u{2022}", 8 ) ) : ''; ?>"
 								class="regular-text" autocomplete="off" />
@@ -1275,6 +1467,41 @@ class Settings {
 							<p class="description">
 								<?php esc_html_e( 'Optional. Route webhooks and chat to a specific OpenClaw agent. Leave blank for default agent.', 'wp-pinch' ); ?>
 							</p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Public chat & stream limits', 'wp-pinch' ); ?></th>
+						<td>
+							<p class="description" style="margin-top:0;">
+								<label for="wp_pinch_public_chat_rate_limit"><?php esc_html_e( 'Public chat (unauthenticated) rate limit:', 'wp-pinch' ); ?></label>
+								<input type="number" id="wp_pinch_public_chat_rate_limit" name="wp_pinch_public_chat_rate_limit"
+										value="<?php echo esc_attr( get_option( 'wp_pinch_public_chat_rate_limit', 3 ) ); ?>"
+										class="tiny-text" min="1" max="60" /> <?php esc_html_e( 'requests per minute per IP', 'wp-pinch' ); ?>
+							</p>
+							<p class="description" style="margin-top:0.5em;">
+								<label for="wp_pinch_sse_max_connections_per_ip"><?php esc_html_e( 'Max concurrent SSE streams per IP:', 'wp-pinch' ); ?></label>
+								<input type="number" id="wp_pinch_sse_max_connections_per_ip" name="wp_pinch_sse_max_connections_per_ip"
+										value="<?php echo esc_attr( get_option( 'wp_pinch_sse_max_connections_per_ip', 5 ) ); ?>"
+										class="tiny-text" min="0" max="20" /> (0 = <?php esc_html_e( 'no limit', 'wp-pinch' ); ?>)
+							</p>
+							<p class="description" style="margin-top:0.5em;">
+								<label for="wp_pinch_chat_max_response_length"><?php esc_html_e( 'Max chat response length (chars):', 'wp-pinch' ); ?></label>
+								<input type="number" id="wp_pinch_chat_max_response_length" name="wp_pinch_chat_max_response_length"
+										value="<?php echo esc_attr( get_option( 'wp_pinch_chat_max_response_length', 200000 ) ); ?>"
+										class="small-text" min="0" /> (0 = <?php esc_html_e( 'no limit', 'wp-pinch' ); ?>)
+							</p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Ability cache', 'wp-pinch' ); ?></th>
+						<td>
+							<p class="description" style="margin-top:0;">
+								<label for="wp_pinch_ability_cache_ttl"><?php esc_html_e( 'Cache TTL for read-heavy abilities (seconds):', 'wp-pinch' ); ?></label>
+								<input type="number" id="wp_pinch_ability_cache_ttl" name="wp_pinch_ability_cache_ttl"
+										value="<?php echo esc_attr( get_option( 'wp_pinch_ability_cache_ttl', 300 ) ); ?>"
+										class="small-text" min="0" max="86400" /> (0 = <?php esc_html_e( 'disabled', 'wp-pinch' ); ?>)
+							</p>
+							<p class="description"><?php esc_html_e( 'list-posts, search-content, list-media, list-taxonomies. Invalidated on post save/delete.', 'wp-pinch' ); ?></p>
 						</td>
 					</tr>
 				</table>
@@ -1834,6 +2061,89 @@ class Settings {
 					);
 					?>
 				</p>
+			<?php endif; ?>
+		</div>
+		<?php
+	}
+
+	// =========================================================================
+	// Usage (Analytics) Tab
+	// =========================================================================
+
+	/**
+	 * Usage tab — ability execution stats from audit log (top abilities, timeline).
+	 */
+	private static function render_tab_usage(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		$days       = 30;
+		$stats      = Audit_Table::get_ability_usage_stats( $days );
+		$by_ability = $stats['by_ability'];
+		$by_day     = $stats['by_day'];
+		$total      = $stats['total'];
+
+		krsort( $by_day, SORT_STRING );
+		?>
+		<h3><?php esc_html_e( 'Ability usage', 'wp-pinch' ); ?></h3>
+		<p class="description">
+		<?php
+		/* translators: %d: number of days */
+		echo esc_html( sprintf( __( 'Last %d days (from audit log).', 'wp-pinch' ), $days ) );
+		?>
+		</p>
+
+		<div class="wp-pinch-card" style="margin-top:1em;">
+			<h4 class="wp-pinch-card__title"><?php esc_html_e( 'Total executions', 'wp-pinch' ); ?></h4>
+			<p style="font-size:1.5em; margin:0.5em 0;"><?php echo esc_html( (string) $total ); ?></p>
+		</div>
+
+		<div class="wp-pinch-card" style="margin-top:1em;">
+			<h4 class="wp-pinch-card__title"><?php esc_html_e( 'Top abilities', 'wp-pinch' ); ?></h4>
+			<?php if ( ! empty( $by_ability ) ) : ?>
+				<table class="widefat striped" style="margin-top:0.5em;">
+					<thead>
+						<tr>
+							<th><?php esc_html_e( 'Ability', 'wp-pinch' ); ?></th>
+							<th><?php esc_html_e( 'Count', 'wp-pinch' ); ?></th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php foreach ( $by_ability as $ability_name => $count ) : ?>
+							<tr>
+								<td><code><?php echo esc_html( $ability_name ); ?></code></td>
+								<td><?php echo esc_html( (string) $count ); ?></td>
+							</tr>
+						<?php endforeach; ?>
+					</tbody>
+				</table>
+			<?php else : ?>
+				<p class="description"><?php esc_html_e( 'No ability executions in this period.', 'wp-pinch' ); ?></p>
+			<?php endif; ?>
+		</div>
+
+		<div class="wp-pinch-card" style="margin-top:1em;">
+			<h4 class="wp-pinch-card__title"><?php esc_html_e( 'Executions by day', 'wp-pinch' ); ?></h4>
+			<?php if ( ! empty( $by_day ) ) : ?>
+				<table class="widefat striped" style="margin-top:0.5em;">
+					<thead>
+						<tr>
+							<th><?php esc_html_e( 'Date', 'wp-pinch' ); ?></th>
+							<th><?php esc_html_e( 'Count', 'wp-pinch' ); ?></th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php foreach ( $by_day as $date => $count ) : ?>
+							<tr>
+								<td><?php echo esc_html( $date ); ?></td>
+								<td><?php echo esc_html( (string) $count ); ?></td>
+							</tr>
+						<?php endforeach; ?>
+					</tbody>
+				</table>
+			<?php else : ?>
+				<p class="description"><?php esc_html_e( 'No data for this period.', 'wp-pinch' ); ?></p>
 			<?php endif; ?>
 		</div>
 		<?php

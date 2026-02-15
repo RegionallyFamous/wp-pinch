@@ -67,8 +67,18 @@ For step-by-step workflows (publish from chat, Molt, PinchDrop, etc.), see [Reci
 - **Never store credentials in config files.** Use environment variables or a secret manager and reference them (e.g. `WP_APP_PASSWORD`, `WP_PINCH_API_TOKEN`). The OpenClaw config should point to secrets, not contain them.
 - **Rotate tokens on a schedule.** API tokens and application passwords should be rotated periodically (e.g. every 90 days). Revoke old application passwords after rotation.
 - **WP Pinch API token** (Connection tab) is used for outbound webhooks and incoming webhook verification. Treat it like a password — it is masked in the admin UI and should never be committed to version control.
+- **Settings form security** — All WP Pinch settings forms post to `options.php` and use `settings_fields()`, so WordPress verifies the option-group nonce on save before updating any option.
 
 See [Security](Security) for the full defense-in-depth overview.
+
+### Multisite (Network)
+
+On **WordPress Multisite**, WP Pinch adds **Network → Settings → WP Pinch**. Network admins can set:
+
+- **Gateway URL** — Default gateway for all sites. Sites can use this when "Use network default" is enabled in their Connection tab.
+- **API Token** — Network-wide API token. Sites can inherit this token or override per site.
+
+Each site still has its own WP Pinch settings (WP Pinch in the site admin sidebar). The network page also shows a **Sites** table with links to each site's WP Pinch, and a **Cross-site audit** of the last 50 ability executions across all sites.
 
 ### OpenClaw role
 
@@ -92,6 +102,8 @@ WP Pinch provides a dedicated **OpenClaw Agent** role for least-privilege webhoo
 | **Rate Limit** | Maximum requests per minute for outbound webhooks (default: 30). REST uses a lower default (10/min per user) when unset. See [Limits](Limits) for full details. |
 | **Daily write budget** | Max write operations per day (0 = no limit). When exceeded, write abilities return 429 until the next day. Optional: **Alert email when usage reaches** a percentage (e.g. 80%) and an **Email** address to receive the alert. Which operations count is filterable via `wp_pinch_write_abilities`. See [Limits](Limits) and [Error Codes](Error-Codes). |
 | **Agent ID** | Default agent to route messages to |
+| **Public chat & stream limits** | **Public chat rate limit** — requests per minute per IP for unauthenticated chat (default 3). **Max concurrent SSE streams per IP** — cap on simultaneous streaming connections per IP (default 5; 0 = no limit). **Max chat response length** — character cap on gateway reply (default 200,000; 0 = no limit). See [Limits](Limits). |
+| **Ability cache** | **Cache TTL for read-heavy abilities** (seconds; default 300, 0 = disabled). Caches results for list-posts, search-content, list-media, list-taxonomies. Invalidated automatically on post save/delete. Filter `wp_pinch_cacheable_abilities` can change which abilities are cacheable. |
 
 ### Webhook Settings
 
@@ -184,6 +196,16 @@ Configure which governance tasks run and on what schedule:
 - Draft Necromancer (abandoned drafts worth resurrecting; requires Ghost Writer)
 - Tide Report (daily digest — bundles findings into one webhook)
 
+### Token Efficiency (LLM costs)
+
+Abilities that send content to the gateway (synthesize, what-do-i-know, site-digest) use filters to control how much text is sent. Tune these to reduce token usage:
+
+- **`wp_pinch_synthesize_excerpt_words`** — Excerpt word count (default 40)
+- **`wp_pinch_synthesize_content_snippet_words`** — Content snippet word count (default 75)
+- **`wp_pinch_synthesize_per_page_max`** — Max posts per synthesize query (default 25)
+
+See [Hooks & Filters](Hooks-and-Filters) for details.
+
 ### Abilities Tab
 
 When the `ability_toggle` feature flag is enabled, you can enable/disable individual abilities from the admin UI without writing code.
@@ -201,7 +223,7 @@ When the `audit_search` feature flag is enabled, the Audit tab shows **search** 
 | WordPress | 6.9+ | For the Abilities API |
 | PHP | 8.1+ | For type hints and enums |
 | MCP Adapter plugin | Recommended | For full MCP integration |
-| Action Scheduler | Required | Ships with WooCommerce, or install standalone |
+| Action Scheduler | Optional | Required for: recurring governance tasks (content freshness, SEO, comment sweep, broken links, security scan, draft necromancer, spaced resurfacing), webhook retry on failure, and audit log cleanup. Without it, the plugin activates and runs; those features no-op. Install from [WooCommerce](https://wordpress.org/plugins/woocommerce/) or [standalone](https://github.com/woocommerce/action-scheduler/releases). A dismissible admin notice appears on the WP Pinch settings/dashboard when Action Scheduler is missing. |
 
 ---
 

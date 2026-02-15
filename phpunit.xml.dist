@@ -12,6 +12,8 @@
 
 	<php>
 		<const name="WP_TESTS_MULTISITE" value="0" />
+		<!-- Suppress vendor deprecations (e.g. thecodingmachine/safe PHP 8.4 nullable params) during tests -->
+		<ini name="error_reporting" value="22527"/>
 	</php>
 
 	<coverage>

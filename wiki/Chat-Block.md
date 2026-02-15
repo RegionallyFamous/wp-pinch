@@ -67,6 +67,7 @@ Failed requests are retried with exponential backoff. The nonce is auto-refreshe
 
 The Pinch Chat block targets WCAG 2.1 AA compliance:
 
+- **ARIA labels** — Buttons (Send, New conversation, Copy, Clear, Scroll to bottom) have `aria-label`. The message list uses `role="log"` and `aria-live="polite"` for live region announcements.
 - **Screen reader announcements** via `wp.a11y.speak` for new messages and errors
 - **`prefers-reduced-motion`** -- all animations (typing indicator, streaming cursor, transitions) are disabled when the user prefers reduced motion
 - **`forced-colors` (Windows High Contrast Mode)** -- uses system color keywords for borders, focus rings, and interactive elements

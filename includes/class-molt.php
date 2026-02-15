@@ -133,7 +133,7 @@ class Molt {
 	 */
 	private static function request_molt( \WP_Post $post, array $output_types ) {
 		$gateway_url = get_option( 'wp_pinch_gateway_url', '' );
-		$api_token   = get_option( 'wp_pinch_api_token', '' );
+		$api_token   = \WP_Pinch\Settings::get_api_token();
 
 		if ( empty( $gateway_url ) || empty( $api_token ) ) {
 			return new \WP_Error(

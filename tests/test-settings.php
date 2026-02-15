@@ -105,7 +105,7 @@ class Test_Settings extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test API token is sanitized with sanitize_text_field.
+	 * Test API token is sanitized and stored encrypted when possible.
 	 */
 	public function test_api_token_sanitization(): void {
 		Settings::register_settings();
@@ -114,13 +114,56 @@ class Test_Settings extends WP_UnitTestCase {
 		$sanitize = $registered['wp_pinch_api_token']['sanitize_callback'];
 		$this->assertIsCallable( $sanitize );
 
-		// Normal token value should be sanitized and returned.
+		// Normal token value should be sanitized; when sodium is available, returned value is encrypted (prefixed).
 		$result = call_user_func( $sanitize, 'my-secret-token' );
-		$this->assertEquals( 'my-secret-token', $result );
+		$this->assertIsString( $result );
+		$this->assertNotEmpty( $result );
+		if ( function_exists( 'sodium_crypto_secretbox' ) ) {
+			$this->assertStringStartsWith( 'wp_pinch_enc_v1:', $result );
+		} else {
+			$this->assertSame( 'my-secret-token', $result );
+		}
 
-		// HTML should be stripped.
+		// HTML should be stripped before encrypt/save.
 		$result = call_user_func( $sanitize, '<script>bad</script>token' );
 		$this->assertStringNotContainsString( '<script>', $result );
+	}
+
+	/**
+	 * Test get_api_token returns decrypted value and set_api_token stores encrypted (when sodium available).
+	 */
+	public function test_get_api_token_decrypts_stored_value(): void {
+		$plain = 'test-token-123';
+		Settings::set_api_token( $plain );
+
+		$raw = get_option( 'wp_pinch_api_token', '' );
+		$this->assertNotEmpty( $raw );
+		if ( function_exists( 'sodium_crypto_secretbox' ) ) {
+			$this->assertStringStartsWith( 'wp_pinch_enc_v1:', $raw );
+			$this->assertNotSame( $plain, $raw );
+		}
+
+		$this->assertSame( $plain, Settings::get_api_token() );
+
+		Settings::set_api_token( '' );
+		$this->assertSame( '', Settings::get_api_token() );
+	}
+
+	/**
+	 * Test legacy plaintext token is migrated to encrypted on first get_api_token read (when sodium available).
+	 */
+	public function test_legacy_plaintext_token_migrated_to_encrypted(): void {
+		update_option( 'wp_pinch_api_token', 'legacy-plaintext' );
+
+		$this->assertSame( 'legacy-plaintext', Settings::get_api_token() );
+
+		$raw = get_option( 'wp_pinch_api_token', '' );
+		if ( function_exists( 'sodium_crypto_secretbox' ) ) {
+			$this->assertStringStartsWith( 'wp_pinch_enc_v1:', $raw );
+		}
+		$this->assertSame( 'legacy-plaintext', Settings::get_api_token() );
+
+		update_option( 'wp_pinch_api_token', '' );
 	}
 
 	/**
