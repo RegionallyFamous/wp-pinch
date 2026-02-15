@@ -136,6 +136,26 @@ setup-hooks: ## Install git pre-commit hook
 	@echo "Pre-commit hook installed."
 
 # ---------------------------------------------------------------------------
+# Release
+# ---------------------------------------------------------------------------
+
+.PHONY: release-check
+release-check: install-dev build check ## Run release gate (no tests). Fails if lint or PHPStan fail.
+	@echo ""
+	@echo "✓ Release check passed (lint + PHPStan + build)."
+
+.PHONY: release-check-full
+release-check-full: install-dev build check test-wp-env ## Run full release gate (lint + PHPStan + PHPUnit). Requires 'make wp-env-start' first.
+	@echo ""
+	@echo "✓ Full release check passed (lint + PHPStan + tests)."
+
+.PHONY: release-prep
+release-prep: release-check-full i18n zip-dist ## Run full gate and create ZIP. Requires wp-env running.
+	@echo ""
+	@echo "✓ Release prep complete. ZIP: $(ZIP_NAME)"
+	@echo "  Next: tag, push, create GitHub release, attach $(ZIP_NAME)"
+
+# ---------------------------------------------------------------------------
 # Package for distribution
 # ---------------------------------------------------------------------------
 

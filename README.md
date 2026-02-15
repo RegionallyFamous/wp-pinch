@@ -13,6 +13,8 @@ One plugin. Connect OpenClaw (or any MCP client), and your site is in the same c
 [![License: GPL v2+](https://img.shields.io/badge/License-GPL%20v2%2B-green.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
 [![CI](https://github.com/RegionallyFamous/wp-pinch/actions/workflows/ci.yml/badge.svg)](https://github.com/RegionallyFamous/wp-pinch/actions/workflows/ci.yml)
 
+**[Try WP Pinch in 30 seconds](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/RegionallyFamous/wp-pinch/main/blueprint.json)** — No install. No signup. Experience the admin UI, toggle abilities, and explore the Pinch Chat block in your browser.
+
 ---
 
 ## Why it's awesome

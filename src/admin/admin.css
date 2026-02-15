@@ -80,6 +80,41 @@
 	word-break: break-all;
 }
 
+/* OpenClaw skill install section. */
+.wp-pinch-skill-install {
+	max-width: 600px;
+	margin-top: var(--wp-pinch-spacing-lg);
+	padding: var(--wp-pinch-spacing-md);
+	background: var(--wp-pinch-bg-subtle);
+	border: var(--wp-pinch-border);
+	border-left: 4px solid var(--wp-pinch-primary);
+	border-radius: var(--wp-pinch-radius);
+}
+
+.wp-pinch-skill-install h3 {
+	margin-top: 0;
+}
+
+.wp-pinch-skill-install .wp-pinch-copy-row {
+	display: flex;
+	align-items: center;
+	gap: var(--wp-pinch-spacing-sm);
+	flex-wrap: wrap;
+	margin-top: var(--wp-pinch-spacing-sm);
+}
+
+.wp-pinch-skill-copy-feedback {
+	font-size: 12px;
+	color: var(--wp-pinch-success);
+	font-weight: 600;
+	opacity: 0;
+	transition: opacity 0.15s;
+}
+
+.wp-pinch-skill-copy-feedback.is-visible {
+	opacity: 1;
+}
+
 /* Test connection button and result. */
 #wp-pinch-test-connection {
 	vertical-align: middle;

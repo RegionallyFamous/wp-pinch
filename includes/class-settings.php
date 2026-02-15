@@ -843,9 +843,10 @@ class Settings {
 			'wp-pinch-admin',
 			'wpPinchAdmin',
 			array(
-				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'nonce'   => wp_create_nonce( 'wp_pinch_test_connection' ),
-				'wizard'  => array(
+				'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
+				'nonce'         => wp_create_nonce( 'wp_pinch_test_connection' ),
+				'openclawSkill' => self::get_openclaw_skill_content(),
+				'wizard'        => array(
 					/* translators: 1: current step number, 2: total steps */
 					'stepOf'        => __( 'Step %1$d of %2$d', 'wp-pinch' ),
 					'pleaseGateway' => __( 'Please enter a gateway URL first.', 'wp-pinch' ),
@@ -870,6 +871,21 @@ class Settings {
 			'wp-pinch-admin',
 			'document.addEventListener("DOMContentLoaded",function(){var btn=document.getElementById("wp-pinch-create-openclaw-agent");if(!btn)return;btn.addEventListener("click",function(){var res=document.getElementById("wp-pinch-create-agent-result");var nonce=btn.getAttribute("data-nonce");var ajaxUrl=btn.getAttribute("data-ajax-url");btn.disabled=true;res.textContent="";var url=ajaxUrl+"?action=wp_pinch_create_openclaw_agent";fetch(url,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded","X-Requested-With":"XMLHttpRequest"},body:"nonce="+encodeURIComponent(nonce),credentials:"same-origin"}).then(function(r){return r.json();}).then(function(data){if(data.success){res.textContent=data.data.message||"Created.";location.reload();}else{res.textContent=data.data||"Error";btn.disabled=false;}}).catch(function(){res.textContent="Request failed";btn.disabled=false;});});});'
 		);
+	}
+
+	/**
+	 * Get OpenClaw skill content for copy-to-clipboard.
+	 *
+	 * @return string Skill markdown content or empty string if file not found.
+	 */
+	public static function get_openclaw_skill_content(): string {
+		$path = WP_PINCH_DIR . 'wiki/OpenClaw-Skill.md';
+		if ( ! file_exists( $path ) || ! is_readable( $path ) ) {
+			return '';
+		}
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Local file, not remote.
+		$content = file_get_contents( $path );
+		return is_string( $content ) ? $content : '';
 	}
 
 	/**
@@ -1181,6 +1197,17 @@ class Settings {
 						<p>
 							<?php esc_html_e( 'Send a message from WhatsApp, Telegram, Slack, or Discord to your OpenClaw agent. Your agent can now pinch your WordPress site via the MCP endpoint below.', 'wp-pinch' ); ?>
 						</p>
+						<?php if ( self::get_openclaw_skill_content() !== '' ) : ?>
+						<h3><?php esc_html_e( 'Install the WP Pinch skill', 'wp-pinch' ); ?></h3>
+						<p class="description">
+							<?php esc_html_e( 'Copy the skill so your agent knows when and how to use each ability. Save to ~/.openclaw/workspace/skills/wp-pinch/SKILL.md', 'wp-pinch' ); ?>
+						</p>
+						<div class="wp-pinch-copy-row">
+							<button type="button" class="button wp-pinch-copy-btn" data-wizard-copy="wp-pinch-skill-content" aria-label="<?php esc_attr_e( 'Copy skill to clipboard', 'wp-pinch' ); ?>"><?php esc_html_e( 'Copy skill', 'wp-pinch' ); ?></button>
+							<span class="wp-pinch-copy-feedback" id="wp-pinch-wizard-skill-feedback" aria-live="polite"></span>
+						</div>
+						<code id="wp-pinch-skill-content" class="wp-pinch-copy-code" style="display:none;"><?php echo esc_html( self::get_openclaw_skill_content() ); ?></code>
+						<?php endif; ?>
 						<p><strong><?php esc_html_e( 'Try this first', 'wp-pinch' ); ?></strong></p>
 						<ul class="wp-pinch-wizard-list" style="margin-top: 0;">
 							<li><?php esc_html_e( 'PinchDrop: Send a sentence to your channel and ask the assistant to turn it into a draft pack.', 'wp-pinch' ); ?></li>
@@ -1798,6 +1825,21 @@ class Settings {
 				<?php esc_html_e( 'Use this URL to connect OpenClaw (or any MCP client) via mcp-wordpress-remote.', 'wp-pinch' ); ?>
 			</p>
 		</div>
+
+		<?php if ( self::get_openclaw_skill_content() !== '' ) : ?>
+		<div class="wp-pinch-skill-install">
+			<h3><?php esc_html_e( 'Install OpenClaw Skill', 'wp-pinch' ); ?></h3>
+			<p class="description">
+				<?php esc_html_e( 'Copy the WP Pinch skill so your OpenClaw agent knows when and how to use each ability (posts, PinchDrop, Molt, etc.). Save to ~/.openclaw/workspace/skills/wp-pinch/SKILL.md', 'wp-pinch' ); ?>
+			</p>
+			<div class="wp-pinch-copy-row">
+				<button type="button" class="button" id="wp-pinch-copy-skill" aria-label="<?php esc_attr_e( 'Copy skill to clipboard', 'wp-pinch' ); ?>">
+					<?php esc_html_e( 'Copy skill', 'wp-pinch' ); ?>
+				</button>
+				<span id="wp-pinch-skill-copy-feedback" class="wp-pinch-skill-copy-feedback" aria-live="polite"></span>
+			</div>
+		</div>
+		<?php endif; ?>
 		<?php
 	}
 

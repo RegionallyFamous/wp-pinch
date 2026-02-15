@@ -49,6 +49,11 @@ import './admin.css';
 		} );
 
 		// Copy buttons
+		const feedbackIds = {
+			'wp-pinch-mcp-url': 'wp-pinch-copy-feedback-mcp',
+			'wp-pinch-cli-cmd': 'wp-pinch-copy-feedback-cli',
+			'wp-pinch-skill-content': 'wp-pinch-wizard-skill-feedback',
+		};
 		wizard.querySelectorAll( '[data-wizard-copy]' ).forEach( ( btn ) => {
 			btn.addEventListener( 'click', () => {
 				const id = btn.getAttribute( 'data-wizard-copy' );
@@ -56,11 +61,10 @@ import './admin.css';
 				if ( ! codeEl ) {
 					return;
 				}
-				const feedbackId =
-					id === 'wp-pinch-mcp-url'
-						? 'wp-pinch-copy-feedback-mcp'
-						: 'wp-pinch-copy-feedback-cli';
-				const feedbackEl = document.getElementById( feedbackId );
+				const feedbackId = feedbackIds[ id ] || null;
+				const feedbackEl = feedbackId
+					? document.getElementById( feedbackId )
+					: null;
 				const text = codeEl.textContent.trim();
 				navigator.clipboard
 					.writeText( text )
@@ -200,5 +204,34 @@ import './admin.css';
 		}
 
 		initWizard();
+
+		// Copy OpenClaw skill to clipboard.
+		const copySkillBtn = document.getElementById( 'wp-pinch-copy-skill' );
+		const skillFeedback = document.getElementById(
+			'wp-pinch-skill-copy-feedback'
+		);
+		if (
+			copySkillBtn &&
+			skillFeedback &&
+			typeof wpPinchAdmin !== 'undefined' &&
+			wpPinchAdmin.openclawSkill
+		) {
+			copySkillBtn.addEventListener( 'click', () => {
+				navigator.clipboard
+					.writeText( wpPinchAdmin.openclawSkill )
+					.then( () => {
+						skillFeedback.textContent =
+							( wpPinchAdmin.wizard &&
+								wpPinchAdmin.wizard.copied ) ||
+							'Snatched!';
+						skillFeedback.classList.add( 'is-visible' );
+						setTimeout( () => {
+							skillFeedback.classList.remove( 'is-visible' );
+							skillFeedback.textContent = '';
+						}, 2000 );
+					} )
+					.catch( () => {} );
+			} );
+		}
 	} );
 } )( jQuery );

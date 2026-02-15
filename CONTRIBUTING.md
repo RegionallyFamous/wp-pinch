@@ -308,13 +308,17 @@ CSS is linted using the Stylelint configuration provided by `@wordpress/scripts`
 
 ## Release Process
 
-Releases are managed by project maintainers. The general process is:
+Releases are managed by project maintainers. **See [RELEASE.md](RELEASE.md)** for the full rock-solid release procedure.
 
-1. Merge approved pull requests into `main`.
-2. Update the version number in the plugin header, `readme.txt`, and any other relevant files.
-3. Update the changelog.
-4. **Run `make zip`** — this builds JS/CSS assets and creates the distributable zip. The zip must include the `build/` directory or users will get 404 errors for admin.js/admin.css.
-5. Tag the release and publish. Attach the generated zip (e.g. `wp-pinch-1.0.1.zip`) to the GitHub release. For "latest" download compatibility, consider also attaching a copy named `wp-pinch.zip`.
+**TL;DR:**
+
+1. **Run the gate** — `make wp-env-start` then `make release-check-full` (lint + PHPStan + PHPUnit).
+2. **Version bump** — `wp-pinch.php`, `package.json`, `readme.txt`.
+3. **Changelog** — Move `[Unreleased]` entries into `[X.Y.Z]` in `CHANGELOG.md`.
+4. **Documentation** — Ensure wiki, README, and AGENTS.md reflect changes.
+5. **Create ZIP** — `make release-prep` (full gate + i18n + zip) or `make zip`.
+6. **Tag and push** — `git tag -a vX.Y.Z -m "Release X.Y.Z"` and push.
+7. **GitHub release** — Draft release, attach `wp-pinch-X.Y.Z.zip`, publish.
 
 Contributors do not need to worry about versioning or releases — simply target the `main` branch with your pull requests.
 
