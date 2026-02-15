@@ -1,12 +1,12 @@
 ---
 name: pinch-to-post
-version: 5.2.0
+version: 5.2.1
 description: Manage WordPress sites through WP Pinch MCP server or REST API fallback. Part of WP Pinch (wp-pinch.com).
 author: RegionallyFamous
 project: https://github.com/RegionallyFamous/wp-pinch
 homepage: https://wp-pinch.com
 user-invocable: true
-security: Uses env vars only; never hardcode credentials. See Best Practices and What Not to Do.
+security: Auth via MCP config or env vars (WP_APP_PASSWORD, WP_PINCH_API_TOKEN). Never hardcode credentials. See Authentication, Authorization Scope, and Security & Usage.
 tags:
   - wordpress
   - wp-pinch
@@ -28,7 +28,14 @@ metadata:
     primaryEnv: "WP_SITE_URL"
     requires:
       env: ["WP_SITE_URL"]
+    optionalEnv:
+      - "WP_APP_PASSWORD"
+      - "WP_USERNAME"
+      - "WP_PINCH_API_TOKEN"
 changelog: |
+  5.2.1
+  - Security audit updates: Authentication section (MCP vs REST credential flow), Authorization Scope, external data flow (webhooks, digests), Security & Usage guidance. Declared optional env (WP_APP_PASSWORD, WP_USERNAME, WP_PINCH_API_TOKEN).
+
   5.2.0
   - Added Molt: repackage any post into 10 formats (social, thread, FAQ, email, meta description, and more)
   - Added Ghost Writer: analyze author voice, find abandoned drafts, complete them in your style
@@ -62,6 +69,16 @@ changelog: |
 *Manage your WordPress site from chat — publish, Molt, PinchDrop, and 38+ abilities without leaving your messaging app.*
 
 You are an AI agent managing a WordPress site through the **WP Pinch** plugin. WP Pinch registers **38+ core abilities** (plus 2 WooCommerce when active) as MCP tools, plus PinchDrop, Ghost Writer, Molt, and high-leverage discovery tools. Every ability has capability checks, input sanitization, and audit logging.
+
+## Authentication
+
+Admin-level actions (create/update/delete posts, toggle plugins, update options, manage users, export data) **require authentication**. Credentials are never hardcoded.
+
+- **MCP (preferred):** The WP Pinch MCP server handles auth. Configure your MCP server with the site URL and credentials (Application Password or API token). The MCP server sends credentials with each request; the skill does not store them.
+- **REST fallback:** Set `WP_SITE_URL`, `WP_USERNAME`, and `WP_APP_PASSWORD` (Application Passwords from Users → Profile → Application Passwords). Use a dedicated user with minimum required capabilities.
+- **Webhooks:** Set `WP_PINCH_API_TOKEN` from WP Pinch → Connection for webhook signature verification. Webhook destinations are configured in WP Pinch → Webhooks.
+
+Do not point this skill at a production site until auth is configured. Test on staging first.
 
 ## Connection Methods (in order of preference)
 
@@ -180,6 +197,13 @@ curl -X POST "https://SITE_URL/wp-json/wp-pinch/v1/chat" \
   -d '{"message": "Show me recent posts"}'
 ```
 
+## Authorization Scope
+
+- **Read operations** (list-posts, get-post, site-health, etc.): Require at least Subscriber or equivalent.
+- **Write operations** (create-post, update-post, toggle-plugin, update-option, etc.): Require Editor or Administrator.
+- The WP Pinch plugin enforces WordPress capability checks on every request. The agent must not bypass or override these; all operations are subject to the configured user's role and capabilities.
+- **Role changes:** `update-user-role` blocks assignment of administrator and other high-privilege roles.
+
 ## Webhook Configuration
 
 WP Pinch sends webhooks to OpenClaw for:
@@ -190,7 +214,11 @@ WP Pinch sends webhooks to OpenClaw for:
 - `post_delete` — Post permanently deleted
 - `governance_finding` — Autonomous scan results (8 tasks)
 
-Configure in **WP Pinch > Webhooks**.
+**Configuration:** WP Pinch → Webhooks. Webhook URLs are user-configured; no default external endpoints. Destinations must be explicitly set by the site admin.
+
+**Data sent:** Event payloads (post ID, status, user ID, etc.). PII (emails, passwords) is not included. `site-digest` and `export-data` can include post content and user metadata; PII is redacted per [Security](https://github.com/RegionallyFamous/wp-pinch/wiki/Security).
+
+**Daily digests (Tide Report, Memory Bait):** Bundled governance findings sent to the configured webhook URL. Scope and format are documented in WP Pinch → Webhooks.
 
 ## Governance Tasks (8)
 
@@ -236,6 +264,15 @@ Findings delivered via webhook or processed server-side.
 
 See [Error Codes](https://github.com/RegionallyFamous/wp-pinch/wiki/Error-Codes) for the full list. Full security details: [Security](https://github.com/RegionallyFamous/wp-pinch/wiki/Security).
 
+## Security & Usage
+
+- **Test on staging first** — Do not point this skill at a production site until you understand auth and permissions.
+- **Use minimal credentials** — Prefer a dedicated WordPress user with limited capabilities (e.g., Editor instead of Administrator) when possible.
+- **Rotate credentials** — Regenerate Application Passwords and API tokens periodically.
+- **Review the plugin** — Confirm MCP endpoint auth and denylisted options: [WP Pinch source](https://github.com/RegionallyFamous/wp-pinch), [Security wiki](https://github.com/RegionallyFamous/wp-pinch/wiki/Security).
+- **Monitor activity** — WP Pinch audit logs record all actions; check them if something seems off.
+- **MCP endpoint security** — Confirm what the WP Pinch plugin exposes and whether any endpoints are public. Write operations should require authentication.
+
 ## Setup: Which WordPress Site?
 
 Set these **environment variables** on your OpenClaw instance to choose which WordPress site the skill uses. For multiple sites, use different workspaces or env configs.
@@ -243,9 +280,9 @@ Set these **environment variables** on your OpenClaw instance to choose which Wo
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `WP_SITE_URL` | Yes | WordPress site URL (e.g. `https://mysite.com`) — **this is how you select which site to use** |
-| `WP_USERNAME` | For REST | WordPress username for REST fallback |
-| `WP_APP_PASSWORD` | For REST | Application password (Users → Profile → Application Passwords), not your main password |
-| `WP_PINCH_API_TOKEN` | For webhooks | From WP Pinch → Connection tab, for webhook verification |
+| `WP_APP_PASSWORD` | For REST fallback | Application password (Users → Profile → Application Passwords). Required for REST fallback; not needed if using MCP only. |
+| `WP_USERNAME` | For REST fallback | WordPress username. Required with `WP_APP_PASSWORD` for REST fallback. |
+| `WP_PINCH_API_TOKEN` | For webhooks | From WP Pinch → Connection tab, for webhook signature verification. |
 
 **Example** (add to your OpenClaw `.env` or environment):
 
