@@ -4,7 +4,7 @@ Tags: ai, agent, openclaw, mcp, automation
 Requires at least: 6.9
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 2.8.0
+Stable tag: 2.9.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -126,6 +126,14 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 5. Audit log showing recent ability executions, webhooks, and chat messages.
 
 == Changelog ==
+
+= 2.9.0 =
+* New: Security hardening — prompt sanitization, webhook loop detection, kill switch, read-only mode, token masking, expanded option denylist.
+* New: OpenClaw Agent role with least-privilege capability picker.
+* New: Prompt sanitizer feature flag (default on) for instruction injection mitigation.
+* New: Approval workflow feature flag for destructive abilities.
+* New: Block-native Molt with faq_blocks output type.
+* Changed: SKILL.md v5.5.1 — marketing-forward rewrite, fixed metadata format (resolves registry mismatch), clarified credential architecture, MCP-only.
 
 = 2.8.0 =
 * New: Capability manifest on GET /abilities (post types, taxonomies, plugins, features).

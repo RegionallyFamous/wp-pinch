@@ -7,10 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.9.0] - 2026-02-15
+
 ### Added
 - **Security hardening (Tier 1)** — Prompt sanitization extended to governance findings and webhook payloads; recursive sanitization for titles, excerpts, taxonomy terms. Webhook loop detection prevents infinite post-update loops. Kill switch (`wp_pinch_api_disabled`) and read-only mode (`wp_pinch_read_only_mode`); constants `WP_PINCH_DISABLED` and `WP_PINCH_READ_ONLY` in wp-config. Emergency mu-plugin drop-in example. Token logging hygiene: `Utils::mask_token()` for safe debug output. Option denylist expanded: `siteurl`, `home`, `admin_email` now blocked from get/update-option abilities.
 - **Credential guidance** — Configuration and Security docs now recommend application passwords, secret reference pattern, and rotation. No full admin credentials.
-- **SKILL.md v5** — Ability count, groupings, and examples refreshed; 38+ core abilities; governance tasks (8); best practices and "what not to do" sections.
 - **OpenClaw role** — Dedicated `openclaw_agent` role with capability group picker. Create OpenClaw agent user; webhook execution uses designated user or first admin. Least-privilege by default.
 - **Prompt sanitizer** — Feature flag `prompt_sanitizer` (default on) mitigates instruction injection in content sent to LLMs. Applied to Molt, Ghost Writer, synthesize. Filters: `wp_pinch_prompt_sanitizer_patterns`, `wp_pinch_prompt_sanitizer_enabled`.
 - **Approval workflow** — Feature flag `approval_workflow` (default off). Destructive abilities (delete-post, toggle-plugin, switch-theme, etc.) queued for admin approval in WP Pinch → Approvals.
@@ -18,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - **Incoming webhook** — Execution user is OpenClaw agent (if set) or first administrator. Migration 2.6.0 ensures role exists on upgrade.
+- **SKILL.md v5.5.1** — Complete rewrite: marketing-forward tone with Quick Start, Highlights, and Built-in Protections. Fixed metadata format to single-line JSON per OpenClaw spec (resolves registry env var mismatch). Clarified credential architecture (auth secrets on MCP server, skill only needs WP_SITE_URL). MCP-only — removed all REST/curl fallback.
 
 ## [2.8.0] - 2026-02-11
 

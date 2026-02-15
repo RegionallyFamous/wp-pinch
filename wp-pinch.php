@@ -3,7 +3,7 @@
  * Plugin Name:       WP Pinch
  * Plugin URI:        https://wp-pinch.com
  * Description:       OpenClaw + WordPress integration — bidirectional MCP, autonomous governance, conversational site management from any messaging app.
- * Version:           2.8.0
+ * Version:           2.9.0
  * Requires at least: 6.9
  * Requires PHP:      8.1
  * Author:            Nick Hamze
@@ -41,7 +41,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-defined( 'WP_PINCH_VERSION' ) || define( 'WP_PINCH_VERSION', '2.8.0' );
+defined( 'WP_PINCH_VERSION' ) || define( 'WP_PINCH_VERSION', '2.9.0' );
 defined( 'WP_PINCH_FILE' ) || define( 'WP_PINCH_FILE', __FILE__ );
 defined( 'WP_PINCH_DIR' ) || define( 'WP_PINCH_DIR', plugin_dir_path( __FILE__ ) );
 defined( 'WP_PINCH_URL' ) || define( 'WP_PINCH_URL', plugin_dir_url( __FILE__ ) );
