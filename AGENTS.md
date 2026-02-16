@@ -65,7 +65,7 @@ Abilities are the core “tools” the AI uses. Each ability:
 2. Call `self::register( $name, $title, $description, $input_schema, $output_schema, $capability, [ __CLASS__, 'execute_my_ability' ], $readonly )`
 3. Implement `public static function execute_my_ability( array $input ): array`
 4. Add the ability name to the MCP server or `CORE_ABILITIES` if it should be on the default server
-5. Add a PHPUnit test in `tests/Test_Abilities.php`
+5. Add a PHPUnit test in `tests/test-abilities.php`
 
 **Conventions:**
 
@@ -184,7 +184,7 @@ Run `make setup-hooks` to install pre-commit checks.
 1. Read `includes/class-abilities.php` — find a similar ability and copy its pattern
 2. Add `register_my_ability()` and `execute_my_ability()`
 3. Call `register_my_ability()` from the `register_abilities()` action
-4. Add test in `tests/Test_Abilities.php`
+4. Add test in `tests/test-abilities.php`
 5. Update `wiki/Abilities-Reference.md` and bump ability count in tests if documented
 
 ### Add a REST endpoint

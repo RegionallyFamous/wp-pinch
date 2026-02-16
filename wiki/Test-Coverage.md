@@ -4,7 +4,7 @@ This document summarizes test coverage added to make the codebase more robust.
 
 ## New Test Files
 
-### `tests/Test_Prompt_Sanitizer.php`
+### `tests/test-prompt-sanitizer.php`
 
 Covers the **Prompt_Sanitizer** security component (previously untested):
 
@@ -17,7 +17,7 @@ Covers the **Prompt_Sanitizer** security component (previously untested):
 
 ## Updated Test Files
 
-### `tests/Test_Webhook_Dispatcher.php`
+### `tests/test-webhook-dispatcher.php`
 
 **Webhook loop detection:**
 
@@ -25,7 +25,7 @@ Covers the **Prompt_Sanitizer** security component (previously untested):
 - `test_should_skip_webhooks_reflects_flag` — flag getter/setter behavior
 - Tear down resets the skip flag to avoid cross-test pollution
 
-### `tests/Test_Rest_Controller.php`
+### `tests/test-rest-controller.php`
 
 Tests target the refactored REST handlers in `WP_Pinch\Rest\*`: **Auth** (permission/token checks), **Chat**, **Status**, **Incoming_Hook**, **Capture**, **Helpers** (e.g. `sanitize_gateway_reply`). Route registration is tested via `Rest_Controller::register_routes()`.
 
@@ -40,21 +40,21 @@ Tests target the refactored REST handlers in `WP_Pinch\Rest\*`: **Auth** (permis
 
 Tear down now cleans `wp_pinch_api_disabled` and `wp_pinch_read_only_mode`.
 
-### `tests/Test_Plugin.php`
+### `tests/test-plugin.php`
 
 **Plugin kill switch & read-only helpers:**
 
 - `test_is_api_disabled_option` / `test_is_api_disabled_false_when_not_set`
 - `test_is_read_only_mode_option` / `test_is_read_only_mode_false_when_not_set`
 
-### `tests/Test_Abilities.php`
+### `tests/test-abilities.php`
 
 **Option denylist:**
 
 - `test_get_option_denylist_home` — `home` is blocked
 - `test_update_option_denylist_siteurl` — `siteurl` cannot be updated via ability
 
-### `tests/Test_Utils.php`
+### `tests/test-utils.php`
 
 **Token masking edge cases:**
 

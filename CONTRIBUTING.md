@@ -88,7 +88,7 @@ Feature suggestions are welcome. To propose a new feature, [open a feature reque
 
    Open [http://localhost:8888](http://localhost:8888) in your browser. The default admin credentials are `admin` / `password`.
 
-6. **Multisite development (optional):** To test network settings and cross-site features, enable multisite in wp-env by adding `"config": { "WP_MULTISITE": true }` to `.wp-env.json` and re-running `npx wp-env start`. The network admin is at `http://localhost:8888/wp-admin/network/`. Network settings tests (`tests/Test_Network_Settings.php`) run only when multisite is active.
+6. **Multisite development (optional):** To test network settings and cross-site features, enable multisite in wp-env by adding `"config": { "WP_MULTISITE": true }` to `.wp-env.json` and re-running `npx wp-env start`. The network admin is at `http://localhost:8888/wp-admin/network/`. Network settings tests (`tests/test-network-settings.php`) run only when multisite is active.
 
 ## Quality System
 
@@ -167,7 +167,7 @@ If you don’t have `bin/install-wp-tests.sh`, get it from [wp-cli/scaffold](htt
 make test
 ```
 
-CI runs the full suite on every push; locally you can run a single file with `vendor/bin/phpunit tests/Test_Abilities.php`.
+CI runs the full suite on every push; locally you can run a single file with `vendor/bin/phpunit tests/test-abilities.php`.
 
 ### Test coverage
 
@@ -233,7 +233,7 @@ make wp-env-start
 
 Every bug fix must follow this process. No exceptions.
 
-1. **Write a failing test first.** Before touching any code, write a PHPUnit test in the appropriate `tests/Test_*.php` file that reproduces the bug. Run `make test` and confirm it fails.
+1. **Write a failing test first.** Before touching any code, write a PHPUnit test in the appropriate `tests/test-*.php` file that reproduces the bug. Run `make test` and confirm it fails.
 
 2. **Fix the code.** Make the smallest change that fixes the bug.
 
@@ -248,7 +248,7 @@ This ensures every bug becomes a permanent regression test. The test suite grows
 Say you find that `execute_list_comments()` returns the wrong total count:
 
 ```php
-// tests/Test_Abilities.php — add a test that fails:
+// tests/test-abilities.php — add a test that fails:
 public function test_list_comments_total_not_affected_by_pagination(): void {
     $post_id = $this->factory->post->create();
     $this->factory->comment->create_many( 5, array( 'comment_post_ID' => $post_id ) );

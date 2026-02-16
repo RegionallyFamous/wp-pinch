@@ -1,6 +1,6 @@
 {
   "core": "WordPress/WordPress#6.9",
-  "phpVersion": "8.1",
+  "phpVersion": "8.2",
   "plugins": [".", "https://downloads.wordpress.org/plugin/action-scheduler.latest-stable.zip"],
   "config": {
     "WP_DEBUG": true,

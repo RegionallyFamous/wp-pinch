@@ -2,8 +2,7 @@
 <phpunit bootstrap="tests/bootstrap.php" backupGlobals="false" colors="true">
   <testsuites>
     <testsuite name="WP Pinch">
-      <directory suffix=".php">./tests/</directory>
-      <exclude>./tests/bootstrap.php</exclude>
+      <directory prefix="test-" suffix=".php">./tests/</directory>
     </testsuite>
   </testsuites>
   <php>
@@ -12,15 +11,13 @@
     <ini name="error_reporting" value="22527"/>
   </php>
   <coverage>
+    <include>
+      <directory suffix=".php">./includes</directory>
+      <file>./wp-pinch.php</file>
+    </include>
     <report>
       <html outputDirectory="build/coverage"/>
       <text outputFile="php://stdout" showUncoveredFiles="false"/>
     </report>
   </coverage>
-  <source>
-    <include>
-      <directory suffix=".php">./includes</directory>
-      <file>./wp-pinch.php</file>
-    </include>
-  </source>
 </phpunit>
