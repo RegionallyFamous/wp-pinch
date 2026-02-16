@@ -2,7 +2,8 @@
 <phpunit bootstrap="tests/bootstrap.php" backupGlobals="false" colors="true">
   <testsuites>
     <testsuite name="WP Pinch">
-      <directory prefix="test-" suffix=".php">./tests/</directory>
+      <directory suffix=".php">./tests/</directory>
+      <exclude>./tests/bootstrap.php</exclude>
     </testsuite>
   </testsuites>
   <php>

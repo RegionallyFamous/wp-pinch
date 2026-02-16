@@ -48,7 +48,7 @@
 		<severity>0</severity>
 	</rule>
 
-	<!-- Test files are test-*.php not class-*.php -->
+	<!-- Test files are Test_*.php (class name = filename) -->
 	<rule ref="WordPress.Files.FileName.InvalidClassFileName">
 		<severity>0</severity>
 	</rule>
