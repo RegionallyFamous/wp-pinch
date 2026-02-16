@@ -61,7 +61,13 @@
 		<severity>0</severity>
 	</rule>
 
-	<!-- File name conventions: we use class-*.php which is correct -->
+	<!-- File name conventions: we use class-*.php in includes/; Ability/ and Settings/Tabs/ use PascalCase (namespace-based) -->
+	<rule ref="WordPress.Files.FileName.NotHyphenatedLowercase">
+		<severity>0</severity>
+	</rule>
+	<rule ref="WordPress.Files.FileName.InvalidClassFileName">
+		<severity>0</severity>
+	</rule>
 
 	<!-- Allow unused parameters required by WordPress hook/callback signatures -->
 	<rule ref="Generic.CodeAnalysis.UnusedFunctionParameter">

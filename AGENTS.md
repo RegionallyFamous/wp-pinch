@@ -36,7 +36,7 @@ WordPress (posts, taxonomies, options, etc.)
 | Purpose | File(s) | Notes |
 |---------|---------|-------|
 | **Abilities** (tools the AI can call) | `includes/class-abilities.php` | 38+ abilities; each has `execute_*` method and `register()` |
-| **REST API** | `includes/class-rest-controller.php` | Chat, status, molt, ghostwrite, pinchdrop, hook, MCP |
+| **REST API** | `includes/class-rest-controller.php` + `includes/Rest/` | Routes and security headers in class; handlers in `Rest\Auth`, `Rest\Chat`, `Rest\Status`, `Rest\Incoming_Hook`, `Rest\Capture`, Ghostwrite, Molt, etc. |
 | **Webhooks** (push events to OpenClaw) | `includes/class-webhook-dispatcher.php` | Configurable events, retry, rate limit, HMAC |
 | **Governance** (scheduled tasks) | `includes/class-governance.php` | Content freshness, SEO, comments, broken links, security, drafts, Tide Report |
 | **Feature flags** | `includes/class-feature-flags.php` | Toggle features without code changes |
@@ -113,6 +113,20 @@ See `wiki/Security.md` for full details.
 
 ---
 
+## Code style (hand-coded feel)
+
+We want the codebase to read like it was written by a human maintainer. That builds trust.
+
+- **Comments:** Prefer "why" over "what". Add comments for non-obvious reasons (security, past bugs, constraints). Omit comments that only restate the method name or the next line. Keep docblocks lean; terse is fine. Private helpers can have no docblock if the code is clear.
+- **Structure:** Allow some inconsistency between modules. Don't over-normalize when refactoring — not every class needs the same template. Some duplication for clarity is fine. Avoid the "perfect grid" where every class looks identical.
+- **User-facing strings:** Specific over generic ("Gateway URL failed security validation" not "An error occurred"). Keep the existing voice ("Snatched!", "Claws at the ready!") where we have it.
+- **Docs/CHANGELOG:** First person, concrete. Changelog entries and commit messages should sound human; prefer concrete over generic.
+- **Don't:** Add docblocks to every method; make every class the same structure; use templated, formal prose everywhere.
+
+See `.cursorrules` for the full guideline.
+
+---
+
 ## Quality System
 
 Before proposing changes, ensure:
@@ -175,10 +189,10 @@ Run `make setup-hooks` to install pre-commit checks.
 
 ### Add a REST endpoint
 
-1. In `class-rest-controller.php`, add `register_rest_route()` in `register_routes()`
-2. Define `args` with `sanitize_callback` and `validate_callback`
-3. Implement handler method; use `check_permission()` or a custom permission callback
-4. Add schema via `get_*_schema()` for discoverability
+1. In `class-rest-controller.php`, add `register_rest_route()` in `register_routes()` and wire the callback to the appropriate handler in `includes/Rest/` (e.g. `Rest\Chat::class`, `Rest\Status::class`).
+2. In the handler class under `includes/Rest/`, implement the static handler method; define `args` with `sanitize_callback` and `validate_callback` in the route registration.
+3. Use `Rest\Auth::check_permission()` or a custom permission callback (e.g. `check_hook_token`, `check_capture_token`).
+4. Add schema via `Rest\Schemas::get_*_schema()` for discoverability.
 
 ### Add a governance task
 

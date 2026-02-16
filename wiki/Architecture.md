@@ -126,9 +126,25 @@ Configurable failure threshold and recovery timeout. Admin notice when the circu
 
 Toggle via the admin UI (WP Pinch > Features) or override with a filter. Your reef, your rules.
 
-### REST Controller (`class-rest-controller.php`)
+### REST API (`includes/class-rest-controller.php` + `includes/Rest/`)
 
-All REST API endpoints:
+Route registration, security headers, and rate-limit headers live in **`class-rest-controller.php`**. Request handling is implemented in the **`includes/Rest/`** namespace:
+
+| Class | Responsibility |
+|-------|----------------|
+| `Rest\Auth` | Permission and token checks (`check_permission`, `check_hook_token`, `check_capture_token`) |
+| `Rest\Chat` | Chat, public chat, session reset, chat stream |
+| `Rest\Status` | Status, abilities list, health |
+| `Rest\Incoming_Hook` | Incoming webhook (execute_ability, execute_batch, run_governance, ping) |
+| `Rest\Capture` | PinchDrop and Web Clipper capture |
+| `Rest\Ghostwrite` | Ghost Writer endpoint |
+| `Rest\Molt` | Molt repackage endpoint |
+| `Rest\Preview_Approve` | Draft-first preview approve |
+| `Rest\Schemas` | REST response schemas |
+| `Rest\Helpers` | Rate limiting, sanitization, shared utilities |
+| `Rest\Write_Budget` | Daily write budget (429 when exceeded) |
+
+Endpoints:
 
 | Endpoint | Method | Auth | Purpose |
 |---|---|---|---|

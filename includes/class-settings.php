@@ -18,19 +18,14 @@ defined( 'ABSPATH' ) || exit;
 class Settings {
 
 	/**
-	 * Prefix for encrypted API token in wp_options (encrypted at rest).
-	 */
-	private const TOKEN_ENC_PREFIX = 'wp_pinch_enc_v1:';
-
-	/**
 	 * Wire hooks.
 	 */
 	public static function init(): void {
 		add_action( 'admin_menu', array( __CLASS__, 'add_menu' ) );
 		add_action( 'admin_init', array( __CLASS__, 'register_settings' ) );
 		add_action( 'admin_init', array( __CLASS__, 'maybe_activation_redirect' ) );
-		add_action( 'admin_init', array( __CLASS__, 'maybe_finish_wizard' ) );
-		add_action( 'admin_init', array( __CLASS__, 'maybe_skip_wizard' ) );
+		add_action( 'admin_init', array( \WP_Pinch\Settings\Wizard::class, 'maybe_finish_wizard' ) );
+		add_action( 'admin_init', array( \WP_Pinch\Settings\Wizard::class, 'maybe_skip_wizard' ) );
 		add_action( 'wp_ajax_wp_pinch_test_connection', array( __CLASS__, 'ajax_test_connection' ) );
 		add_action( 'wp_ajax_wp_pinch_create_openclaw_agent', array( __CLASS__, 'ajax_create_openclaw_agent' ) );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_assets' ) );
@@ -52,8 +47,8 @@ class Settings {
 		if ( '' === $raw ) {
 			return '';
 		}
-		if ( str_starts_with( $raw, self::TOKEN_ENC_PREFIX ) ) {
-			$decrypted = self::decrypt_token( $raw );
+		if ( str_starts_with( $raw, \WP_Pinch\Settings\Token_Storage::PREFIX ) ) {
+			$decrypted = \WP_Pinch\Settings\Token_Storage::decrypt_token( $raw );
 			return is_string( $decrypted ) ? $decrypted : '';
 		}
 		// Legacy plaintext: migrate to encrypted and return plaintext.
@@ -71,7 +66,7 @@ class Settings {
 		if ( '' === $token ) {
 			return update_option( 'wp_pinch_api_token', '' );
 		}
-		$encrypted = self::encrypt_token( $token );
+		$encrypted = \WP_Pinch\Settings\Token_Storage::encrypt_token( $token );
 		return null !== $encrypted && update_option( 'wp_pinch_api_token', $encrypted );
 	}
 
@@ -88,8 +83,8 @@ class Settings {
 		if ( '' === $raw ) {
 			return '';
 		}
-		if ( str_starts_with( $raw, self::TOKEN_ENC_PREFIX ) ) {
-			$decrypted = self::decrypt_token( $raw );
+		if ( str_starts_with( $raw, \WP_Pinch\Settings\Token_Storage::PREFIX ) ) {
+			$decrypted = \WP_Pinch\Settings\Token_Storage::decrypt_token( $raw );
 			return is_string( $decrypted ) ? $decrypted : '';
 		}
 		// Legacy plaintext: migrate to encrypted and return plaintext.
@@ -110,59 +105,8 @@ class Settings {
 		if ( '' === $token ) {
 			return update_site_option( 'wp_pinch_network_api_token', '' );
 		}
-		$encrypted = self::encrypt_token( $token );
+		$encrypted = \WP_Pinch\Settings\Token_Storage::encrypt_token( $token );
 		return null !== $encrypted && update_site_option( 'wp_pinch_network_api_token', $encrypted );
-	}
-
-	/**
-	 * Derive a 32-byte key from WordPress auth salts for token encryption.
-	 *
-	 * @return string
-	 */
-	private static function get_encryption_key(): string {
-		$key  = defined( 'AUTH_KEY' ) ? AUTH_KEY : '';
-		$salt = defined( 'AUTH_SALT' ) ? AUTH_SALT : '';
-		return hash( 'sha256', $key . $salt, true );
-	}
-
-	/**
-	 * Encrypt the API token for storage.
-	 *
-	 * @param string $token Plaintext token.
-	 * @return string|null Encrypted blob with prefix, or null on failure.
-	 */
-	private static function encrypt_token( string $token ): ?string {
-		if ( ! function_exists( 'sodium_crypto_secretbox' ) ) {
-			return null;
-		}
-		$key        = self::get_encryption_key();
-		$nonce      = random_bytes( SODIUM_CRYPTO_SECRETBOX_NONCEBYTES );
-		$ciphertext = sodium_crypto_secretbox( $token, $nonce, $key );
-		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- Used for token encryption storage.
-		return self::TOKEN_ENC_PREFIX . base64_encode( $nonce . $ciphertext );
-	}
-
-	/**
-	 * Decrypt the API token from storage.
-	 *
-	 * @param string $stored Value from wp_options (must start with TOKEN_ENC_PREFIX).
-	 * @return string|null Plaintext token or null on failure.
-	 */
-	private static function decrypt_token( string $stored ): ?string {
-		if ( ! function_exists( 'sodium_crypto_secretbox_open' ) ) {
-			return null;
-		}
-		$payload = substr( $stored, strlen( self::TOKEN_ENC_PREFIX ) );
-		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode -- Used for token decryption.
-		$decoded = base64_decode( $payload, true );
-		if ( false === $decoded || strlen( $decoded ) < SODIUM_CRYPTO_SECRETBOX_NONCEBYTES ) {
-			return null;
-		}
-		$nonce      = substr( $decoded, 0, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES );
-		$ciphertext = substr( $decoded, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES );
-		$key        = self::get_encryption_key();
-		$plain      = sodium_crypto_secretbox_open( $ciphertext, $nonce, $key );
-		return false !== $plain ? $plain : null;
 	}
 
 	/**
@@ -176,45 +120,6 @@ class Settings {
 			return;
 		}
 		delete_option( 'wp_pinch_activation_redirect' );
-		wp_safe_redirect( admin_url( 'admin.php?page=wp-pinch' ) );
-		exit;
-	}
-
-	/**
-	 * Handle "Finish wizard" link: set wizard completed and redirect to settings.
-	 */
-	public static function maybe_finish_wizard(): void {
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		if ( ! isset( $_GET['wp_pinch_finish_wizard'] ) || '1' !== $_GET['wp_pinch_finish_wizard'] ) {
-			return;
-		}
-		if ( ! current_user_can( 'manage_options' ) ) {
-			return;
-		}
-		if ( ! wp_verify_nonce( sanitize_key( $_GET['_wpnonce'] ?? '' ), 'wp_pinch_finish_wizard' ) ) {
-			return;
-		}
-		update_option( 'wp_pinch_wizard_completed', true );
-		wp_safe_redirect( admin_url( 'admin.php?page=wp-pinch' ) );
-		exit;
-	}
-
-	/**
-	 * Handle "Skip setup" link: set wizard completed and redirect to settings.
-	 */
-	public static function maybe_skip_wizard(): void {
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		if ( ! isset( $_GET['wp_pinch_skip_wizard'] ) || '1' !== $_GET['wp_pinch_skip_wizard'] ) {
-			return;
-		}
-		if ( ! current_user_can( 'manage_options' ) ) {
-			return;
-		}
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		if ( ! wp_verify_nonce( sanitize_key( $_GET['_wpnonce'] ?? '' ), 'wp_pinch_skip_wizard' ) ) {
-			return;
-		}
-		update_option( 'wp_pinch_wizard_completed', true );
 		wp_safe_redirect( admin_url( 'admin.php?page=wp-pinch' ) );
 		exit;
 	}
@@ -253,31 +158,31 @@ class Settings {
 	}
 
 	/**
-	 * Register settings.
+	 * Option definitions for data-driven registration.
 	 *
-	 * Each tab has its own settings group so that saving one tab
-	 * does not overwrite options managed by a different tab.
+	 * Each entry: group, option, type, default, sanitize (string callback name or callable).
+	 *
+	 * @return array<int, array{group: string, option: string, type: string, default: mixed, sanitize?: string|callable}>
 	 */
-	public static function register_settings(): void {
-		// Connection tab settings.
-		register_setting(
-			'wp_pinch_connection',
-			'wp_pinch_gateway_url',
-			array(
-				'type'              => 'string',
-				'sanitize_callback' => 'esc_url_raw',
-				'default'           => '',
-				'show_in_rest'      => false,
-			)
-		);
+	private static function get_option_definitions(): array {
+		$thinking_allowed  = array( '', 'off', 'low', 'medium', 'high' );
+		$pinchdrop_outputs = array( 'post', 'product_update', 'changelog', 'social' );
 
-		register_setting(
-			'wp_pinch_connection',
-			'wp_pinch_api_token',
+		return array(
+			// Connection tab.
 			array(
-				'type'              => 'string',
-				'sanitize_callback' => function ( $value ) {
-					// If the placeholder mask is submitted, keep the existing token.
+				'group'    => 'wp_pinch_connection',
+				'option'   => 'wp_pinch_gateway_url',
+				'type'     => 'string',
+				'default'  => '',
+				'sanitize' => 'esc_url_raw',
+			),
+			array(
+				'group'    => 'wp_pinch_connection',
+				'option'   => 'wp_pinch_api_token',
+				'type'     => 'string',
+				'default'  => '',
+				'sanitize' => function ( $value ) {
 					if ( str_repeat( "\u{2022}", 8 ) === $value || '' === $value ) {
 						return self::get_api_token();
 					}
@@ -285,390 +190,263 @@ class Settings {
 					if ( '' === $plain ) {
 						return '';
 					}
-					$encrypted = self::encrypt_token( $plain );
+					$encrypted = \WP_Pinch\Settings\Token_Storage::encrypt_token( $plain );
 					return null !== $encrypted ? $encrypted : $plain;
 				},
-				'default'           => '',
-				'show_in_rest'      => false,
-			)
-		);
-
-		register_setting(
-			'wp_pinch_connection',
-			'wp_pinch_api_disabled',
+			),
 			array(
-				'type'              => 'boolean',
-				'sanitize_callback' => 'rest_sanitize_boolean',
-				'default'           => false,
-				'show_in_rest'      => false,
-			)
-		);
-
-		register_setting(
-			'wp_pinch_connection',
-			'wp_pinch_read_only_mode',
+				'group'    => 'wp_pinch_connection',
+				'option'   => 'wp_pinch_api_disabled',
+				'type'     => 'boolean',
+				'default'  => false,
+				'sanitize' => 'rest_sanitize_boolean',
+			),
 			array(
-				'type'              => 'boolean',
-				'sanitize_callback' => 'rest_sanitize_boolean',
-				'default'           => false,
-				'show_in_rest'      => false,
-			)
-		);
-
-		register_setting(
-			'wp_pinch_connection',
-			'wp_pinch_gateway_reply_strict_sanitize',
+				'group'    => 'wp_pinch_connection',
+				'option'   => 'wp_pinch_read_only_mode',
+				'type'     => 'boolean',
+				'default'  => false,
+				'sanitize' => 'rest_sanitize_boolean',
+			),
 			array(
-				'type'              => 'boolean',
-				'sanitize_callback' => 'rest_sanitize_boolean',
-				'default'           => false,
-				'show_in_rest'      => false,
-			)
-		);
-
-		register_setting(
-			'wp_pinch_connection',
-			'wp_pinch_rate_limit',
+				'group'    => 'wp_pinch_connection',
+				'option'   => 'wp_pinch_gateway_reply_strict_sanitize',
+				'type'     => 'boolean',
+				'default'  => false,
+				'sanitize' => 'rest_sanitize_boolean',
+			),
 			array(
-				'type'              => 'integer',
-				'sanitize_callback' => 'absint',
-				'default'           => 30,
-				'show_in_rest'      => false,
-			)
-		);
-
-		register_setting(
-			'wp_pinch_connection',
-			'wp_pinch_daily_write_cap',
+				'group'    => 'wp_pinch_connection',
+				'option'   => 'wp_pinch_rate_limit',
+				'type'     => 'integer',
+				'default'  => 30,
+				'sanitize' => 'absint',
+			),
 			array(
-				'type'              => 'integer',
-				'sanitize_callback' => 'absint',
-				'default'           => 0,
-				'show_in_rest'      => false,
-			)
-		);
-
-		register_setting(
-			'wp_pinch_connection',
-			'wp_pinch_daily_write_alert_email',
+				'group'    => 'wp_pinch_connection',
+				'option'   => 'wp_pinch_daily_write_cap',
+				'type'     => 'integer',
+				'default'  => 0,
+				'sanitize' => 'absint',
+			),
 			array(
-				'type'              => 'string',
-				'sanitize_callback' => 'sanitize_email',
-				'default'           => '',
-				'show_in_rest'      => false,
-			)
-		);
-
-		register_setting(
-			'wp_pinch_connection',
-			'wp_pinch_daily_write_alert_threshold',
+				'group'    => 'wp_pinch_connection',
+				'option'   => 'wp_pinch_daily_write_alert_email',
+				'type'     => 'string',
+				'default'  => '',
+				'sanitize' => 'sanitize_email',
+			),
 			array(
-				'type'              => 'integer',
-				'sanitize_callback' => function ( $v ) {
+				'group'    => 'wp_pinch_connection',
+				'option'   => 'wp_pinch_daily_write_alert_threshold',
+				'type'     => 'integer',
+				'default'  => 80,
+				'sanitize' => function ( $v ) {
 					$v = absint( $v );
 					return $v >= 1 && $v <= 100 ? $v : 80;
 				},
-				'default'           => 80,
-				'show_in_rest'      => false,
-			)
-		);
-
-		register_setting(
-			'wp_pinch_connection',
-			'wp_pinch_agent_id',
+			),
 			array(
-				'type'              => 'string',
-				'sanitize_callback' => 'sanitize_text_field',
-				'default'           => '',
-				'show_in_rest'      => false,
-			)
-		);
-
-		register_setting(
-			'wp_pinch_connection',
-			'wp_pinch_openclaw_user_id',
+				'group'    => 'wp_pinch_connection',
+				'option'   => 'wp_pinch_agent_id',
+				'type'     => 'string',
+				'default'  => '',
+				'sanitize' => 'sanitize_text_field',
+			),
 			array(
-				'type'              => 'integer',
-				'sanitize_callback' => 'absint',
-				'default'           => 0,
-				'show_in_rest'      => false,
-			)
-		);
-
-		register_setting(
-			'wp_pinch_connection',
-			'wp_pinch_openclaw_capability_groups',
+				'group'    => 'wp_pinch_connection',
+				'option'   => 'wp_pinch_openclaw_user_id',
+				'type'     => 'integer',
+				'default'  => 0,
+				'sanitize' => 'absint',
+			),
 			array(
-				'type'              => 'array',
-				'sanitize_callback' => function ( $value ) {
+				'group'    => 'wp_pinch_connection',
+				'option'   => 'wp_pinch_openclaw_capability_groups',
+				'type'     => 'array',
+				'default'  => OpenClaw_Role::DEFAULT_GROUPS,
+				'sanitize' => function ( $value ) {
 					if ( ! is_array( $value ) ) {
 						return OpenClaw_Role::DEFAULT_GROUPS;
 					}
-					$allowed = OpenClaw_Role::get_capability_group_slugs();
+					$allowed  = OpenClaw_Role::get_capability_group_slugs();
 					$filtered = array_values( array_intersect( $value, $allowed ) );
 					return empty( $filtered ) ? OpenClaw_Role::DEFAULT_GROUPS : $filtered;
 				},
-				'default'           => OpenClaw_Role::DEFAULT_GROUPS,
-				'show_in_rest'      => false,
-			)
-		);
-
-		register_setting(
-			'wp_pinch_connection',
-			'wp_pinch_webhook_deliver',
+			),
 			array(
-				'type'              => 'boolean',
-				'sanitize_callback' => 'rest_sanitize_boolean',
-				'default'           => true,
-				'show_in_rest'      => false,
-			)
-		);
-
-		register_setting(
-			'wp_pinch_connection',
-			'wp_pinch_webhook_channel',
+				'group'    => 'wp_pinch_connection',
+				'option'   => 'wp_pinch_webhook_deliver',
+				'type'     => 'boolean',
+				'default'  => true,
+				'sanitize' => 'rest_sanitize_boolean',
+			),
 			array(
-				'type'              => 'string',
-				'sanitize_callback' => 'sanitize_key',
-				'default'           => '',
-				'show_in_rest'      => false,
-			)
-		);
-
-		register_setting(
-			'wp_pinch_connection',
-			'wp_pinch_webhook_to',
+				'group'    => 'wp_pinch_connection',
+				'option'   => 'wp_pinch_webhook_channel',
+				'type'     => 'string',
+				'default'  => '',
+				'sanitize' => 'sanitize_key',
+			),
 			array(
-				'type'              => 'string',
-				'sanitize_callback' => 'sanitize_text_field',
-				'default'           => '',
-				'show_in_rest'      => false,
-			)
-		);
-
-		register_setting(
-			'wp_pinch_connection',
-			'wp_pinch_webhook_model',
+				'group'    => 'wp_pinch_connection',
+				'option'   => 'wp_pinch_webhook_to',
+				'type'     => 'string',
+				'default'  => '',
+				'sanitize' => 'sanitize_text_field',
+			),
 			array(
-				'type'              => 'string',
-				'sanitize_callback' => 'sanitize_text_field',
-				'default'           => '',
-				'show_in_rest'      => false,
-			)
-		);
-
-		register_setting(
-			'wp_pinch_connection',
-			'wp_pinch_webhook_thinking',
+				'group'    => 'wp_pinch_connection',
+				'option'   => 'wp_pinch_webhook_model',
+				'type'     => 'string',
+				'default'  => '',
+				'sanitize' => 'sanitize_text_field',
+			),
 			array(
-				'type'              => 'string',
-				'sanitize_callback' => function ( $value ) {
-					$allowed = array( '', 'off', 'low', 'medium', 'high' );
-					return in_array( $value, $allowed, true ) ? $value : '';
+				'group'    => 'wp_pinch_connection',
+				'option'   => 'wp_pinch_webhook_thinking',
+				'type'     => 'string',
+				'default'  => '',
+				'sanitize' => function ( $value ) use ( $thinking_allowed ) {
+					return in_array( $value, $thinking_allowed, true ) ? $value : '';
 				},
-				'default'           => '',
-				'show_in_rest'      => false,
-			)
-		);
-
-		register_setting(
-			'wp_pinch_connection',
-			'wp_pinch_webhook_timeout',
+			),
 			array(
-				'type'              => 'integer',
-				'sanitize_callback' => 'absint',
-				'default'           => 0,
-				'show_in_rest'      => false,
-			)
-		);
-
-		register_setting(
-			'wp_pinch_connection',
-			'wp_pinch_chat_model',
+				'group'    => 'wp_pinch_connection',
+				'option'   => 'wp_pinch_webhook_timeout',
+				'type'     => 'integer',
+				'default'  => 0,
+				'sanitize' => 'absint',
+			),
 			array(
-				'type'              => 'string',
-				'sanitize_callback' => 'sanitize_text_field',
-				'default'           => '',
-				'show_in_rest'      => false,
-			)
-		);
-
-		register_setting(
-			'wp_pinch_connection',
-			'wp_pinch_chat_thinking',
+				'group'    => 'wp_pinch_connection',
+				'option'   => 'wp_pinch_chat_model',
+				'type'     => 'string',
+				'default'  => '',
+				'sanitize' => 'sanitize_text_field',
+			),
 			array(
-				'type'              => 'string',
-				'sanitize_callback' => function ( $value ) {
-					$allowed = array( '', 'off', 'low', 'medium', 'high' );
-					return in_array( $value, $allowed, true ) ? $value : '';
+				'group'    => 'wp_pinch_connection',
+				'option'   => 'wp_pinch_chat_thinking',
+				'type'     => 'string',
+				'default'  => '',
+				'sanitize' => function ( $value ) use ( $thinking_allowed ) {
+					return in_array( $value, $thinking_allowed, true ) ? $value : '';
 				},
-				'default'           => '',
-				'show_in_rest'      => false,
-			)
-		);
-
-		register_setting(
-			'wp_pinch_connection',
-			'wp_pinch_chat_timeout',
+			),
 			array(
-				'type'              => 'integer',
-				'sanitize_callback' => 'absint',
-				'default'           => 0,
-				'show_in_rest'      => false,
-			)
-		);
-
-		register_setting(
-			'wp_pinch_connection',
-			'wp_pinch_chat_placeholder',
+				'group'    => 'wp_pinch_connection',
+				'option'   => 'wp_pinch_chat_timeout',
+				'type'     => 'integer',
+				'default'  => 0,
+				'sanitize' => 'absint',
+			),
 			array(
-				'type'              => 'string',
-				'sanitize_callback' => 'sanitize_text_field',
-				'default'           => '',
-				'show_in_rest'      => false,
-			)
-		);
-
-		register_setting(
-			'wp_pinch_connection',
-			'wp_pinch_session_idle_minutes',
+				'group'    => 'wp_pinch_connection',
+				'option'   => 'wp_pinch_chat_placeholder',
+				'type'     => 'string',
+				'default'  => '',
+				'sanitize' => 'sanitize_text_field',
+			),
 			array(
-				'type'              => 'integer',
-				'sanitize_callback' => 'absint',
-				'default'           => 0,
-				'show_in_rest'      => false,
-			)
-		);
-
-		register_setting(
-			'wp_pinch_connection',
-			'wp_pinch_public_chat_rate_limit',
+				'group'    => 'wp_pinch_connection',
+				'option'   => 'wp_pinch_session_idle_minutes',
+				'type'     => 'integer',
+				'default'  => 0,
+				'sanitize' => 'absint',
+			),
 			array(
-				'type'              => 'integer',
-				'sanitize_callback' => function ( $v ) {
+				'group'    => 'wp_pinch_connection',
+				'option'   => 'wp_pinch_public_chat_rate_limit',
+				'type'     => 'integer',
+				'default'  => 3,
+				'sanitize' => function ( $v ) {
 					return max( 1, min( 60, absint( $v ) ) );
 				},
-				'default'           => 3,
-				'show_in_rest'      => false,
-			)
-		);
-
-		register_setting(
-			'wp_pinch_connection',
-			'wp_pinch_sse_max_connections_per_ip',
+			),
 			array(
-				'type'              => 'integer',
-				'sanitize_callback' => function ( $v ) {
+				'group'    => 'wp_pinch_connection',
+				'option'   => 'wp_pinch_sse_max_connections_per_ip',
+				'type'     => 'integer',
+				'default'  => 5,
+				'sanitize' => function ( $v ) {
 					$v = absint( $v );
 					return $v <= 0 ? 0 : max( 1, min( 20, $v ) );
 				},
-				'default'           => 5,
-				'show_in_rest'      => false,
-			)
-		);
-
-		register_setting(
-			'wp_pinch_connection',
-			'wp_pinch_chat_max_response_length',
+			),
 			array(
-				'type'              => 'integer',
-				'sanitize_callback' => function ( $v ) {
+				'group'    => 'wp_pinch_connection',
+				'option'   => 'wp_pinch_chat_max_response_length',
+				'type'     => 'integer',
+				'default'  => 200000,
+				'sanitize' => function ( $v ) {
 					$v = absint( $v );
 					return $v < 0 ? 0 : min( 2000000, $v );
 				},
-				'default'           => 200000,
-				'show_in_rest'      => false,
-			)
-		);
-
-		register_setting(
-			'wp_pinch_connection',
-			'wp_pinch_ability_cache_ttl',
+			),
 			array(
-				'type'              => 'integer',
-				'sanitize_callback' => function ( $v ) {
+				'group'    => 'wp_pinch_connection',
+				'option'   => 'wp_pinch_ability_cache_ttl',
+				'type'     => 'integer',
+				'default'  => 300,
+				'sanitize' => function ( $v ) {
 					$v = absint( $v );
 					return $v < 0 ? 0 : min( 86400, $v );
 				},
-				'default'           => 300,
-				'show_in_rest'      => false,
-			)
-		);
-
-		register_setting(
-			'wp_pinch_connection',
-			'wp_pinch_pinchdrop_enabled',
+			),
 			array(
-				'type'              => 'boolean',
-				'sanitize_callback' => 'rest_sanitize_boolean',
-				'default'           => false,
-				'show_in_rest'      => false,
-			)
-		);
-
-		register_setting(
-			'wp_pinch_connection',
-			'wp_pinch_pinchdrop_default_outputs',
+				'group'    => 'wp_pinch_connection',
+				'option'   => 'wp_pinch_pinchdrop_enabled',
+				'type'     => 'boolean',
+				'default'  => false,
+				'sanitize' => 'rest_sanitize_boolean',
+			),
 			array(
-				'type'              => 'array',
-				'sanitize_callback' => function ( $value ) {
-					$allowed = array( 'post', 'product_update', 'changelog', 'social' );
+				'group'    => 'wp_pinch_connection',
+				'option'   => 'wp_pinch_pinchdrop_default_outputs',
+				'type'     => 'array',
+				'default'  => $pinchdrop_outputs,
+				'sanitize' => function ( $value ) use ( $pinchdrop_outputs ) {
 					if ( ! is_array( $value ) ) {
-						return array( 'post', 'product_update', 'changelog', 'social' );
+						return $pinchdrop_outputs;
 					}
-					$value = array_values( array_intersect( $allowed, array_map( 'sanitize_key', $value ) ) );
-					return empty( $value ) ? array( 'post', 'product_update', 'changelog', 'social' ) : $value;
+					$value = array_values( array_intersect( $pinchdrop_outputs, array_map( 'sanitize_key', $value ) ) );
+					return empty( $value ) ? $pinchdrop_outputs : $value;
 				},
-				'default'           => array( 'post', 'product_update', 'changelog', 'social' ),
-				'show_in_rest'      => false,
-			)
-		);
-
-		register_setting(
-			'wp_pinch_connection',
-			'wp_pinch_pinchdrop_auto_save_drafts',
+			),
 			array(
-				'type'              => 'boolean',
-				'sanitize_callback' => 'rest_sanitize_boolean',
-				'default'           => true,
-				'show_in_rest'      => false,
-			)
-		);
-
-		register_setting(
-			'wp_pinch_connection',
-			'wp_pinch_pinchdrop_allowed_sources',
+				'group'    => 'wp_pinch_connection',
+				'option'   => 'wp_pinch_pinchdrop_auto_save_drafts',
+				'type'     => 'boolean',
+				'default'  => true,
+				'sanitize' => 'rest_sanitize_boolean',
+			),
 			array(
-				'type'              => 'string',
-				'sanitize_callback' => function ( $value ) {
+				'group'    => 'wp_pinch_connection',
+				'option'   => 'wp_pinch_pinchdrop_allowed_sources',
+				'type'     => 'string',
+				'default'  => '',
+				'sanitize' => function ( $value ) {
 					$parts = array_filter( array_map( 'sanitize_key', array_map( 'trim', explode( ',', (string) $value ) ) ) );
 					return implode( ',', $parts );
 				},
-				'default'           => '',
-				'show_in_rest'      => false,
-			)
-		);
-
-		// Webhooks tab settings.
-		register_setting(
-			'wp_pinch_webhooks',
-			'wp_pinch_webhook_events',
+			),
+			// Webhooks tab.
 			array(
-				'type'              => 'array',
-				'sanitize_callback' => function ( $value ) {
+				'group'    => 'wp_pinch_webhooks',
+				'option'   => 'wp_pinch_webhook_events',
+				'type'     => 'array',
+				'default'  => array(),
+				'sanitize' => function ( $value ) {
 					return is_array( $value ) ? array_map( 'sanitize_key', $value ) : array();
 				},
-				'default'           => array(),
-				'show_in_rest'      => false,
-			)
-		);
-
-		register_setting(
-			'wp_pinch_webhooks',
-			'wp_pinch_webhook_wake_modes',
+			),
 			array(
-				'type'              => 'array',
-				'sanitize_callback' => function ( $value ) {
+				'group'    => 'wp_pinch_webhooks',
+				'option'   => 'wp_pinch_webhook_wake_modes',
+				'type'     => 'array',
+				'default'  => array(),
+				'sanitize' => function ( $value ) {
 					if ( ! is_array( $value ) ) {
 						return array();
 					}
@@ -680,17 +458,13 @@ class Settings {
 						$value
 					);
 				},
-				'default'           => array(),
-				'show_in_rest'      => false,
-			)
-		);
-
-		register_setting(
-			'wp_pinch_webhooks',
-			'wp_pinch_webhook_endpoint_types',
+			),
 			array(
-				'type'              => 'array',
-				'sanitize_callback' => function ( $value ) {
+				'group'    => 'wp_pinch_webhooks',
+				'option'   => 'wp_pinch_webhook_endpoint_types',
+				'type'     => 'array',
+				'default'  => array(),
+				'sanitize' => function ( $value ) {
 					if ( ! is_array( $value ) ) {
 						return array();
 					}
@@ -702,59 +476,48 @@ class Settings {
 						$value
 					);
 				},
-				'default'           => array(),
-				'show_in_rest'      => false,
-			)
-		);
-
-		// Governance tab settings.
-		register_setting(
-			'wp_pinch_governance',
-			'wp_pinch_governance_tasks',
+			),
+			// Governance tab.
 			array(
-				'type'              => 'array',
-				'sanitize_callback' => function ( $value ) {
+				'group'    => 'wp_pinch_governance',
+				'option'   => 'wp_pinch_governance_tasks',
+				'type'     => 'array',
+				'default'  => array(),
+				'sanitize' => function ( $value ) {
 					return is_array( $value ) ? array_map( 'sanitize_key', $value ) : array();
 				},
-				'default'           => array(),
-				'show_in_rest'      => false,
-			)
-		);
-
-		register_setting(
-			'wp_pinch_governance',
-			'wp_pinch_governance_mode',
+			),
 			array(
-				'type'              => 'string',
-				'sanitize_callback' => 'sanitize_key',
-				'default'           => 'webhook',
-				'show_in_rest'      => false,
-			)
-		);
-
-		// Abilities tab settings.
-		register_setting(
-			'wp_pinch_abilities',
-			'wp_pinch_disabled_abilities',
+				'group'    => 'wp_pinch_governance',
+				'option'   => 'wp_pinch_governance_mode',
+				'type'     => 'string',
+				'default'  => 'webhook',
+				'sanitize' => 'sanitize_key',
+			),
 			array(
-				'type'              => 'array',
-				'sanitize_callback' => function ( $value ) {
+				'group'    => 'wp_pinch_governance',
+				'option'   => 'wp_pinch_ghost_writer_threshold',
+				'type'     => 'integer',
+				'default'  => 30,
+				'sanitize' => 'absint',
+			),
+			// Abilities tab.
+			array(
+				'group'    => 'wp_pinch_abilities',
+				'option'   => 'wp_pinch_disabled_abilities',
+				'type'     => 'array',
+				'default'  => array(),
+				'sanitize' => function ( $value ) {
 					return is_array( $value ) ? array_map( 'sanitize_text_field', $value ) : array();
 				},
-				'default'           => array(),
-				'show_in_rest'      => false,
-			)
-		);
-
-		// Feature flags settings.
-		register_setting(
-			'wp_pinch_features',
-			'wp_pinch_feature_flags',
+			),
+			// Feature flags.
 			array(
-				'type'              => 'object',
-				'sanitize_callback' => function ( $value ) {
-					// When no checkboxes are checked, $value may be null or empty.
-					// Build the explicit map from DEFAULTS keys: checked = true, unchecked = false.
+				'group'    => 'wp_pinch_features',
+				'option'   => 'wp_pinch_feature_flags',
+				'type'     => 'object',
+				'default'  => Feature_Flags::DEFAULTS,
+				'sanitize' => function ( $value ) {
 					if ( ! is_array( $value ) ) {
 						$value = array();
 					}
@@ -764,52 +527,49 @@ class Settings {
 					}
 					return $sanitized;
 				},
-				'default'           => Feature_Flags::DEFAULTS,
-				'show_in_rest'      => false,
-			)
-		);
-
-		// Ghost Writer settings.
-		register_setting(
-			'wp_pinch_governance',
-			'wp_pinch_ghost_writer_threshold',
+			),
+			// Wizard + Web Clipper.
 			array(
-				'type'              => 'integer',
-				'sanitize_callback' => 'absint',
-				'default'           => 30,
-				'show_in_rest'      => false,
-			)
-		);
-
-		register_setting(
-			'wp_pinch_connection',
-			'wp_pinch_wizard_completed',
+				'group'    => 'wp_pinch_connection',
+				'option'   => 'wp_pinch_wizard_completed',
+				'type'     => 'boolean',
+				'default'  => false,
+				'sanitize' => 'rest_sanitize_boolean',
+			),
 			array(
-				'type'              => 'boolean',
-				'sanitize_callback' => 'rest_sanitize_boolean',
-				'default'           => false,
-				'show_in_rest'      => false,
-			)
-		);
-
-		// Web Clipper: token for one-shot capture from browser (bookmarklet).
-		register_setting(
-			'wp_pinch_connection',
-			'wp_pinch_capture_token',
-			array(
-				'type'              => 'string',
-				'sanitize_callback' => function ( $value ) {
+				'group'    => 'wp_pinch_connection',
+				'option'   => 'wp_pinch_capture_token',
+				'type'     => 'string',
+				'default'  => '',
+				'sanitize' => function ( $value ) {
 					$value = sanitize_text_field( (string) $value );
-					// Preserve existing token when user did not change it (placeholder shown).
 					if ( '' === $value || str_repeat( "\u{2022}", 8 ) === $value ) {
 						return get_option( 'wp_pinch_capture_token', '' );
 					}
 					return $value;
 				},
-				'default'           => '',
-				'show_in_rest'      => false,
-			)
+			),
 		);
+	}
+
+	/**
+	 * Register settings.
+	 *
+	 * Each tab has its own settings group so that saving one tab
+	 * does not overwrite options managed by a different tab.
+	 */
+	public static function register_settings(): void {
+		foreach ( self::get_option_definitions() as $def ) {
+			$args = array(
+				'type'         => $def['type'],
+				'default'      => $def['default'],
+				'show_in_rest' => false,
+			);
+			if ( isset( $def['sanitize'] ) ) {
+				$args['sanitize_callback'] = $def['sanitize'];
+			}
+			register_setting( $def['group'], $def['option'], $args );
+		}
 	}
 
 	/**
@@ -974,9 +734,9 @@ class Settings {
 	}
 
 	/**
-	 * Render the OpenClaw role / agent identity section.
+	 * Render the OpenClaw role / agent identity section. Public so Connection_Tab can call it.
 	 */
-	private static function render_openclaw_role_section(): void {
+	public static function render_openclaw_role_section(): void {
 		$current_user_id = (int) get_option( 'wp_pinch_openclaw_user_id', 0 );
 		$cap_groups      = get_option( 'wp_pinch_openclaw_capability_groups', OpenClaw_Role::DEFAULT_GROUPS );
 		if ( ! is_array( $cap_groups ) ) {
@@ -1049,202 +809,6 @@ class Settings {
 	}
 
 	/**
-	 * Render the first-run onboarding wizard.
-	 *
-	 * @param int $initial_step Which step to show initially (1, 2, or 3). Step 3 when gateway + token already saved.
-	 */
-	public static function render_wizard( int $initial_step = 1 ): void {
-		$mcp_url    = rest_url( 'wp-pinch/v1/mcp' );
-		$gateway    = get_option( 'wp_pinch_gateway_url', '' );
-		$token      = self::get_api_token();
-		$show_s1    = ( 1 === $initial_step ) ? 'block' : 'none';
-		$show_s2    = ( 2 === $initial_step ) ? 'block' : 'none';
-		$show_s3    = ( 3 === $initial_step ) ? 'block' : 'none';
-		$finish_url = wp_nonce_url( admin_url( 'admin.php?page=wp-pinch&wp_pinch_finish_wizard=1' ), 'wp_pinch_finish_wizard' );
-		?>
-		<div class="wrap">
-			<h1><?php esc_html_e( 'Welcome to WP Pinch — your site\'s got claws', 'wp-pinch' ); ?></h1>
-
-			<div class="wp-pinch-wizard" id="wp-pinch-wizard" aria-live="polite">
-				<p class="wp-pinch-wizard__step-indicator" id="wp-pinch-wizard-step-label" aria-live="polite" aria-atomic="true">
-					<?php
-					/* translators: 1: current step number, 2: total steps */
-					echo esc_html( sprintf( __( 'Step %1$d of %2$d', 'wp-pinch' ), (int) $initial_step, 3 ) );
-					?>
-				</p>
-
-				<!-- Step 1: Welcome -->
-				<div class="wp-pinch-wizard__step" data-step="1" id="wp-pinch-wizard-step-1" style="display: <?php echo esc_attr( $show_s1 ); ?>;">
-					<div class="wp-pinch-wizard__card">
-						<h2><?php esc_html_e( 'Connect WordPress to OpenClaw', 'wp-pinch' ); ?></h2>
-						<p>
-							<?php esc_html_e( 'WP Pinch bridges your WordPress site with OpenClaw, letting you manage your site from WhatsApp, Telegram, Slack, Discord, or any messaging platform OpenClaw supports.', 'wp-pinch' ); ?>
-						</p>
-						<h3><?php esc_html_e( 'What you\'ll need (no claws required):', 'wp-pinch' ); ?></h3>
-						<ul class="wp-pinch-wizard-list">
-							<li><?php esc_html_e( 'OpenClaw installed and running (local or remote)', 'wp-pinch' ); ?></li>
-							<li><?php esc_html_e( 'Your OpenClaw gateway URL and API token', 'wp-pinch' ); ?></li>
-						</ul>
-						<p>
-							<?php
-							printf(
-								/* translators: %s: link to OpenClaw install docs */
-								esc_html__( 'Don\'t have OpenClaw yet? %s', 'wp-pinch' ),
-								'<a href="https://docs.openclaw.ai/install" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Install it here', 'wp-pinch' ) . ' &rarr;</a>'
-							);
-							?>
-						</p>
-						<p class="wp-pinch-wizard-actions">
-							<button type="button" class="button button-primary button-hero" data-wizard-action="go" data-wizard-to="2">
-								<?php esc_html_e( 'Let\'s get pinching', 'wp-pinch' ); ?> &rarr;
-							</button>
-						</p>
-						<p class="wp-pinch-wizard-skip">
-							<a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=wp-pinch&wp_pinch_skip_wizard=1' ), 'wp_pinch_skip_wizard' ) ); ?>"><?php esc_html_e( 'I\'ll scuttle back later', 'wp-pinch' ); ?></a>
-						</p>
-					</div>
-				</div>
-
-				<!-- Step 2: Connect -->
-				<div class="wp-pinch-wizard__step" data-step="2" id="wp-pinch-wizard-step-2" style="display: <?php echo esc_attr( $show_s2 ); ?>;">
-					<div class="wp-pinch-wizard__card">
-						<h2><?php esc_html_e( 'Configure Connection', 'wp-pinch' ); ?></h2>
-
-						<form method="post" action="options.php" id="wp-pinch-wizard-form">
-							<?php settings_fields( 'wp_pinch_connection' ); ?>
-
-							<table class="form-table" role="presentation">
-								<tr>
-									<th scope="row">
-										<label for="wp_pinch_gateway_url"><?php esc_html_e( 'Gateway URL', 'wp-pinch' ); ?></label>
-									</th>
-									<td>
-										<input
-											type="url"
-											id="wp_pinch_gateway_url"
-											name="wp_pinch_gateway_url"
-											value="<?php echo esc_attr( $gateway ); ?>"
-											class="regular-text"
-											placeholder="http://127.0.0.1:18789"
-											required
-										/>
-										<p class="description">
-											<?php esc_html_e( 'The URL of your OpenClaw gateway (usually http://127.0.0.1:18789 for local installs).', 'wp-pinch' ); ?>
-										</p>
-									</td>
-								</tr>
-								<tr>
-									<th scope="row">
-										<label for="wp_pinch_api_token"><?php esc_html_e( 'API Token', 'wp-pinch' ); ?></label>
-									</th>
-									<td>
-										<input
-											type="password"
-											id="wp_pinch_api_token"
-											name="wp_pinch_api_token"
-											value="<?php echo esc_attr( $token ); ?>"
-											class="regular-text"
-											required
-										/>
-										<p class="description">
-											<?php esc_html_e( 'Your OpenClaw gateway token (OPENCLAW_GATEWAY_TOKEN).', 'wp-pinch' ); ?>
-										</p>
-									</td>
-								</tr>
-							</table>
-
-							<div class="wp-pinch-wizard-test-row">
-								<button type="button" class="button" id="wp-pinch-wizard-test" aria-busy="false" aria-live="polite">
-									<?php esc_html_e( 'Test Connection', 'wp-pinch' ); ?>
-								</button>
-								<span id="wp-pinch-wizard-test-result" class="wp-pinch-wizard-test-result" aria-live="polite"></span>
-							</div>
-
-							<hr />
-
-							<h3><?php esc_html_e( 'Your MCP Endpoint', 'wp-pinch' ); ?></h3>
-							<p class="description">
-								<?php esc_html_e( 'Use this URL to connect OpenClaw to your WordPress site via MCP:', 'wp-pinch' ); ?>
-							</p>
-							<div class="wp-pinch-copy-row">
-								<code id="wp-pinch-mcp-url" class="wp-pinch-copy-code"><?php echo esc_html( $mcp_url ); ?></code>
-								<button type="button" class="button wp-pinch-copy-btn" data-wizard-copy="wp-pinch-mcp-url" aria-label="<?php esc_attr_e( 'Copy MCP URL', 'wp-pinch' ); ?>"><?php esc_html_e( 'Copy', 'wp-pinch' ); ?></button>
-								<span class="wp-pinch-copy-feedback" id="wp-pinch-copy-feedback-mcp" aria-live="polite"></span>
-							</div>
-							<p class="description">
-								<?php esc_html_e( 'Or run this command in your OpenClaw CLI:', 'wp-pinch' ); ?>
-							</p>
-							<div class="wp-pinch-copy-row">
-								<code id="wp-pinch-cli-cmd" class="wp-pinch-copy-code">npx openclaw connect --mcp-url <?php echo esc_html( $mcp_url ); ?></code>
-								<button type="button" class="button wp-pinch-copy-btn" data-wizard-copy="wp-pinch-cli-cmd" aria-label="<?php esc_attr_e( 'Copy command', 'wp-pinch' ); ?>"><?php esc_html_e( 'Copy', 'wp-pinch' ); ?></button>
-								<span class="wp-pinch-copy-feedback" id="wp-pinch-copy-feedback-cli" aria-live="polite"></span>
-							</div>
-
-							<p class="wp-pinch-wizard-actions wp-pinch-wizard-step-footer">
-								<button type="button" class="button" data-wizard-action="go" data-wizard-to="1">
-									&larr; <?php esc_html_e( 'Back', 'wp-pinch' ); ?>
-								</button>
-								<?php submit_button( __( 'Save & Continue', 'wp-pinch' ), 'primary', 'submit', false ); ?>
-							</p>
-						</form>
-					</div>
-				</div>
-
-				<!-- Step 3: Time to pinch -->
-				<div class="wp-pinch-wizard__step" data-step="3" id="wp-pinch-wizard-step-3" style="display: <?php echo esc_attr( $show_s3 ); ?>;">
-					<div class="wp-pinch-wizard__card">
-						<h2><?php esc_html_e( 'Time to pinch', 'wp-pinch' ); ?></h2>
-						<p>
-							<?php esc_html_e( 'Send a message from WhatsApp, Telegram, Slack, or Discord to your OpenClaw agent. Your agent can now pinch your WordPress site via the MCP endpoint below.', 'wp-pinch' ); ?>
-						</p>
-						<?php if ( self::get_openclaw_skill_content() !== '' ) : ?>
-						<h3><?php esc_html_e( 'Install the WP Pinch skill', 'wp-pinch' ); ?></h3>
-						<p class="description">
-							<?php esc_html_e( 'Copy the skill so your agent knows when and how to use each ability. Save to ~/.openclaw/workspace/skills/wp-pinch/SKILL.md', 'wp-pinch' ); ?>
-						</p>
-						<div class="wp-pinch-copy-row">
-							<button type="button" class="button wp-pinch-copy-btn" data-wizard-copy="wp-pinch-skill-content" aria-label="<?php esc_attr_e( 'Copy skill to clipboard', 'wp-pinch' ); ?>"><?php esc_html_e( 'Copy skill', 'wp-pinch' ); ?></button>
-							<span class="wp-pinch-copy-feedback" id="wp-pinch-wizard-skill-feedback" aria-live="polite"></span>
-						</div>
-						<code id="wp-pinch-skill-content" class="wp-pinch-copy-code" style="display:none;"><?php echo esc_html( self::get_openclaw_skill_content() ); ?></code>
-						<?php endif; ?>
-						<p><strong><?php esc_html_e( 'Try this first', 'wp-pinch' ); ?></strong></p>
-						<ul class="wp-pinch-wizard-list" style="margin-top: 0;">
-							<li><?php esc_html_e( 'PinchDrop: Send a sentence to your channel and ask the assistant to turn it into a draft pack.', 'wp-pinch' ); ?></li>
-							<li><?php esc_html_e( 'Molt: Say "Molt 123" (or "Turn post 123 into social and meta") to get multiple formats from one post.', 'wp-pinch' ); ?></li>
-						</ul>
-						<p class="description">
-							<?php
-							printf(
-								/* translators: %s: link to Recipes wiki */
-								esc_html__( 'Step-by-step flows: %s', 'wp-pinch' ),
-								'<a href="https://github.com/RegionallyFamous/wp-pinch/wiki/Recipes" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Recipes', 'wp-pinch' ) . ' &rarr;</a>'
-							);
-							?>
-						</p>
-						<div class="wp-pinch-copy-row">
-							<code class="wp-pinch-copy-code"><?php echo esc_html( $mcp_url ); ?></code>
-						</div>
-						<p class="description">
-							<?php
-							printf(
-								/* translators: %s: link to OpenClaw docs */
-								esc_html__( 'Need help connecting a channel? See the %s.', 'wp-pinch' ),
-								'<a href="https://docs.openclaw.ai" target="_blank" rel="noopener noreferrer">' . esc_html__( 'OpenClaw docs', 'wp-pinch' ) . ' &rarr;</a>'
-							);
-							?>
-						</p>
-						<p class="wp-pinch-wizard-step-footer">
-							<a href="<?php echo esc_url( $finish_url ); ?>" class="button button-primary button-hero"><?php esc_html_e( 'Enter the warren', 'wp-pinch' ); ?></a>
-						</p>
-					</div>
-				</div>
-			</div>
-		</div>
-		<?php
-	}
-
-	/**
 	 * Render the settings page.
 	 */
 	public static function render_page(): void {
@@ -1257,7 +821,7 @@ class Settings {
 			$gateway     = get_option( 'wp_pinch_gateway_url', '' );
 			$token       = self::get_api_token();
 			$wizard_step = ( '' !== $gateway && '' !== $token ) ? 3 : 1;
-			self::render_wizard( $wizard_step );
+			\WP_Pinch\Settings\Wizard::render( $wizard_step );
 			return;
 		}
 
@@ -1303,1071 +867,34 @@ class Settings {
 				<?php
 				switch ( $active_tab ) {
 					case 'what_can_i_do':
-						self::render_tab_what_can_i_do();
+						\WP_Pinch\Settings\Tabs\What_Can_I_Do_Tab::render();
 						break;
 					case 'webhooks':
-						self::render_tab_webhooks();
+						\WP_Pinch\Settings\Tabs\Webhooks_Tab::render();
 						break;
 					case 'governance':
-						self::render_tab_governance();
+						\WP_Pinch\Settings\Tabs\Governance_Tab::render();
 						break;
 					case 'abilities':
-						self::render_tab_abilities();
+						\WP_Pinch\Settings\Tabs\Abilities_Tab::render();
 						break;
 					case 'features':
-						self::render_tab_features();
+						\WP_Pinch\Settings\Tabs\Features_Tab::render();
 						break;
 					case 'usage':
-						self::render_tab_usage();
+						\WP_Pinch\Settings\Tabs\Usage_Tab::render();
 						break;
 					case 'audit':
-						self::render_tab_audit();
+						\WP_Pinch\Settings\Tabs\Audit_Tab::render();
 						break;
 					case 'connection':
 					default:
-						self::render_tab_connection();
+						\WP_Pinch\Settings\Tabs\Connection_Tab::render();
 						break;
 				}
 				?>
 			</div>
 		</div>
-		<?php
-	}
-
-	/**
-	 * "What can I do?" tab — discoverability of main features.
-	 */
-	private static function render_tab_what_can_i_do(): void {
-		$wiki = 'https://github.com/RegionallyFamous/wp-pinch/wiki';
-		?>
-		<div class="wp-pinch-what-can-i-do">
-			<p><?php esc_html_e( 'Here’s what this lobster can pinch for you:', 'wp-pinch' ); ?></p>
-			<ul>
-				<li>
-					<strong><?php esc_html_e( 'Capture from channels (PinchDrop)', 'wp-pinch' ); ?></strong>
-					— <?php esc_html_e( 'Send ideas from WhatsApp, Telegram, Slack, or Discord; turn them into draft packs or quick notes.', 'wp-pinch' ); ?>
-					<a href="<?php echo esc_url( $wiki . '/PinchDrop' ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'PinchDrop guide', 'wp-pinch' ); ?> &rarr;</a>
-				</li>
-				<li>
-					<strong><?php esc_html_e( 'Chat with your site (block)', 'wp-pinch' ); ?></strong>
-					— <?php esc_html_e( 'Add a chat block to any post or page so visitors (or you) can talk to your site.', 'wp-pinch' ); ?>
-					<a href="<?php echo esc_url( $wiki . '/Chat-Block' ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Chat block', 'wp-pinch' ); ?> &rarr;</a>
-				</li>
-				<li>
-					<strong><?php esc_html_e( 'Daily digest (Tide Report)', 'wp-pinch' ); ?></strong>
-					— <?php esc_html_e( 'Governance findings (stale posts, SEO, drafts) bundled into one daily webhook.', 'wp-pinch' ); ?>
-					<a href="<?php echo esc_url( $wiki . '/Configuration' ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Configuration', 'wp-pinch' ); ?> &rarr;</a>
-				</li>
-				<li>
-					<strong><?php esc_html_e( 'Synthesize across posts (Weave)', 'wp-pinch' ); ?></strong>
-					— <?php esc_html_e( 'Search content and get a payload ready for synthesis; build answers from your existing posts.', 'wp-pinch' ); ?>
-					<a href="<?php echo esc_url( $wiki . '/Abilities-Reference' ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Abilities Reference', 'wp-pinch' ); ?> &rarr;</a>
-				</li>
-				<li>
-					<strong><?php esc_html_e( 'Quick tools', 'wp-pinch' ); ?></strong>
-					— <?php esc_html_e( 'TL;DR on publish, Link Suggester (suggest internal links), Quote Bank (extract notable sentences).', 'wp-pinch' ); ?>
-					<a href="<?php echo esc_url( $wiki . '/Abilities-Reference' ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Abilities Reference', 'wp-pinch' ); ?> &rarr;</a>
-				</li>
-			</ul>
-			<p>
-				<a href="<?php echo esc_url( $wiki . '/Abilities-Reference' ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Full Abilities Reference (the whole claw)', 'wp-pinch' ); ?> &rarr;</a>
-			</p>
-		</div>
-		<?php
-	}
-
-	/**
-	 * Connection tab.
-	 */
-	private static function render_tab_connection(): void {
-		?>
-		<form method="post" action="options.php">
-			<?php settings_fields( 'wp_pinch_connection' ); ?>
-
-			<div class="wp-pinch-card">
-				<h3 class="wp-pinch-card__title"><?php esc_html_e( 'Gateway & API — where the claws connect', 'wp-pinch' ); ?></h3>
-				<table class="form-table">
-					<tr>
-						<th scope="row">
-							<label for="wp_pinch_gateway_url"><?php esc_html_e( 'OpenClaw Gateway URL', 'wp-pinch' ); ?></label>
-						</th>
-						<td>
-							<input type="url" id="wp_pinch_gateway_url" name="wp_pinch_gateway_url"
-									value="<?php echo esc_attr( get_option( 'wp_pinch_gateway_url' ) ); ?>"
-									class="regular-text" placeholder="http://127.0.0.1:3000" />
-							<p class="description"><?php esc_html_e( 'The URL of your OpenClaw gateway. This is where we reach out and pinch.', 'wp-pinch' ); ?></p>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row">
-							<label for="wp_pinch_api_token"><?php esc_html_e( 'API Token', 'wp-pinch' ); ?></label>
-						</th>
-						<td>
-						<?php $has_token = ! empty( self::get_api_token() ); ?>
-						<input type="password" id="wp_pinch_api_token" name="wp_pinch_api_token"
-								value="<?php echo $has_token ? esc_attr( str_repeat( "\u{2022}", 8 ) ) : ''; ?>"
-								class="regular-text" autocomplete="off" />
-							<p class="description"><?php esc_html_e( 'Your secret handshake. Bearer token for webhook auth — keep it safe, we\'re territorial about it.', 'wp-pinch' ); ?></p>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Safety controls (claws sheathed)', 'wp-pinch' ); ?></th>
-						<td>
-							<label>
-								<input type="checkbox" id="wp_pinch_api_disabled" name="wp_pinch_api_disabled" value="1"
-									<?php checked( (bool) get_option( 'wp_pinch_api_disabled', false ) ); ?> />
-								<?php esc_html_e( 'Disable API access (hide in the kelp)', 'wp-pinch' ); ?>
-							</label>
-							<p class="description"><?php esc_html_e( 'When checked, all REST endpoints return 503. Use during incidents — we\'ll keep our claws to ourselves.', 'wp-pinch' ); ?></p>
-							<label style="display:block; margin-top:1em;">
-								<input type="checkbox" id="wp_pinch_read_only_mode" name="wp_pinch_read_only_mode" value="1"
-									<?php checked( (bool) get_option( 'wp_pinch_read_only_mode', false ) ); ?> />
-								<?php esc_html_e( 'Read-only mode (look but don\'t pinch)', 'wp-pinch' ); ?>
-							</label>
-							<p class="description"><?php esc_html_e( 'When checked, write abilities are blocked. We\'ll look around all you want, but no grabbing.', 'wp-pinch' ); ?></p>
-							<label style="display:block; margin-top:1em;">
-								<input type="checkbox" id="wp_pinch_gateway_reply_strict_sanitize" name="wp_pinch_gateway_reply_strict_sanitize" value="1"
-									<?php checked( (bool) get_option( 'wp_pinch_gateway_reply_strict_sanitize', false ) ); ?> />
-								<?php esc_html_e( 'Strict gateway reply sanitization', 'wp-pinch' ); ?>
-							</label>
-							<p class="description"><?php esc_html_e( 'When checked, chat replies are stripped of HTML comments and instruction-like text, and iframe/object/embed/form are removed to reduce prompt-injection and XSS risk.', 'wp-pinch' ); ?></p>
-							<?php if ( defined( 'WP_PINCH_DISABLED' ) && WP_PINCH_DISABLED ) : ?>
-								<p class="description" style="color:#b32d2e;">
-									<?php esc_html_e( 'Note: WP_PINCH_DISABLED is set in wp-config.php — API is disabled until that constant is removed.', 'wp-pinch' ); ?>
-								</p>
-							<?php endif; ?>
-							<?php if ( defined( 'WP_PINCH_READ_ONLY' ) && WP_PINCH_READ_ONLY ) : ?>
-								<p class="description" style="color:#b32d2e;">
-									<?php esc_html_e( 'Note: WP_PINCH_READ_ONLY is set in wp-config.php — write operations are disabled until that constant is removed.', 'wp-pinch' ); ?>
-								</p>
-							<?php endif; ?>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row">
-							<label for="wp_pinch_rate_limit"><?php esc_html_e( 'Rate Limit', 'wp-pinch' ); ?></label>
-						</th>
-						<td>
-							<input type="number" id="wp_pinch_rate_limit" name="wp_pinch_rate_limit"
-									value="<?php echo esc_attr( get_option( 'wp_pinch_rate_limit', 30 ) ); ?>"
-									class="small-text" min="1" max="1000" />
-							<span><?php esc_html_e( 'webhooks per minute', 'wp-pinch' ); ?></span>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row">
-							<label for="wp_pinch_daily_write_cap"><?php esc_html_e( 'Daily write budget', 'wp-pinch' ); ?></label>
-						</th>
-						<td>
-							<input type="number" id="wp_pinch_daily_write_cap" name="wp_pinch_daily_write_cap"
-									value="<?php echo esc_attr( get_option( 'wp_pinch_daily_write_cap', 0 ) ); ?>"
-									class="small-text" min="0" max="10000" />
-							<span><?php esc_html_e( 'max write operations per day (0 = no limit)', 'wp-pinch' ); ?></span>
-							<p class="description">
-								<?php esc_html_e( 'Write operations: create/update/delete posts, media, options, etc. When exceeded, requests return 429 until the next day.', 'wp-pinch' ); ?>
-							</p>
-							<p class="description" style="margin-top:0.5em;">
-								<label for="wp_pinch_daily_write_alert_threshold"><?php esc_html_e( 'Alert email when usage reaches', 'wp-pinch' ); ?></label>
-								<input type="number" id="wp_pinch_daily_write_alert_threshold" name="wp_pinch_daily_write_alert_threshold"
-										value="<?php echo esc_attr( get_option( 'wp_pinch_daily_write_alert_threshold', 80 ) ); ?>"
-										class="tiny-text" min="1" max="100" /> %
-								<label for="wp_pinch_daily_write_alert_email"><?php esc_html_e( '— Email:', 'wp-pinch' ); ?></label>
-								<input type="email" id="wp_pinch_daily_write_alert_email" name="wp_pinch_daily_write_alert_email"
-										value="<?php echo esc_attr( get_option( 'wp_pinch_daily_write_alert_email', '' ) ); ?>"
-										class="regular-text" placeholder="<?php esc_attr_e( 'admin@example.com', 'wp-pinch' ); ?>" />
-							</p>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row">
-							<label for="wp_pinch_agent_id"><?php esc_html_e( 'Agent ID', 'wp-pinch' ); ?></label>
-						</th>
-						<td>
-							<input
-								type="text"
-								id="wp_pinch_agent_id"
-								name="wp_pinch_agent_id"
-								value="<?php echo esc_attr( get_option( 'wp_pinch_agent_id', '' ) ); ?>"
-								class="regular-text"
-								placeholder="<?php esc_attr_e( 'e.g. hooks or main', 'wp-pinch' ); ?>"
-							/>
-							<p class="description">
-								<?php esc_html_e( 'Optional. Route webhooks and chat to a specific OpenClaw agent. Leave blank for default agent.', 'wp-pinch' ); ?>
-							</p>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Public chat & stream limits', 'wp-pinch' ); ?></th>
-						<td>
-							<p class="description" style="margin-top:0;">
-								<label for="wp_pinch_public_chat_rate_limit"><?php esc_html_e( 'Public chat (unauthenticated) rate limit:', 'wp-pinch' ); ?></label>
-								<input type="number" id="wp_pinch_public_chat_rate_limit" name="wp_pinch_public_chat_rate_limit"
-										value="<?php echo esc_attr( get_option( 'wp_pinch_public_chat_rate_limit', 3 ) ); ?>"
-										class="tiny-text" min="1" max="60" /> <?php esc_html_e( 'requests per minute per IP', 'wp-pinch' ); ?>
-							</p>
-							<p class="description" style="margin-top:0.5em;">
-								<label for="wp_pinch_sse_max_connections_per_ip"><?php esc_html_e( 'Max concurrent SSE streams per IP:', 'wp-pinch' ); ?></label>
-								<input type="number" id="wp_pinch_sse_max_connections_per_ip" name="wp_pinch_sse_max_connections_per_ip"
-										value="<?php echo esc_attr( get_option( 'wp_pinch_sse_max_connections_per_ip', 5 ) ); ?>"
-										class="tiny-text" min="0" max="20" /> (0 = <?php esc_html_e( 'no limit', 'wp-pinch' ); ?>)
-							</p>
-							<p class="description" style="margin-top:0.5em;">
-								<label for="wp_pinch_chat_max_response_length"><?php esc_html_e( 'Max chat response length (chars):', 'wp-pinch' ); ?></label>
-								<input type="number" id="wp_pinch_chat_max_response_length" name="wp_pinch_chat_max_response_length"
-										value="<?php echo esc_attr( get_option( 'wp_pinch_chat_max_response_length', 200000 ) ); ?>"
-										class="small-text" min="0" /> (0 = <?php esc_html_e( 'no limit', 'wp-pinch' ); ?>)
-							</p>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><?php esc_html_e( 'Ability cache', 'wp-pinch' ); ?></th>
-						<td>
-							<p class="description" style="margin-top:0;">
-								<label for="wp_pinch_ability_cache_ttl"><?php esc_html_e( 'Cache TTL for read-heavy abilities (seconds):', 'wp-pinch' ); ?></label>
-								<input type="number" id="wp_pinch_ability_cache_ttl" name="wp_pinch_ability_cache_ttl"
-										value="<?php echo esc_attr( get_option( 'wp_pinch_ability_cache_ttl', 300 ) ); ?>"
-										class="small-text" min="0" max="86400" /> (0 = <?php esc_html_e( 'disabled', 'wp-pinch' ); ?>)
-							</p>
-							<p class="description"><?php esc_html_e( 'list-posts, search-content, list-media, list-taxonomies. Invalidated on post save/delete.', 'wp-pinch' ); ?></p>
-						</td>
-					</tr>
-				</table>
-			</div>
-
-			<?php self::render_openclaw_role_section(); ?>
-
-			<div class="wp-pinch-card">
-				<h3 class="wp-pinch-card__title"><?php esc_html_e( 'Webhook defaults', 'wp-pinch' ); ?></h3>
-				<table class="form-table">
-					<tr>
-						<th scope="row">
-							<label for="wp_pinch_webhook_channel"><?php esc_html_e( 'Delivery Channel', 'wp-pinch' ); ?></label>
-						</th>
-					<td>
-						<select id="wp_pinch_webhook_channel" name="wp_pinch_webhook_channel">
-							<option value="" <?php selected( get_option( 'wp_pinch_webhook_channel', '' ), '' ); ?>><?php esc_html_e( 'None (agent only)', 'wp-pinch' ); ?></option>
-							<option value="last" <?php selected( get_option( 'wp_pinch_webhook_channel', '' ), 'last' ); ?>><?php esc_html_e( 'Last active channel', 'wp-pinch' ); ?></option>
-							<option value="whatsapp" <?php selected( get_option( 'wp_pinch_webhook_channel', '' ), 'whatsapp' ); ?>>WhatsApp</option>
-							<option value="telegram" <?php selected( get_option( 'wp_pinch_webhook_channel', '' ), 'telegram' ); ?>>Telegram</option>
-							<option value="discord" <?php selected( get_option( 'wp_pinch_webhook_channel', '' ), 'discord' ); ?>>Discord</option>
-							<option value="slack" <?php selected( get_option( 'wp_pinch_webhook_channel', '' ), 'slack' ); ?>>Slack</option>
-							<option value="signal" <?php selected( get_option( 'wp_pinch_webhook_channel', '' ), 'signal' ); ?>>Signal</option>
-							<option value="imessage" <?php selected( get_option( 'wp_pinch_webhook_channel', '' ), 'imessage' ); ?>>iMessage</option>
-							<option value="msteams" <?php selected( get_option( 'wp_pinch_webhook_channel', '' ), 'msteams' ); ?>>Microsoft Teams</option>
-						</select>
-						<p class="description">
-							<?php esc_html_e( 'Optional. Deliver webhook responses to a messaging channel.', 'wp-pinch' ); ?>
-						</p>
-					</td>
-				</tr>
-				<tr>
-					<th scope="row">
-						<label for="wp_pinch_webhook_to"><?php esc_html_e( 'Recipient', 'wp-pinch' ); ?></label>
-					</th>
-					<td>
-						<input
-							type="text"
-							id="wp_pinch_webhook_to"
-							name="wp_pinch_webhook_to"
-							value="<?php echo esc_attr( get_option( 'wp_pinch_webhook_to', '' ) ); ?>"
-							class="regular-text"
-							placeholder="<?php esc_attr_e( 'e.g. +15551234567 or channel ID', 'wp-pinch' ); ?>"
-						/>
-						<p class="description">
-							<?php esc_html_e( 'Optional. Recipient identifier for the delivery channel (phone number, chat ID, etc.).', 'wp-pinch' ); ?>
-						</p>
-					</td>
-				</tr>
-				<tr>
-					<th scope="row">
-						<?php esc_html_e( 'Deliver Responses', 'wp-pinch' ); ?>
-					</th>
-					<td>
-						<label for="wp_pinch_webhook_deliver">
-							<input
-								type="checkbox"
-								id="wp_pinch_webhook_deliver"
-								name="wp_pinch_webhook_deliver"
-								value="1"
-								<?php checked( get_option( 'wp_pinch_webhook_deliver', true ) ); ?>
-							/>
-							<?php esc_html_e( 'Send agent responses to the delivery channel', 'wp-pinch' ); ?>
-						</label>
-						<p class="description">
-							<?php esc_html_e( 'When enabled, OpenClaw will deliver webhook responses to the configured messaging channel.', 'wp-pinch' ); ?>
-						</p>
-					</td>
-				</tr>
-				<tr>
-					<th scope="row">
-						<label for="wp_pinch_webhook_model"><?php esc_html_e( 'Webhook Model', 'wp-pinch' ); ?></label>
-					</th>
-					<td>
-						<input
-							type="text"
-							id="wp_pinch_webhook_model"
-							name="wp_pinch_webhook_model"
-							value="<?php echo esc_attr( get_option( 'wp_pinch_webhook_model', '' ) ); ?>"
-							class="regular-text"
-							placeholder="<?php esc_attr_e( 'e.g. openai/gpt-5.2-mini', 'wp-pinch' ); ?>"
-						/>
-						<p class="description">
-							<?php esc_html_e( 'Override which model processes webhook events. Leave empty for the agent default.', 'wp-pinch' ); ?>
-						</p>
-					</td>
-				</tr>
-				<tr>
-					<th scope="row">
-						<label for="wp_pinch_webhook_thinking"><?php esc_html_e( 'Thinking Level', 'wp-pinch' ); ?></label>
-					</th>
-					<td>
-						<select id="wp_pinch_webhook_thinking" name="wp_pinch_webhook_thinking">
-							<option value="" <?php selected( get_option( 'wp_pinch_webhook_thinking', '' ), '' ); ?>><?php esc_html_e( 'Default', 'wp-pinch' ); ?></option>
-							<option value="off" <?php selected( get_option( 'wp_pinch_webhook_thinking', '' ), 'off' ); ?>><?php esc_html_e( 'Off', 'wp-pinch' ); ?></option>
-							<option value="low" <?php selected( get_option( 'wp_pinch_webhook_thinking', '' ), 'low' ); ?>><?php esc_html_e( 'Low', 'wp-pinch' ); ?></option>
-							<option value="medium" <?php selected( get_option( 'wp_pinch_webhook_thinking', '' ), 'medium' ); ?>><?php esc_html_e( 'Medium', 'wp-pinch' ); ?></option>
-							<option value="high" <?php selected( get_option( 'wp_pinch_webhook_thinking', '' ), 'high' ); ?>><?php esc_html_e( 'High', 'wp-pinch' ); ?></option>
-						</select>
-						<p class="description">
-							<?php esc_html_e( 'Control the thinking level for webhook-triggered agent turns.', 'wp-pinch' ); ?>
-						</p>
-					</td>
-				</tr>
-				<tr>
-					<th scope="row">
-						<label for="wp_pinch_webhook_timeout"><?php esc_html_e( 'Timeout (seconds)', 'wp-pinch' ); ?></label>
-					</th>
-					<td>
-						<input
-							type="number"
-							id="wp_pinch_webhook_timeout"
-							name="wp_pinch_webhook_timeout"
-							value="<?php echo esc_attr( get_option( 'wp_pinch_webhook_timeout', 0 ) ); ?>"
-							class="small-text"
-							min="0"
-							max="600"
-							placeholder="0"
-						/>
-						<p class="description">
-							<?php esc_html_e( 'Maximum seconds for webhook agent runs (0 = no limit).', 'wp-pinch' ); ?>
-						</p>
-					</td>
-				</tr>
-				</table>
-			</div>
-
-			<div class="wp-pinch-card">
-				<h3 class="wp-pinch-card__title"><?php esc_html_e( 'Chat Settings', 'wp-pinch' ); ?></h3>
-				<p class="description"><?php esc_html_e( 'Configure how the chat block behaves — model, thinking level, placeholder, and more.', 'wp-pinch' ); ?></p>
-				<table class="form-table">
-				<tr>
-					<th scope="row">
-						<label for="wp_pinch_chat_model"><?php esc_html_e( 'Chat Model', 'wp-pinch' ); ?></label>
-					</th>
-					<td>
-						<input type="text" id="wp_pinch_chat_model" name="wp_pinch_chat_model"
-								value="<?php echo esc_attr( get_option( 'wp_pinch_chat_model', '' ) ); ?>"
-								class="regular-text" />
-						<p class="description">
-							<?php esc_html_e( 'e.g. anthropic/claude-sonnet-4-5 — leave empty for gateway default.', 'wp-pinch' ); ?>
-						</p>
-					</td>
-				</tr>
-				<tr>
-					<th scope="row">
-						<label for="wp_pinch_chat_thinking"><?php esc_html_e( 'Chat Thinking Level', 'wp-pinch' ); ?></label>
-					</th>
-					<td>
-						<select id="wp_pinch_chat_thinking" name="wp_pinch_chat_thinking">
-							<?php
-							$current_thinking = get_option( 'wp_pinch_chat_thinking', '' );
-							$thinking_options = array(
-								''       => __( 'Default (gateway decides)', 'wp-pinch' ),
-								'off'    => __( 'Off', 'wp-pinch' ),
-								'low'    => __( 'Low', 'wp-pinch' ),
-								'medium' => __( 'Medium', 'wp-pinch' ),
-								'high'   => __( 'High', 'wp-pinch' ),
-							);
-							foreach ( $thinking_options as $val => $label ) :
-								?>
-								<option value="<?php echo esc_attr( $val ); ?>" <?php selected( $current_thinking, $val ); ?>>
-									<?php echo esc_html( $label ); ?>
-								</option>
-							<?php endforeach; ?>
-						</select>
-					</td>
-				</tr>
-				<tr>
-					<th scope="row">
-						<label for="wp_pinch_chat_timeout"><?php esc_html_e( 'Chat Timeout (seconds)', 'wp-pinch' ); ?></label>
-					</th>
-					<td>
-						<input type="number" id="wp_pinch_chat_timeout" name="wp_pinch_chat_timeout"
-								value="<?php echo esc_attr( get_option( 'wp_pinch_chat_timeout', 0 ) ); ?>"
-								min="0" max="600" step="1" class="small-text" />
-						<p class="description">
-							<?php esc_html_e( '0 = gateway default. Maximum 600 seconds.', 'wp-pinch' ); ?>
-						</p>
-					</td>
-				</tr>
-				<tr>
-					<th scope="row">
-						<label for="wp_pinch_chat_placeholder"><?php esc_html_e( 'Default Chat Placeholder', 'wp-pinch' ); ?></label>
-					</th>
-					<td>
-						<input type="text" id="wp_pinch_chat_placeholder" name="wp_pinch_chat_placeholder"
-								value="<?php echo esc_attr( get_option( 'wp_pinch_chat_placeholder', '' ) ); ?>"
-								class="regular-text" />
-						<p class="description">
-							<?php esc_html_e( 'Default placeholder when the block hasn\'t been customized. Leave empty for our lobster-y default. Can be overridden per post via Block Bindings.', 'wp-pinch' ); ?>
-						</p>
-					</td>
-				</tr>
-				<tr>
-					<th scope="row">
-						<label for="wp_pinch_session_idle_minutes"><?php esc_html_e( 'Session Idle Timeout (minutes)', 'wp-pinch' ); ?></label>
-					</th>
-					<td>
-						<input type="number" id="wp_pinch_session_idle_minutes" name="wp_pinch_session_idle_minutes"
-								value="<?php echo esc_attr( get_option( 'wp_pinch_session_idle_minutes', 0 ) ); ?>"
-								min="0" max="1440" step="1" class="small-text" />
-						<p class="description">
-							<?php esc_html_e( '0 = gateway default. After this many idle minutes, a new session starts.', 'wp-pinch' ); ?>
-						</p>
-					</td>
-				</tr>
-				<tr>
-					<th scope="row">
-						<label for="wp_pinch_capture_token"><?php esc_html_e( 'Web Clipper capture token', 'wp-pinch' ); ?></label>
-					</th>
-					<td>
-						<?php $has_capture_token = ! empty( get_option( 'wp_pinch_capture_token' ) ); ?>
-						<input
-							type="password"
-							id="wp_pinch_capture_token"
-							name="wp_pinch_capture_token"
-							value="<?php echo $has_capture_token ? esc_attr( str_repeat( "\u{2022}", 8 ) ) : ''; ?>"
-							class="regular-text"
-							autocomplete="off"
-						/>
-						<p class="description">
-							<?php esc_html_e( 'Optional. Long-lived secret token for the Web Clipper / bookmarklet capture endpoint. If set, one-shot captures from the browser use this token (query param or X-WP-Pinch-Capture-Token header). Keep it secret; the URL may contain the token.', 'wp-pinch' ); ?>
-						</p>
-					</td>
-				</tr>
-				</table>
-			</div>
-
-			<div class="wp-pinch-card">
-				<h3 class="wp-pinch-card__title"><?php esc_html_e( 'PinchDrop (Capture Anywhere)', 'wp-pinch' ); ?></h3>
-			<p class="description"><?php esc_html_e( 'Capture ideas from OpenClaw channels and auto-generate draft packs.', 'wp-pinch' ); ?></p>
-			<table class="form-table">
-				<tr>
-					<th scope="row"><?php esc_html_e( 'Enable PinchDrop', 'wp-pinch' ); ?></th>
-					<td>
-						<label for="wp_pinch_pinchdrop_enabled">
-							<input type="checkbox" id="wp_pinch_pinchdrop_enabled" name="wp_pinch_pinchdrop_enabled" value="1"
-								<?php checked( (bool) get_option( 'wp_pinch_pinchdrop_enabled', false ) ); ?> />
-							<?php esc_html_e( 'Accept capture requests on /wp-pinch/v1/pinchdrop/capture', 'wp-pinch' ); ?>
-						</label>
-					</td>
-				</tr>
-				<tr>
-					<th scope="row"><?php esc_html_e( 'Default output types', 'wp-pinch' ); ?></th>
-					<td>
-						<?php $pd_outputs = (array) get_option( 'wp_pinch_pinchdrop_default_outputs', array( 'post', 'product_update', 'changelog', 'social' ) ); ?>
-						<label><input type="checkbox" name="wp_pinch_pinchdrop_default_outputs[]" value="post" <?php checked( in_array( 'post', $pd_outputs, true ) ); ?> /> <?php esc_html_e( 'Blog post', 'wp-pinch' ); ?></label><br />
-						<label><input type="checkbox" name="wp_pinch_pinchdrop_default_outputs[]" value="product_update" <?php checked( in_array( 'product_update', $pd_outputs, true ) ); ?> /> <?php esc_html_e( 'Product update', 'wp-pinch' ); ?></label><br />
-						<label><input type="checkbox" name="wp_pinch_pinchdrop_default_outputs[]" value="changelog" <?php checked( in_array( 'changelog', $pd_outputs, true ) ); ?> /> <?php esc_html_e( 'Changelog', 'wp-pinch' ); ?></label><br />
-						<label><input type="checkbox" name="wp_pinch_pinchdrop_default_outputs[]" value="social" <?php checked( in_array( 'social', $pd_outputs, true ) ); ?> /> <?php esc_html_e( 'Social snippets', 'wp-pinch' ); ?></label>
-					</td>
-				</tr>
-				<tr>
-					<th scope="row"><?php esc_html_e( 'Auto-save generated drafts', 'wp-pinch' ); ?></th>
-					<td>
-						<label for="wp_pinch_pinchdrop_auto_save_drafts">
-							<input type="checkbox" id="wp_pinch_pinchdrop_auto_save_drafts" name="wp_pinch_pinchdrop_auto_save_drafts" value="1"
-								<?php checked( (bool) get_option( 'wp_pinch_pinchdrop_auto_save_drafts', true ) ); ?> />
-							<?php esc_html_e( 'Create draft posts automatically from generated output', 'wp-pinch' ); ?>
-						</label>
-					</td>
-				</tr>
-				<tr>
-					<th scope="row">
-						<label for="wp_pinch_pinchdrop_allowed_sources"><?php esc_html_e( 'Allowed capture sources', 'wp-pinch' ); ?></label>
-					</th>
-					<td>
-						<input type="text" id="wp_pinch_pinchdrop_allowed_sources" name="wp_pinch_pinchdrop_allowed_sources"
-							value="<?php echo esc_attr( get_option( 'wp_pinch_pinchdrop_allowed_sources', '' ) ); ?>"
-							class="regular-text"
-							placeholder="<?php esc_attr_e( 'slack,telegram,whatsapp', 'wp-pinch' ); ?>" />
-						<p class="description"><?php esc_html_e( 'Optional comma-separated source allowlist. Leave empty to allow all sources.', 'wp-pinch' ); ?></p>
-					</td>
-				</tr>
-			</table>
-			</div>
-
-			<p>
-				<button type="button" id="wp-pinch-test-connection" class="button button-secondary">
-					<?php esc_html_e( 'Test Connection', 'wp-pinch' ); ?>
-				</button>
-				<span id="wp-pinch-connection-result"></span>
-			</p>
-
-			<?php submit_button(); ?>
-		</form>
-
-		<div class="wp-pinch-mcp-info">
-			<h3><?php esc_html_e( 'MCP Server Endpoint', 'wp-pinch' ); ?></h3>
-			<p><?php esc_html_e( 'Your WP Pinch MCP server is available at:', 'wp-pinch' ); ?></p>
-			<code><?php echo esc_html( rest_url( 'wp-pinch/mcp' ) ); ?></code>
-			<p class="description">
-				<?php esc_html_e( 'Use this URL to connect OpenClaw (or any MCP client) via mcp-wordpress-remote.', 'wp-pinch' ); ?>
-			</p>
-		</div>
-
-		<?php if ( self::get_openclaw_skill_content() !== '' ) : ?>
-		<div class="wp-pinch-skill-install">
-			<h3><?php esc_html_e( 'Install OpenClaw Skill', 'wp-pinch' ); ?></h3>
-			<p class="description">
-				<?php esc_html_e( 'Copy the WP Pinch skill so your OpenClaw agent knows when and how to use each ability (posts, PinchDrop, Molt, etc.). Save to ~/.openclaw/workspace/skills/wp-pinch/SKILL.md', 'wp-pinch' ); ?>
-			</p>
-			<div class="wp-pinch-copy-row">
-				<button type="button" class="button" id="wp-pinch-copy-skill" aria-label="<?php esc_attr_e( 'Copy skill to clipboard', 'wp-pinch' ); ?>">
-					<?php esc_html_e( 'Copy skill', 'wp-pinch' ); ?>
-				</button>
-				<span id="wp-pinch-skill-copy-feedback" class="wp-pinch-skill-copy-feedback" aria-live="polite"></span>
-			</div>
-		</div>
-		<?php endif; ?>
-		<?php
-	}
-
-	/**
-	 * Webhooks tab.
-	 */
-	private static function render_tab_webhooks(): void {
-		$events  = Webhook_Dispatcher::get_available_events();
-		$enabled = get_option( 'wp_pinch_webhook_events', array() );
-		?>
-		<form method="post" action="options.php">
-			<?php settings_fields( 'wp_pinch_webhooks' ); ?>
-
-			<p><?php esc_html_e( 'Select which WordPress events trigger webhooks to OpenClaw. Leave all unchecked to enable everything.', 'wp-pinch' ); ?></p>
-
-			<table class="form-table">
-				<thead>
-					<tr>
-						<th><?php esc_html_e( 'Event', 'wp-pinch' ); ?></th>
-						<th><?php esc_html_e( 'Enabled', 'wp-pinch' ); ?></th>
-						<th><?php esc_html_e( 'Endpoint', 'wp-pinch' ); ?></th>
-						<th><?php esc_html_e( 'Wake Mode', 'wp-pinch' ); ?></th>
-					</tr>
-				</thead>
-				<tbody>
-				<?php
-				$wake_modes        = get_option( 'wp_pinch_webhook_wake_modes', array() );
-				$endpoint_types    = get_option( 'wp_pinch_webhook_endpoint_types', array() );
-				$wake_defaults     = array(
-					'post_status_change' => 'next-heartbeat',
-					'new_comment'        => 'next-heartbeat',
-					'user_register'      => 'next-heartbeat',
-					'woo_order_change'   => 'now',
-					'post_delete'        => 'now',
-					'governance_finding' => 'next-heartbeat',
-				);
-				$endpoint_defaults = array(
-					'post_status_change' => 'wake',
-					'new_comment'        => 'wake',
-					'user_register'      => 'wake',
-					'woo_order_change'   => 'agent',
-					'post_delete'        => 'agent',
-					'governance_finding' => 'wake',
-				);
-				foreach ( $events as $key => $label ) :
-					$event_wake     = $wake_modes[ $key ] ?? ( $wake_defaults[ $key ] ?? 'now' );
-					$event_endpoint = $endpoint_types[ $key ] ?? ( $endpoint_defaults[ $key ] ?? 'agent' );
-					?>
-					<tr>
-						<td><strong><?php echo esc_html( $label ); ?></strong></td>
-						<td>
-							<input type="checkbox" name="wp_pinch_webhook_events[]"
-									value="<?php echo esc_attr( $key ); ?>"
-									<?php checked( in_array( $key, $enabled, true ) ); ?> />
-						</td>
-						<td>
-							<select name="wp_pinch_webhook_endpoint_types[<?php echo esc_attr( $key ); ?>]">
-								<option value="agent" <?php selected( $event_endpoint, 'agent' ); ?>><?php esc_html_e( '/hooks/agent (full turn)', 'wp-pinch' ); ?></option>
-								<option value="wake" <?php selected( $event_endpoint, 'wake' ); ?>><?php esc_html_e( '/hooks/wake (lightweight)', 'wp-pinch' ); ?></option>
-							</select>
-						</td>
-						<td>
-							<select name="wp_pinch_webhook_wake_modes[<?php echo esc_attr( $key ); ?>]">
-								<option value="now" <?php selected( $event_wake, 'now' ); ?>><?php esc_html_e( 'Immediate', 'wp-pinch' ); ?></option>
-								<option value="next-heartbeat" <?php selected( $event_wake, 'next-heartbeat' ); ?>><?php esc_html_e( 'Next heartbeat', 'wp-pinch' ); ?></option>
-							</select>
-						</td>
-					</tr>
-				<?php endforeach; ?>
-				</tbody>
-			</table>
-
-			<?php submit_button(); ?>
-		</form>
-		<?php
-	}
-
-	/**
-	 * Governance tab.
-	 */
-	private static function render_tab_governance(): void {
-		$tasks   = Governance::get_available_tasks();
-		$enabled = Governance::get_enabled_tasks();
-		$mode    = get_option( 'wp_pinch_governance_mode', 'webhook' );
-		?>
-		<form method="post" action="options.php">
-			<?php settings_fields( 'wp_pinch_governance' ); ?>
-
-			<h3><?php esc_html_e( 'Delivery Mode', 'wp-pinch' ); ?></h3>
-			<table class="form-table">
-				<tr>
-					<th scope="row"><?php esc_html_e( 'How to process findings', 'wp-pinch' ); ?></th>
-					<td>
-						<label>
-							<input type="radio" name="wp_pinch_governance_mode" value="webhook" <?php checked( $mode, 'webhook' ); ?> />
-							<?php esc_html_e( 'Webhook to OpenClaw (recommended)', 'wp-pinch' ); ?>
-						</label>
-						<br />
-						<label>
-							<input type="radio" name="wp_pinch_governance_mode" value="server" <?php checked( $mode, 'server' ); ?> />
-							<?php esc_html_e( 'Server-side via WP AI Client (requires WP 7.0+)', 'wp-pinch' ); ?>
-						</label>
-					</td>
-				</tr>
-			</table>
-
-			<h3><?php esc_html_e( 'Governance Tasks', 'wp-pinch' ); ?></h3>
-			<p><?php esc_html_e( 'Select which autonomous tasks to run. Leave all unchecked to enable everything.', 'wp-pinch' ); ?></p>
-
-			<table class="form-table">
-				<?php foreach ( $tasks as $key => $label ) : ?>
-					<tr>
-						<th scope="row"><?php echo esc_html( $label ); ?></th>
-						<td>
-							<label>
-								<input type="checkbox" name="wp_pinch_governance_tasks[]"
-										value="<?php echo esc_attr( $key ); ?>"
-										<?php checked( in_array( $key, $enabled, true ) ); ?> />
-								<?php esc_html_e( 'Enabled', 'wp-pinch' ); ?>
-							</label>
-						</td>
-					</tr>
-				<?php endforeach; ?>
-			</table>
-
-			<?php submit_button(); ?>
-		</form>
-		<?php
-	}
-
-	// =========================================================================
-	// Abilities Tab
-	// =========================================================================
-
-	/**
-	 * Abilities toggle tab — lets admins disable individual abilities.
-	 */
-	private static function render_tab_abilities(): void {
-		$all_abilities = Abilities::get_ability_names();
-		$disabled      = get_option( 'wp_pinch_disabled_abilities', array() );
-
-		if ( ! is_array( $disabled ) ) {
-			$disabled = array();
-		}
-		?>
-		<form method="post" action="options.php">
-			<?php settings_fields( 'wp_pinch_abilities' ); ?>
-
-			<p><?php esc_html_e( 'Uncheck abilities you want to disable. Disabled abilities will not be registered or available via MCP.', 'wp-pinch' ); ?></p>
-
-			<table class="form-table wp-pinch-abilities-table">
-				<thead>
-					<tr>
-						<th><?php esc_html_e( 'On', 'wp-pinch' ); ?></th>
-						<th><?php esc_html_e( 'Ability', 'wp-pinch' ); ?></th>
-					</tr>
-				</thead>
-				<tbody>
-					<?php foreach ( $all_abilities as $name ) : ?>
-						<tr>
-							<td>
-								<input type="checkbox" name="wp_pinch_disabled_abilities[]"
-									value="<?php echo esc_attr( $name ); ?>"
-									<?php checked( in_array( $name, $disabled, true ) ); ?> />
-							</td>
-							<td><code><?php echo esc_html( $name ); ?></code></td>
-						</tr>
-					<?php endforeach; ?>
-				</tbody>
-			</table>
-
-			<p class="description"><?php esc_html_e( 'Check the box to DISABLE the ability. Leave unchecked to keep it enabled.', 'wp-pinch' ); ?></p>
-
-			<?php submit_button(); ?>
-		</form>
-		<?php
-	}
-
-	// =========================================================================
-	// Features Tab
-	// =========================================================================
-
-	/**
-	 * Feature flags tab.
-	 */
-	private static function render_tab_features(): void {
-		$flags  = Feature_Flags::get_all();
-		$labels = array(
-			'streaming_chat'     => __( 'Streaming Chat (SSE)', 'wp-pinch' ),
-			'webhook_signatures' => __( 'HMAC-SHA256 Webhook Signatures', 'wp-pinch' ),
-			'circuit_breaker'    => __( 'Circuit Breaker (claws up when the gateway goes down)', 'wp-pinch' ),
-			'ability_toggle'     => __( 'Ability Toggle (disable individual abilities)', 'wp-pinch' ),
-			'webhook_dashboard'  => __( 'Webhook Dashboard in Audit Log', 'wp-pinch' ),
-			'audit_search'       => __( 'Audit Log Search & Filters', 'wp-pinch' ),
-			'health_endpoint'    => __( 'Public Health Check Endpoint', 'wp-pinch' ),
-			'slash_commands'     => __( 'Slash commands (/new, /status) in chat', 'wp-pinch' ),
-			'token_display'      => __( 'Show token usage in chat footer', 'wp-pinch' ),
-			'pinchdrop_engine'   => __( 'PinchDrop engine (capture anywhere draft packs)', 'wp-pinch' ),
-			'ghost_writer'       => __( 'Ghost Writer (draft completion in author voice)', 'wp-pinch' ),
-			'molt'               => __( 'Molt (content repackager)', 'wp-pinch' ),
-			'prompt_sanitizer'   => __( 'Prompt sanitizer (mitigate instruction injection in content sent to LLMs)', 'wp-pinch' ),
-			'approval_workflow'  => __( 'Approval workflow (queue destructive abilities for admin approval)', 'wp-pinch' ),
-		);
-		?>
-		<form method="post" action="options.php">
-			<?php settings_fields( 'wp_pinch_features' ); ?>
-
-			<h3><?php esc_html_e( 'Feature Flags', 'wp-pinch' ); ?></h3>
-			<p><?php esc_html_e( 'Flip the switches. Enable what you need — we take our features as seriously as a lobster takes its territory.', 'wp-pinch' ); ?></p>
-
-			<table class="form-table">
-				<?php foreach ( $labels as $flag => $label ) : ?>
-					<tr>
-						<th scope="row"><?php echo esc_html( $label ); ?></th>
-						<td>
-							<label>
-								<input type="checkbox" name="wp_pinch_feature_flags[<?php echo esc_attr( $flag ); ?>]"
-									value="1"
-									<?php checked( $flags[ $flag ] ?? false ); ?> />
-								<?php esc_html_e( 'Enabled', 'wp-pinch' ); ?>
-							</label>
-						</td>
-					</tr>
-				<?php endforeach; ?>
-			</table>
-
-			<p class="description">
-				<?php esc_html_e( 'Feature flags can also be overridden via the wp_pinch_feature_flag filter in code.', 'wp-pinch' ); ?>
-			</p>
-
-			<?php submit_button(); ?>
-		</form>
-
-		<div class="wp-pinch-circuit-status">
-			<h3><?php esc_html_e( 'Circuit Breaker Status', 'wp-pinch' ); ?></h3>
-			<?php
-			$state       = Circuit_Breaker::get_state();
-			$retry_after = Circuit_Breaker::get_retry_after();
-			$state_label = array(
-				'closed'    => __( 'Closed (normal)', 'wp-pinch' ),
-				'open'      => __( 'Claws up (failing fast)', 'wp-pinch' ),
-				'half_open' => __( 'Half-Open (poking a claw out)', 'wp-pinch' ),
-			);
-			?>
-			<p>
-				<?php
-				printf(
-					/* translators: %s: circuit state label */
-					esc_html__( 'State: %s', 'wp-pinch' ),
-					'<strong>' . esc_html( $state_label[ $state ] ?? $state ) . '</strong>'
-				);
-				?>
-			</p>
-			<?php if ( $retry_after > 0 ) : ?>
-				<p>
-					<?php
-					printf(
-						/* translators: %d: seconds until retry */
-						esc_html__( 'Retry in %d seconds.', 'wp-pinch' ),
-						absint( $retry_after )
-					);
-					?>
-				</p>
-			<?php endif; ?>
-		</div>
-		<?php
-	}
-
-	// =========================================================================
-	// Usage (Analytics) Tab
-	// =========================================================================
-
-	/**
-	 * Usage tab — ability execution stats from audit log (top abilities, timeline).
-	 */
-	private static function render_tab_usage(): void {
-		if ( ! current_user_can( 'manage_options' ) ) {
-			return;
-		}
-
-		$days       = 30;
-		$stats      = Audit_Table::get_ability_usage_stats( $days );
-		$by_ability = $stats['by_ability'];
-		$by_day     = $stats['by_day'];
-		$total      = $stats['total'];
-
-		krsort( $by_day, SORT_STRING );
-		?>
-		<h3><?php esc_html_e( 'Ability usage', 'wp-pinch' ); ?></h3>
-		<p class="description">
-		<?php
-		/* translators: %d: number of days */
-		echo esc_html( sprintf( __( 'Last %d days (from audit log).', 'wp-pinch' ), $days ) );
-		?>
-		</p>
-
-		<div class="wp-pinch-card" style="margin-top:1em;">
-			<h4 class="wp-pinch-card__title"><?php esc_html_e( 'Total executions', 'wp-pinch' ); ?></h4>
-			<p style="font-size:1.5em; margin:0.5em 0;"><?php echo esc_html( (string) $total ); ?></p>
-		</div>
-
-		<div class="wp-pinch-card" style="margin-top:1em;">
-			<h4 class="wp-pinch-card__title"><?php esc_html_e( 'Top abilities', 'wp-pinch' ); ?></h4>
-			<?php if ( ! empty( $by_ability ) ) : ?>
-				<table class="widefat striped" style="margin-top:0.5em;">
-					<thead>
-						<tr>
-							<th><?php esc_html_e( 'Ability', 'wp-pinch' ); ?></th>
-							<th><?php esc_html_e( 'Count', 'wp-pinch' ); ?></th>
-						</tr>
-					</thead>
-					<tbody>
-						<?php foreach ( $by_ability as $ability_name => $count ) : ?>
-							<tr>
-								<td><code><?php echo esc_html( $ability_name ); ?></code></td>
-								<td><?php echo esc_html( (string) $count ); ?></td>
-							</tr>
-						<?php endforeach; ?>
-					</tbody>
-				</table>
-			<?php else : ?>
-				<p class="description"><?php esc_html_e( 'No ability executions in this period.', 'wp-pinch' ); ?></p>
-			<?php endif; ?>
-		</div>
-
-		<div class="wp-pinch-card" style="margin-top:1em;">
-			<h4 class="wp-pinch-card__title"><?php esc_html_e( 'Executions by day', 'wp-pinch' ); ?></h4>
-			<?php if ( ! empty( $by_day ) ) : ?>
-				<table class="widefat striped" style="margin-top:0.5em;">
-					<thead>
-						<tr>
-							<th><?php esc_html_e( 'Date', 'wp-pinch' ); ?></th>
-							<th><?php esc_html_e( 'Count', 'wp-pinch' ); ?></th>
-						</tr>
-					</thead>
-					<tbody>
-						<?php foreach ( $by_day as $date => $count ) : ?>
-							<tr>
-								<td><?php echo esc_html( $date ); ?></td>
-								<td><?php echo esc_html( (string) $count ); ?></td>
-							</tr>
-						<?php endforeach; ?>
-					</tbody>
-				</table>
-			<?php else : ?>
-				<p class="description"><?php esc_html_e( 'No data for this period.', 'wp-pinch' ); ?></p>
-			<?php endif; ?>
-		</div>
-		<?php
-	}
-
-	// =========================================================================
-	// Audit Log Tab (Enhanced)
-	// =========================================================================
-
-	/**
-	 * Audit log tab with search, date filters, and CSV export.
-	 */
-	private static function render_tab_audit(): void {
-		// Filter params are sanitized; export is protected by nonce below. Admin-only (manage_options).
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended
-		$page      = max( 1, absint( $_GET['audit_page'] ?? 1 ) );
-		$filter    = sanitize_key( $_GET['event_type'] ?? '' );
-		$source    = sanitize_key( $_GET['source'] ?? '' );
-		$search    = sanitize_text_field( wp_unslash( $_GET['audit_search'] ?? '' ) );
-		$date_from = sanitize_text_field( wp_unslash( $_GET['date_from'] ?? '' ) );
-		$date_to   = sanitize_text_field( wp_unslash( $_GET['date_to'] ?? '' ) );
-		// phpcs:enable
-
-		$query_args = array(
-			'event_type' => $filter,
-			'source'     => $source,
-			'search'     => $search,
-			'date_from'  => $date_from,
-			'date_to'    => $date_to,
-			'per_page'   => 30,
-			'page'       => $page,
-		);
-
-		$result    = Audit_Table::query( $query_args );
-		$items     = $result['items'];
-		$total     = $result['total'];
-		$max_pages = (int) ceil( $total / 30 );
-		?>
-		<h3><?php esc_html_e( 'Audit Log', 'wp-pinch' ); ?></h3>
-
-		<!-- Search & Filter Bar -->
-		<div class="wp-pinch-audit-filters">
-			<form method="get" action="">
-				<input type="hidden" name="page" value="wp-pinch" />
-				<input type="hidden" name="tab" value="audit" />
-
-				<label for="audit_search"><?php esc_html_e( 'Search:', 'wp-pinch' ); ?></label>
-				<input type="text" id="audit_search" name="audit_search"
-					value="<?php echo esc_attr( $search ); ?>"
-					placeholder="<?php esc_attr_e( 'Search messages...', 'wp-pinch' ); ?>"
-					class="regular-text" />
-
-				<label for="event_type"><?php esc_html_e( 'Event:', 'wp-pinch' ); ?></label>
-				<select id="event_type" name="event_type" class="wp-pinch-audit-input-event">
-					<option value=""><?php esc_html_e( 'All events', 'wp-pinch' ); ?></option>
-					<option value="ability_executed" <?php selected( $filter, 'ability_executed' ); ?>><?php esc_html_e( 'Ability executed', 'wp-pinch' ); ?></option>
-					<option value="batch_executed" <?php selected( $filter, 'batch_executed' ); ?>><?php esc_html_e( 'Batch executed', 'wp-pinch' ); ?></option>
-					<option value="post_created" <?php selected( $filter, 'post_created' ); ?>><?php esc_html_e( 'Post created', 'wp-pinch' ); ?></option>
-					<option value="post_updated" <?php selected( $filter, 'post_updated' ); ?>><?php esc_html_e( 'Post updated', 'wp-pinch' ); ?></option>
-					<option value="preview_approved" <?php selected( $filter, 'preview_approved' ); ?>><?php esc_html_e( 'Preview approved', 'wp-pinch' ); ?></option>
-					<option value="webhook_sent" <?php selected( $filter, 'webhook_sent' ); ?>><?php esc_html_e( 'Webhook sent', 'wp-pinch' ); ?></option>
-					<option value="webhook_failed" <?php selected( $filter, 'webhook_failed' ); ?>><?php esc_html_e( 'Webhook failed', 'wp-pinch' ); ?></option>
-					<option value="chat_message" <?php selected( $filter, 'chat_message' ); ?>><?php esc_html_e( 'Chat message', 'wp-pinch' ); ?></option>
-					<option value="incoming_hook" <?php selected( $filter, 'incoming_hook' ); ?>><?php esc_html_e( 'Incoming hook', 'wp-pinch' ); ?></option>
-				</select>
-
-				<label for="source"><?php esc_html_e( 'Source:', 'wp-pinch' ); ?></label>
-				<input type="text" id="source" name="source"
-					value="<?php echo esc_attr( $source ); ?>"
-					placeholder="<?php esc_attr_e( 'e.g. webhook', 'wp-pinch' ); ?>"
-					class="regular-text wp-pinch-audit-input-source" />
-
-				<br class="wp-pinch-audit-filters-br" />
-
-				<label for="date_from"><?php esc_html_e( 'From:', 'wp-pinch' ); ?></label>
-				<input type="date" id="date_from" name="date_from"
-					value="<?php echo esc_attr( $date_from ); ?>" />
-
-				<label for="date_to"><?php esc_html_e( 'To:', 'wp-pinch' ); ?></label>
-				<input type="date" id="date_to" name="date_to"
-					value="<?php echo esc_attr( $date_to ); ?>" />
-
-				<button type="submit" class="button"><?php esc_html_e( 'Filter', 'wp-pinch' ); ?></button>
-
-				<?php if ( $search || $filter || $source || $date_from || $date_to ) : ?>
-					<a href="<?php echo esc_url( admin_url( 'admin.php?page=wp-pinch&tab=audit' ) ); ?>" class="button">
-						<?php esc_html_e( 'Reset', 'wp-pinch' ); ?>
-					</a>
-				<?php endif; ?>
-			</form>
-		</div>
-
-		<p>
-			<?php
-			printf(
-				/* translators: %d: total number of log entries */
-				esc_html__( '%d entries found. Entries older than 90 days are automatically removed.', 'wp-pinch' ),
-				(int) $total
-			);
-			?>
-
-			<?php if ( $total > 0 ) : ?>
-				&mdash;
-				<a href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'wp_pinch_export_audit', '1' ), 'wp_pinch_export_audit' ) ); ?>">
-					<?php esc_html_e( 'Export CSV', 'wp-pinch' ); ?>
-				</a>
-			<?php endif; ?>
-		</p>
-
-		<?php if ( ! empty( $items ) ) : ?>
-			<div class="wp-pinch-audit-table-wrap">
-			<table class="widefat striped wp-pinch-audit-table">
-				<thead>
-					<tr>
-						<th><?php esc_html_e( 'Date', 'wp-pinch' ); ?></th>
-						<th><?php esc_html_e( 'Event', 'wp-pinch' ); ?></th>
-						<th><?php esc_html_e( 'Source', 'wp-pinch' ); ?></th>
-						<th><?php esc_html_e( 'Message', 'wp-pinch' ); ?></th>
-						<th><?php esc_html_e( 'Details', 'wp-pinch' ); ?></th>
-					</tr>
-				</thead>
-				<tbody>
-					<?php foreach ( $items as $item ) : ?>
-						<?php
-						$ctx     = ( isset( $item['context'] ) && is_array( $item['context'] ) ) ? $item['context'] : array();
-						$details = array();
-						if ( ! empty( $ctx['post_id'] ) ) {
-							$details[] = 'post_id: ' . (int) $ctx['post_id'];
-						}
-						if ( ! empty( $ctx['ability'] ) ) {
-							$details[] = 'ability: ' . esc_html( (string) $ctx['ability'] );
-						}
-						if ( ! empty( $ctx['diff'] ) && is_array( $ctx['diff'] ) ) {
-							$details[] = 'diff: ' . esc_html( wp_json_encode( $ctx['diff'] ) );
-						}
-						if ( ! empty( $ctx['request_summary'] ) && is_array( $ctx['request_summary'] ) ) {
-							$details[] = 'params: ' . esc_html( wp_json_encode( $ctx['request_summary'] ) );
-						}
-						$details_str = implode( '; ', $details );
-						if ( mb_strlen( $details_str ) > 120 ) {
-							$details_str = mb_substr( $details_str, 0, 120 ) . '…';
-						}
-						?>
-						<tr>
-							<td class="wp-pinch-audit-date"><?php echo esc_html( $item['created_at'] ); ?></td>
-							<td><code><?php echo esc_html( $item['event_type'] ); ?></code></td>
-							<td><?php echo esc_html( $item['source'] ); ?></td>
-							<td><?php echo esc_html( $item['message'] ); ?></td>
-							<td class="wp-pinch-audit-details"><?php echo esc_html( $details_str ); ?></td>
-						</tr>
-					<?php endforeach; ?>
-				</tbody>
-			</table>
-			</div>
-
-			<?php if ( $max_pages > 1 ) : ?>
-				<div class="tablenav wp-pinch-audit-nav">
-					<div class="tablenav-pages">
-						<?php
-						$base_url      = remove_query_arg( 'audit_page' );
-						$max_page_link = min( $max_pages, 50 );
-						for ( $i = 1; $i <= $max_page_link; $i++ ) :
-							if ( $i === $page ) :
-								?>
-								<strong><?php echo esc_html( (string) $i ); ?></strong>
-							<?php else : ?>
-								<a href="<?php echo esc_url( add_query_arg( 'audit_page', $i, $base_url ) ); ?>"><?php echo esc_html( (string) $i ); ?></a>
-							<?php endif; ?>
-						<?php endfor; ?>
-						<?php if ( $max_pages > 50 ) : ?>
-							<span>&hellip; (<?php echo esc_html( (string) $max_pages ); ?> pages)</span>
-						<?php endif; ?>
-					</div>
-				</div>
-			<?php endif; ?>
-		<?php else : ?>
-			<div class="wp-pinch-audit-empty">
-				<div class="wp-pinch-audit-empty-icon" aria-hidden="true">🦞</div>
-				<p><?php esc_html_e( 'Nothing in the log yet — the waters are calm.', 'wp-pinch' ); ?></p>
-				<p class="description"><?php esc_html_e( 'Events will pinch in once webhooks run or the chat block is used. Try adjusting filters or scuttle back later.', 'wp-pinch' ); ?></p>
-			</div>
-		<?php endif; ?>
 		<?php
 	}
 

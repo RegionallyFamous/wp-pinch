@@ -3,7 +3,7 @@
  * Plugin Name:       WP Pinch
  * Plugin URI:        https://wp-pinch.com
  * Description:       OpenClaw + WordPress integration — bidirectional MCP, autonomous governance, conversational site management from any messaging app.
- * Version:           2.9.0
+ * Version:           3.0.0
  * Requires at least: 6.9
  * Requires PHP:      8.1
  * Author:            Nick Hamze
@@ -41,7 +41,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-defined( 'WP_PINCH_VERSION' ) || define( 'WP_PINCH_VERSION', '2.9.0' );
+defined( 'WP_PINCH_VERSION' ) || define( 'WP_PINCH_VERSION', '3.0.0' );
 defined( 'WP_PINCH_FILE' ) || define( 'WP_PINCH_FILE', __FILE__ );
 defined( 'WP_PINCH_DIR' ) || define( 'WP_PINCH_DIR', plugin_dir_path( __FILE__ ) );
 defined( 'WP_PINCH_URL' ) || define( 'WP_PINCH_URL', plugin_dir_url( __FILE__ ) );
@@ -64,10 +64,49 @@ require_once WP_PINCH_DIR . 'includes/class-utils.php';
 require_once WP_PINCH_DIR . 'includes/class-audit-table.php';
 require_once WP_PINCH_DIR . 'includes/class-mcp-server.php';
 require_once WP_PINCH_DIR . 'includes/class-abilities.php';
+require_once WP_PINCH_DIR . 'includes/Ability/Content_Abilities.php';
+require_once WP_PINCH_DIR . 'includes/Ability/Media_Abilities.php';
+require_once WP_PINCH_DIR . 'includes/Ability/User_Comment_Abilities.php';
+require_once WP_PINCH_DIR . 'includes/Ability/Settings_Abilities.php';
+require_once WP_PINCH_DIR . 'includes/Ability/Analytics_Abilities.php';
+require_once WP_PINCH_DIR . 'includes/Ability/QuickWin_Abilities.php';
+require_once WP_PINCH_DIR . 'includes/Ability/PinchDrop_Abilities.php';
+require_once WP_PINCH_DIR . 'includes/Ability/Menu_Meta_Revisions_Abilities.php';
+require_once WP_PINCH_DIR . 'includes/Ability/Woo_Abilities.php';
+require_once WP_PINCH_DIR . 'includes/Ability/GhostWriter_Molt_Abilities.php';
 require_once WP_PINCH_DIR . 'includes/class-webhook-dispatcher.php';
 require_once WP_PINCH_DIR . 'includes/class-governance.php';
+require_once WP_PINCH_DIR . 'includes/Governance/Tasks/Content_Freshness.php';
+require_once WP_PINCH_DIR . 'includes/Governance/Tasks/SEO_Health.php';
+require_once WP_PINCH_DIR . 'includes/Governance/Tasks/Comment_Sweep.php';
+require_once WP_PINCH_DIR . 'includes/Governance/Tasks/Draft_Necromancer.php';
+require_once WP_PINCH_DIR . 'includes/Governance/Tasks/Spaced_Resurfacing.php';
+require_once WP_PINCH_DIR . 'includes/Governance/Tasks/Tide_Report.php';
+require_once WP_PINCH_DIR . 'includes/Governance/Tasks/Broken_Links.php';
+require_once WP_PINCH_DIR . 'includes/Governance/Tasks/Security_Scan.php';
 require_once WP_PINCH_DIR . 'includes/class-settings.php';
+require_once WP_PINCH_DIR . 'includes/Settings/Token_Storage.php';
+require_once WP_PINCH_DIR . 'includes/Settings/Wizard.php';
+require_once WP_PINCH_DIR . 'includes/Settings/Tabs/What_Can_I_Do_Tab.php';
+require_once WP_PINCH_DIR . 'includes/Settings/Tabs/Connection_Tab.php';
+require_once WP_PINCH_DIR . 'includes/Settings/Tabs/Webhooks_Tab.php';
+require_once WP_PINCH_DIR . 'includes/Settings/Tabs/Governance_Tab.php';
+require_once WP_PINCH_DIR . 'includes/Settings/Tabs/Abilities_Tab.php';
+require_once WP_PINCH_DIR . 'includes/Settings/Tabs/Features_Tab.php';
+require_once WP_PINCH_DIR . 'includes/Settings/Tabs/Usage_Tab.php';
+require_once WP_PINCH_DIR . 'includes/Settings/Tabs/Audit_Tab.php';
 require_once WP_PINCH_DIR . 'includes/class-rest-controller.php';
+require_once WP_PINCH_DIR . 'includes/Rest/Auth.php';
+require_once WP_PINCH_DIR . 'includes/Rest/Helpers.php';
+require_once WP_PINCH_DIR . 'includes/Rest/Write_Budget.php';
+require_once WP_PINCH_DIR . 'includes/Rest/Schemas.php';
+require_once WP_PINCH_DIR . 'includes/Rest/Status.php';
+require_once WP_PINCH_DIR . 'includes/Rest/Preview_Approve.php';
+require_once WP_PINCH_DIR . 'includes/Rest/Ghostwrite.php';
+require_once WP_PINCH_DIR . 'includes/Rest/Molt.php';
+require_once WP_PINCH_DIR . 'includes/Rest/Incoming_Hook.php';
+require_once WP_PINCH_DIR . 'includes/Rest/Chat.php';
+require_once WP_PINCH_DIR . 'includes/Rest/Capture.php';
 require_once WP_PINCH_DIR . 'includes/class-privacy.php';
 require_once WP_PINCH_DIR . 'includes/class-site-health.php';
 require_once WP_PINCH_DIR . 'includes/class-circuit-breaker.php';

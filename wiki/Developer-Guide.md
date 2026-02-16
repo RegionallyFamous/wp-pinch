@@ -45,7 +45,7 @@ WP Pinch uses a multi-layered quality system. Think of it as a lobster cage with
 | **CI Pipeline** | GitHub Actions | PHPCS, PHPStan, PHPUnit, ESLint, Stylelint, Build |
 | **Static Analysis** | PHPStan Level 6 | Type mismatches, null access, undefined properties |
 | **Coding Standards** | PHPCS (WordPress-Extra + Security) | Security, escaping, sanitization, naming |
-| **Unit Tests** | PHPUnit (160+ tests) | Functional correctness, security guards, edge cases |
+| **Unit Tests** | PHPUnit (300+ tests) | Functional correctness, security guards, edge cases |
 | **JS Lint** | ESLint (wp-scripts) | JavaScript errors, Prettier formatting |
 | **CSS Lint** | Stylelint (wp-scripts) | CSS errors, specificity issues |
 | **Branch Protection** | GitHub | All checks must pass before merging to main |
@@ -90,15 +90,16 @@ We follow a test-first approach for bug fixes — because lobsters learn from th
 ```
 wp-pinch/
 ├── includes/                    # PHP classes
-│   ├── class-abilities.php      # 35 WordPress abilities
+│   ├── class-abilities.php      # 38+ WordPress abilities
 │   ├── class-audit-table.php    # Audit log database table
 │   ├── class-circuit-breaker.php
 │   ├── class-cli.php            # WP-CLI commands
 │   ├── class-feature-flags.php  # Feature toggle system
 │   ├── class-plugin.php         # Core plugin singleton
-│   ├── class-rest-controller.php # REST API endpoints
+│   ├── class-rest-controller.php # REST route registration, security/rate-limit headers
 │   ├── class-settings.php       # Admin settings pages
-│   └── class-webhook-dispatcher.php
+│   ├── class-webhook-dispatcher.php
+│   └── Rest/                    # REST request handlers (Auth, Chat, Status, Incoming_Hook, Capture, etc.)
 ├── src/
 │   ├── admin/                   # Admin JS/CSS source
 │   └── blocks/

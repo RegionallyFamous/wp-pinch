@@ -4,7 +4,7 @@ Tags: ai, agent, openclaw, mcp, automation
 Requires at least: 6.9
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 2.9.0
+Stable tag: 3.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -126,6 +126,11 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 5. Audit log showing recent ability executions, webhooks, and chat messages.
 
 == Changelog ==
+
+= 3.0.0 =
+* New: REST request handling moved to includes/Rest/ (Auth, Chat, Status, Incoming_Hook, Capture, Ghostwrite, Molt, Preview_Approve, Schemas, Helpers, Write_Budget). Route registration stays in class-rest-controller.php.
+* Changed: Settings use data-driven option registration (get_option_definitions + loop). Governance tests call task class run() methods.
+* Docs: Architecture, Developer-Guide, Test-Coverage, AGENTS.md, Security, FAQ, CONTRIBUTING updated for REST structure and 300+ tests.
 
 = 2.9.0 =
 * New: Security hardening — prompt sanitization, webhook loop detection, kill switch, read-only mode, token masking, expanded option denylist.
@@ -308,6 +313,9 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 * 12+ developer filters and 6+ action hooks for extensibility.
 
 == Upgrade Notice ==
+
+= 3.0.0 =
+Major: REST handlers moved to includes/Rest/ namespace; settings use data-driven registration. No API changes for MCP or REST consumers. Update any custom code that called Rest_Controller or Governance task methods directly.
 
 = 2.5.0 =
 Block Bindings for Pinch Chat, default placeholder, block supports. Doc refresh. No breaking changes.

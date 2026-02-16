@@ -1,23 +1,6 @@
 /**
- * Pinch Chat — Frontend Interactivity API store.
- *
- * Features:
- * - Send/receive chat messages via REST API
- * - SSE streaming support with fallback
- * - Session persistence via sessionStorage
- * - Nonce auto-refresh on 403
- * - Character counter (4,000 char limit)
- * - Clear chat / session reset
- * - Copy-to-clipboard on assistant messages
- * - Message feedback (thumbs up/down)
- * - Slash commands (/new, /reset, /status, /compact)
- * - Markdown rendering (bold, italic, code, links, headings, lists, code blocks)
- * - Typing indicator animation
- * - Keyboard shortcuts (Escape to clear input)
- * - Token usage display
- * - Error boundary for graceful failure
- *
- * @package
+ * Pinch Chat — Interactivity API store: send/receive, SSE streaming, session reset,
+ * slash commands, markdown in bubbles, copy/feedback, 4k char limit, error boundary.
  */
 
 /* global sessionStorage, requestAnimationFrame, navigator */

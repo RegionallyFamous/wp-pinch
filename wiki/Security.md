@@ -51,7 +51,7 @@ When the `prompt_sanitizer` feature flag is enabled (default: on), WordPress con
 ### Database
 
 - **Prepared SQL statements** everywhere — no raw queries, ever
-- **`show_in_rest => false`** on all 24 settings to prevent REST API leakage
+- **`show_in_rest => false`** on all settings to prevent REST API leakage
 - **Existence checks** before modifying posts, comments, terms, and media
 - **Audit CSV export** capped at 5,000 rows (DoS mitigation); **Content-Disposition** filename stripped of CRLF and quotes to prevent header injection
 
@@ -135,7 +135,7 @@ WP Pinch applies standard web security practices:
 |---|---|---|
 | **Static Analysis** | PHPStan Level 6 | Type mismatches, null access, undefined properties |
 | **Coding Standards** | PHPCS (WordPress-Extra + Security) | Security violations, escaping, sanitization, naming |
-| **Unit Tests** | PHPUnit (160+ tests) | Functional correctness, security guards, edge cases |
+| **Unit Tests** | PHPUnit (300+ tests) | Functional correctness, security guards, edge cases |
 | **CI Pipeline** | GitHub Actions | All of the above on every push |
 | **Pre-commit Hook** | PHPCS + PHPStan | Catches issues before they reach the repo |
 

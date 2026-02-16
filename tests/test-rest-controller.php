@@ -6,6 +6,12 @@
  */
 
 use WP_Pinch\Rest_Controller;
+use WP_Pinch\Rest\Auth;
+use WP_Pinch\Rest\Chat;
+use WP_Pinch\Rest\Capture;
+use WP_Pinch\Rest\Helpers;
+use WP_Pinch\Rest\Incoming_Hook;
+use WP_Pinch\Rest\Status;
 use WP_Pinch\Audit_Table;
 use WP_Pinch\OpenClaw_Role;
 
@@ -79,7 +85,7 @@ class Test_Rest_Controller extends WP_UnitTestCase {
 	 */
 	public function test_check_permission_allows_editor(): void {
 		wp_set_current_user( $this->editor_id );
-		$this->assertTrue( Rest_Controller::check_permission() );
+		$this->assertTrue( Auth::check_permission() );
 	}
 
 	/**
@@ -87,7 +93,7 @@ class Test_Rest_Controller extends WP_UnitTestCase {
 	 */
 	public function test_check_permission_allows_admin(): void {
 		wp_set_current_user( $this->admin_id );
-		$this->assertTrue( Rest_Controller::check_permission() );
+		$this->assertTrue( Auth::check_permission() );
 	}
 
 	/**
@@ -95,7 +101,7 @@ class Test_Rest_Controller extends WP_UnitTestCase {
 	 */
 	public function test_check_permission_denies_subscriber(): void {
 		wp_set_current_user( $this->subscriber_id );
-		$result = Rest_Controller::check_permission();
+		$result = Auth::check_permission();
 		$this->assertInstanceOf( WP_Error::class, $result );
 		$this->assertEquals( 'capability_denied', $result->get_error_code() );
 	}
@@ -105,7 +111,7 @@ class Test_Rest_Controller extends WP_UnitTestCase {
 	 */
 	public function test_check_permission_denies_logged_out(): void {
 		wp_set_current_user( 0 );
-		$result = Rest_Controller::check_permission();
+		$result = Auth::check_permission();
 		$this->assertInstanceOf( WP_Error::class, $result );
 	}
 
@@ -123,7 +129,7 @@ class Test_Rest_Controller extends WP_UnitTestCase {
 		delete_option( 'wp_pinch_api_token' );
 
 		$request  = new WP_REST_Request( 'GET', '/wp-pinch/v1/status' );
-		$response = Rest_Controller::handle_status( $request );
+		$response = Status::handle_status( $request );
 
 		$this->assertInstanceOf( WP_REST_Response::class, $response );
 		$this->assertEquals( 200, $response->get_status() );
@@ -144,7 +150,7 @@ class Test_Rest_Controller extends WP_UnitTestCase {
 		update_option( 'wp_pinch_api_token', 'test-token' );
 
 		$request  = new WP_REST_Request( 'GET', '/wp-pinch/v1/status' );
-		$response = Rest_Controller::handle_status( $request );
+		$response = Status::handle_status( $request );
 		$data     = $response->get_data();
 
 		$this->assertArrayNotHasKey( 'url', $data['gateway'], 'Gateway URL should NOT be visible to editors.' );
@@ -160,7 +166,7 @@ class Test_Rest_Controller extends WP_UnitTestCase {
 		update_option( 'wp_pinch_api_token', 'test-token' );
 
 		$request  = new WP_REST_Request( 'GET', '/wp-pinch/v1/status' );
-		$response = Rest_Controller::handle_status( $request );
+		$response = Status::handle_status( $request );
 		$data     = $response->get_data();
 
 		$this->assertArrayHasKey( 'url', $data['gateway'] );
@@ -184,7 +190,7 @@ class Test_Rest_Controller extends WP_UnitTestCase {
 		$request->set_param( 'ability', 'wp-pinch/list-posts' );
 		$request->set_param( 'params', array() );
 
-		$response = Rest_Controller::handle_incoming_hook( $request );
+		$response = Incoming_Hook::handle_incoming_hook( $request );
 
 		$this->assertInstanceOf( WP_REST_Response::class, $response );
 		$this->assertSame( 503, $response->get_status() );
@@ -203,7 +209,7 @@ class Test_Rest_Controller extends WP_UnitTestCase {
 		$request = new WP_REST_Request( 'POST', '/wp-pinch/v1/chat' );
 		$request->set_param( 'message', 'Hello' );
 
-		$response = Rest_Controller::handle_chat( $request );
+		$response = Chat::handle_chat( $request );
 
 		$this->assertInstanceOf( WP_REST_Response::class, $response );
 		$this->assertSame( 503, $response->get_status() );
@@ -232,7 +238,7 @@ class Test_Rest_Controller extends WP_UnitTestCase {
 		$request->set_param( 'ability', 'wp-pinch/update-option' );
 		$request->set_param( 'params', array( 'key' => 'blogname', 'value' => 'Read-only test' ) );
 
-		$response = Rest_Controller::handle_incoming_hook( $request );
+		$response = Incoming_Hook::handle_incoming_hook( $request );
 
 		$this->assertInstanceOf( WP_REST_Response::class, $response );
 		$this->assertSame( 200, $response->get_status() );
@@ -259,7 +265,7 @@ class Test_Rest_Controller extends WP_UnitTestCase {
 		$request = new WP_REST_Request( 'POST', '/wp-pinch/v1/chat' );
 		$request->set_param( 'message', 'Hello' );
 
-		$result = Rest_Controller::handle_chat( $request );
+		$result = Chat::handle_chat( $request );
 
 		$this->assertInstanceOf( WP_Error::class, $result );
 		$this->assertEquals( 'not_configured', $result->get_error_code() );
@@ -294,7 +300,7 @@ class Test_Rest_Controller extends WP_UnitTestCase {
 	 * Test rate limit constant value.
 	 */
 	public function test_rate_limit_constant(): void {
-		$this->assertEquals( 10, Rest_Controller::DEFAULT_RATE_LIMIT );
+		$this->assertEquals( 10, \WP_Pinch\Rest\Helpers::DEFAULT_RATE_LIMIT );
 	}
 
 	// =========================================================================
@@ -326,7 +332,7 @@ class Test_Rest_Controller extends WP_UnitTestCase {
 		$request->set_param( 'text', 'Idea text' );
 		$request->set_param( 'source', 'slack' );
 
-		$result = Rest_Controller::handle_pinchdrop_capture( $request );
+		$result = Capture::handle_pinchdrop_capture( $request );
 		$this->assertInstanceOf( WP_Error::class, $result );
 		$this->assertEquals( 'pinchdrop_disabled', $result->get_error_code() );
 	}
@@ -351,12 +357,12 @@ class Test_Rest_Controller extends WP_UnitTestCase {
 		$request->set_param( 'request_id', 'req-pin-001' );
 		$request->set_param( 'options', array( 'output_types' => array( 'post' ) ) );
 
-		$first = Rest_Controller::handle_pinchdrop_capture( $request );
+		$first = Capture::handle_pinchdrop_capture( $request );
 		$this->assertInstanceOf( WP_REST_Response::class, $first );
 		$this->assertEquals( 200, $first->get_status() );
 		$this->assertFalse( $first->get_data()['deduplicated'] );
 
-		$second = Rest_Controller::handle_pinchdrop_capture( $request );
+		$second = Capture::handle_pinchdrop_capture( $request );
 		$this->assertInstanceOf( WP_REST_Response::class, $second );
 		$this->assertEquals( 200, $second->get_status() );
 		$this->assertTrue( $second->get_data()['deduplicated'] );
@@ -372,7 +378,7 @@ class Test_Rest_Controller extends WP_UnitTestCase {
 	public function test_handle_list_abilities_includes_site_manifest(): void {
 		wp_set_current_user( $this->admin_id );
 
-		$response = Rest_Controller::handle_list_abilities();
+		$response = Status::handle_list_abilities();
 		$this->assertInstanceOf( WP_REST_Response::class, $response );
 		$data = $response->get_data();
 
@@ -445,7 +451,7 @@ class Test_Rest_Controller extends WP_UnitTestCase {
 	public function test_sanitize_gateway_reply_strict(): void {
 		update_option( 'wp_pinch_gateway_reply_strict_sanitize', true );
 
-		$method = new ReflectionMethod( Rest_Controller::class, 'sanitize_gateway_reply' );
+		$method = new ReflectionMethod( Helpers::class, 'sanitize_gateway_reply' );
 		$method->setAccessible( true );
 
 		// Comment should be stripped; line with instruction-like text should be redacted.
@@ -471,7 +477,7 @@ class Test_Rest_Controller extends WP_UnitTestCase {
 	public function test_sanitize_gateway_reply_non_strict(): void {
 		update_option( 'wp_pinch_gateway_reply_strict_sanitize', false );
 
-		$method = new ReflectionMethod( Rest_Controller::class, 'sanitize_gateway_reply' );
+		$method = new ReflectionMethod( Helpers::class, 'sanitize_gateway_reply' );
 		$method->setAccessible( true );
 
 		$reply = '<p>Safe <strong>html</strong></p>';

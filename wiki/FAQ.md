@@ -53,7 +53,7 @@ If you can dream it, you can register it.
 
 ## Is it production-ready?
 
-WP Pinch passes PHPCS (WordPress-Extra + Security), PHPStan Level 6, and 160+ PHPUnit tests. Every ability has security guards, every input is sanitized, every output is escaped. It's as battle-tested as a lobster that survived the tank at Red Lobster.
+WP Pinch passes PHPCS (WordPress-Extra + Security), PHPStan Level 6, and 300+ PHPUnit tests. Every ability has security guards, every input is sanitized, every output is escaped. It's as battle-tested as a lobster that survived the tank at Red Lobster.
 
 ---
 

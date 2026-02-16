@@ -27,6 +27,8 @@ Covers the **Prompt_Sanitizer** security component (previously untested):
 
 ### `tests/test-rest-controller.php`
 
+Tests target the refactored REST handlers in `WP_Pinch\Rest\*`: **Auth** (permission/token checks), **Chat**, **Status**, **Incoming_Hook**, **Capture**, **Helpers** (e.g. `sanitize_gateway_reply`). Route registration is tested via `Rest_Controller::register_routes()`.
+
 **Kill switch (API disabled):**
 
 - `test_handle_incoming_hook_returns_503_when_api_disabled` — incoming hook returns 503 with `api_disabled` code

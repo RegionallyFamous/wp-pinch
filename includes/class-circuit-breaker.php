@@ -19,9 +19,7 @@ namespace WP_Pinch;
 
 defined( 'ABSPATH' ) || exit;
 
-/**
- * Circuit breaker for outbound HTTP calls to the AI gateway.
- */
+/** Fails fast when the gateway is down; recovers on probe. */
 class Circuit_Breaker {
 
 	/**

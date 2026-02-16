@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-02-11
+
+### Added
+- **REST handler namespace** — Request handling moved from `Rest_Controller` into `includes/Rest/`: `Auth`, `Chat`, `Status`, `Incoming_Hook`, `Capture`, `Ghostwrite`, `Molt`, `Preview_Approve`, `Schemas`, `Helpers`, `Write_Budget`. Route registration and security/rate-limit headers remain in `class-rest-controller.php`. `Rest_Controller::DEFAULT_RATE_LIMIT` kept for backward compatibility; canonical constant is `Rest\Helpers::DEFAULT_RATE_LIMIT`.
+
+### Changed
+- **Settings registration** — Data-driven option registration: `Settings::get_option_definitions()` returns all option configs; `register_settings()` loops over definitions. Reduces repetition and keeps option list in one place.
+- **Governance tests** — Tests updated to call `Governance\Tasks\Content_Freshness::run()`, `SEO_Health::run()`, `Comment_Sweep::run()` directly instead of removed `Governance::task_*()` methods.
+- **Documentation** — Architecture, Developer-Guide, Test-Coverage, AGENTS.md, Security.md, FAQ.md, CONTRIBUTING.md updated for REST structure, 300+ tests, and settings refactor. Security doc: "all settings" for show_in_rest (no fixed count).
+
+### Fixed
+- **Governance PHPUnit** — Four tests no longer call undefined `Governance::task_content_freshness()`, `task_seo_health()`, `task_comment_sweep()`; they use the task class `run()` methods.
+
 ## [2.9.0] - 2026-02-15
 
 ### Added

@@ -6,6 +6,9 @@
  */
 
 use WP_Pinch\Governance;
+use WP_Pinch\Governance\Tasks\Comment_Sweep;
+use WP_Pinch\Governance\Tasks\Content_Freshness;
+use WP_Pinch\Governance\Tasks\SEO_Health;
 use WP_Pinch\Audit_Table;
 
 /**
@@ -199,7 +202,7 @@ class Test_Governance extends WP_UnitTestCase {
 		delete_option( 'wp_pinch_gateway_url' );
 
 		// This should complete without error.
-		Governance::task_content_freshness();
+		Content_Freshness::run();
 
 		// No assertion needed — we verify it doesn't fatal.
 		$this->assertTrue( true );
@@ -237,7 +240,7 @@ class Test_Governance extends WP_UnitTestCase {
 			return $findings;
 		} );
 
-		Governance::task_seo_health();
+		SEO_Health::run();
 		$this->assertTrue( true );
 	}
 
@@ -251,7 +254,7 @@ class Test_Governance extends WP_UnitTestCase {
 	public function test_task_comment_sweep_clean(): void {
 		delete_option( 'wp_pinch_gateway_url' );
 
-		Governance::task_comment_sweep();
+		Comment_Sweep::run();
 		$this->assertTrue( true, 'Comment sweep should complete without error on clean site.' );
 	}
 
@@ -277,7 +280,7 @@ class Test_Governance extends WP_UnitTestCase {
 		delete_option( 'wp_pinch_gateway_url' );
 
 		// This should suppress delivery (no webhook, no audit log for findings).
-		Governance::task_seo_health();
+		SEO_Health::run();
 
 		remove_filter( 'wp_pinch_governance_findings', '__return_false' );
 		$this->assertTrue( true );

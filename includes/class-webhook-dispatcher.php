@@ -298,6 +298,7 @@ class Webhook_Dispatcher {
 		$payload = apply_filters( 'wp_pinch_webhook_payload', $payload, $event, $data );
 
 		$webhook_url = trailingslashit( $gateway_url ) . 'hooks/agent';
+		// SSRF: block internal/private URLs.
 		if ( ! wp_http_validate_url( $webhook_url ) ) {
 			Audit_Table::insert(
 				'webhook_rejected',

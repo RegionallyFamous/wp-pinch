@@ -212,7 +212,7 @@ For basic auth with a token, set `WP_AUTH_TOKEN` to the base64-encoded `user:pas
 Every push and PR runs several checks. All must pass to merge:
 
 1. **PHPCS + PHPStan** — WordPress coding standards, security sniffs, and level 6 static analysis (PHP 8.1/8.2/8.3)
-2. **PHPUnit** — 293+ tests across PHP 8.1/8.2/8.3 + WP latest and WP 6.9 (Action Scheduler loaded in wp-env for governance tests)
+2. **PHPUnit** — 300+ tests across PHP 8.1/8.2/8.3 + WP latest and WP 6.9 (Action Scheduler loaded in wp-env for governance tests)
 3. **JS / CSS lint + build** — ESLint, Stylelint, asset compilation, and JS unit tests
 4. **Dependency audit** — Composer and npm security audits
 5. **CodeQL** — Static application security testing (SAST) on PHP
