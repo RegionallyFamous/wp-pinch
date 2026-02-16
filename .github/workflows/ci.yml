@@ -236,10 +236,10 @@ jobs:
         run: composer infection
 
   # ──────────────────────────────────────────────────────────────────────────
-  # JavaScript quality checks
+  # NPM CI — install, lint, build, and test (JS/CSS)
   # ──────────────────────────────────────────────────────────────────────────
-  js-lint:
-    name: JS / CSS lint + build
+  npm-ci:
+    name: NPM CI
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -250,8 +250,11 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Install dependencies
+      - name: Install dependencies (npm ci)
         run: npm ci
+
+      - name: Check for outdated dependencies
+        run: npm outdated
 
       - name: Lint JavaScript
         run: npm run lint:js
@@ -262,7 +265,7 @@ jobs:
       - name: Build assets
         run: npm run build
 
-      - name: Run JS tests
+      - name: Run JS unit tests
         run: npm test -- --passWithNoTests
 
   # ──────────────────────────────────────────────────────────────────────────

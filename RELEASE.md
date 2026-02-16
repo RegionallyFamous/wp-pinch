@@ -13,6 +13,21 @@ A rock-solid checklist to cut a WP Pinch release. Nothing ships until every step
 
 ---
 
+## 0. Dependencies up to date
+
+Before cutting a release, ensure dependencies are current:
+
+```bash
+make deps-check    # Show outdated npm and Composer (direct) packages
+```
+
+- [ ] Run **`make deps-check`**. If anything is outdated:
+  - **npm:** Run `npm update` (or update specific packages). Re-run `npm run build`, `npm run test`, and lint.
+  - **Composer:** For patch/minor (e.g. `!` in composer outdated), run `composer update <package>` or `make deps-update`. For major upgrades (e.g. `~`), review changelogs and test before updating.
+- [ ] After updating, run the full gate (step 1) to confirm nothing broke.
+
+---
+
 ## 1. Run the full gate
 
 Nothing ships if the gate fails. Run:
@@ -97,6 +112,8 @@ git push origin vX.Y.Z
 
 | Command | What it does |
 |---------|--------------|
+| `make deps-check` | List outdated npm and Composer (direct) dependencies |
+| `make deps-update` | npm update + composer update (run full gate after) |
 | `make release-check` | Lint + PHPStan + build (no tests) |
 | `make release-check-full` | Lint + PHPStan + PHPUnit (requires wp-env) |
 | `make release-prep` | Full gate + i18n + zip |

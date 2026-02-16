@@ -1,29 +1,25 @@
 <?xml version="1.0"?>
-<phpunit
-	bootstrap="tests/bootstrap.php"
-	backupGlobals="false"
-	colors="true"
->
-	<testsuites>
-		<testsuite name="WP Pinch">
-			<directory prefix="test-" suffix=".php">./tests/</directory>
-		</testsuite>
-	</testsuites>
-
-	<php>
-		<const name="WP_TESTS_MULTISITE" value="0" />
-		<!-- Suppress vendor deprecations (e.g. thecodingmachine/safe PHP 8.4 nullable params) during tests -->
-		<ini name="error_reporting" value="22527"/>
-	</php>
-
-	<coverage>
-		<include>
-			<directory suffix=".php">./includes</directory>
-			<file>./wp-pinch.php</file>
-		</include>
-		<report>
-			<html outputDirectory="build/coverage"/>
-			<text outputFile="php://stdout" showUncoveredFiles="false"/>
-		</report>
-	</coverage>
+<phpunit bootstrap="tests/bootstrap.php" backupGlobals="false" colors="true">
+  <testsuites>
+    <testsuite name="WP Pinch">
+      <directory prefix="test-" suffix=".php">./tests/</directory>
+    </testsuite>
+  </testsuites>
+  <php>
+    <const name="WP_TESTS_MULTISITE" value="0"/>
+    <!-- Suppress vendor deprecations (e.g. thecodingmachine/safe PHP 8.4 nullable params) during tests -->
+    <ini name="error_reporting" value="22527"/>
+  </php>
+  <coverage>
+    <report>
+      <html outputDirectory="build/coverage"/>
+      <text outputFile="php://stdout" showUncoveredFiles="false"/>
+    </report>
+  </coverage>
+  <source>
+    <include>
+      <directory suffix=".php">./includes</directory>
+      <file>./wp-pinch.php</file>
+    </include>
+  </source>
 </phpunit>

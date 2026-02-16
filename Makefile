@@ -12,6 +12,19 @@ DIST_DIR     := dist
 # Dependencies
 # ---------------------------------------------------------------------------
 
+.PHONY: deps-check
+deps-check: ## Show outdated npm and Composer (direct) dependencies. Run before release.
+	@echo "=== npm (direct dependencies) ==="
+	@npm outdated 2>/dev/null || true
+	@echo ""
+	@echo "=== Composer (direct dependencies) ==="
+	@composer outdated --direct 2>/dev/null || true
+
+.PHONY: deps-update
+deps-update: ## Update dependencies: npm update, then composer update (patch/minor). Review major bumps manually.
+	npm update
+	composer update
+
 .PHONY: install
 install: node_modules vendor ## Install all dependencies
 
