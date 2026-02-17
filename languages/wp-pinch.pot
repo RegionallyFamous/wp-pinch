@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-02-17T13:41:40+00:00\n"
+"POT-Creation-Date: 2026-02-17T13:51:43+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: wp-pinch\n"
@@ -252,7 +252,7 @@ msgid "Invalid export type."
 msgstr ""
 
 #: includes/Ability/Analytics_Abilities.php:551
-#: includes/Ability/Analytics_Abilities.php:731
+#: includes/Ability/Analytics_Abilities.php:732
 #: includes/Ability/QuickWin_Abilities.php:764
 msgid "Invalid post type or insufficient permissions."
 msgstr ""
@@ -266,11 +266,11 @@ msgstr ""
 msgid "Post not found or insufficient permissions."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:727
+#: includes/Ability/Analytics_Abilities.php:728
 msgid "Query is required."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:785
+#: includes/Ability/Analytics_Abilities.php:786
 #: includes/Ability/GEO_SEO_Abilities.php:183
 #: includes/Ability/GEO_SEO_Abilities.php:358
 #: includes/Ability/GEO_SEO_Abilities.php:638
@@ -281,11 +281,11 @@ msgstr ""
 msgid "WP Pinch gateway is not configured."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:788
+#: includes/Ability/Analytics_Abilities.php:789
 msgid "API is in read-only mode."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:791
+#: includes/Ability/Analytics_Abilities.php:792
 #: includes/Ability/GEO_SEO_Abilities.php:191
 #: includes/Ability/GEO_SEO_Abilities.php:469
 #: includes/Ability/GEO_SEO_Abilities.php:641
@@ -297,7 +297,7 @@ msgstr ""
 msgid "The AI gateway is temporarily unavailable."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:825
+#: includes/Ability/Analytics_Abilities.php:826
 #: includes/Ability/GEO_SEO_Abilities.php:225
 #: includes/Ability/GEO_SEO_Abilities.php:501
 #: includes/Ability/GEO_SEO_Abilities.php:672
@@ -313,7 +313,7 @@ msgid "Gateway URL failed security validation."
 msgstr ""
 
 #. translators: %d: HTTP status code
-#: includes/Ability/Analytics_Abilities.php:851
+#: includes/Ability/Analytics_Abilities.php:852
 #: includes/Ability/GEO_SEO_Abilities.php:254
 #: includes/Ability/GEO_SEO_Abilities.php:531
 #: includes/Ability/GEO_SEO_Abilities.php:698
@@ -323,15 +323,15 @@ msgstr ""
 msgid "Gateway returned HTTP %d."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:878
+#: includes/Ability/Analytics_Abilities.php:879
 msgid "fields must be an array of { name, value } objects."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:891
+#: includes/Ability/Analytics_Abilities.php:892
 msgid "(empty)"
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:897
+#: includes/Ability/Analytics_Abilities.php:898
 msgid "No valid fields provided."
 msgstr ""
 
@@ -2323,15 +2323,15 @@ msgstr ""
 msgid "Too many streaming connections. Please close other chat windows and try again."
 msgstr ""
 
-#: includes/Rest/Chat.php:509
+#: includes/Rest/Chat.php:510
 msgid "Unable to reach the AI gateway."
 msgstr ""
 
-#: includes/Rest/Chat.php:530
+#: includes/Rest/Chat.php:532
 msgid "The AI gateway returned an error."
 msgstr ""
 
-#: includes/Rest/Chat.php:554
+#: includes/Rest/Chat.php:557
 msgid "Response too large. Try a shorter message."
 msgstr ""
 
@@ -2375,7 +2375,7 @@ msgstr ""
 msgid "Invalid action. Use \"list\" or \"write\"."
 msgstr ""
 
-#: includes/Rest/Helpers.php:337
+#: includes/Rest/Helpers.php:339
 msgid "Response truncated for length."
 msgstr ""
 
