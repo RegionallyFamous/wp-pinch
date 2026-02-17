@@ -319,6 +319,7 @@ class Audit_Table {
 		$result = self::query( $args );
 		$items  = $result['items'];
 
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- php://temp stream for CSV in memory; WP_Filesystem has no equivalent.
 		$output = fopen( 'php://temp', 'r+' );
 
 		// CSV header.
@@ -340,6 +341,7 @@ class Audit_Table {
 
 		rewind( $output );
 		$csv = stream_get_contents( $output );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Paired with fopen( php://temp ).
 		fclose( $output );
 
 		return $csv;

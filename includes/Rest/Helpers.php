@@ -183,7 +183,8 @@ class Helpers {
 		if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG && defined( 'WP_CONTENT_DIR' ) ) {
 			$log_file = WP_CONTENT_DIR . '/debug.log';
 			if ( is_readable( $log_file ) && is_file( $log_file ) ) {
-				$lines  = array();
+				$lines = array();
+				// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Reading debug.log tail for admin diagnostics; path is WP_CONTENT_DIR.
 				$handle = @fopen( $log_file, 'r' );
 				if ( $handle ) {
 					$size  = fstat( $handle )['size'] ?? 0;
@@ -197,6 +198,7 @@ class Helpers {
 						$lines[] = $line;
 						$line    = fgets( $handle );
 					}
+					// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Paired with fopen for debug.log read.
 					fclose( $handle );
 					$lines                 = array_slice( $lines, -20 );
 					$max_len               = 200;

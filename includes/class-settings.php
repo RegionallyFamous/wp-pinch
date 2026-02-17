@@ -943,6 +943,7 @@ class Settings {
 		header( 'X-Content-Type-Options: nosniff' );
 		header( "Content-Security-Policy: default-src 'none'" );
 
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSV download; raw export data.
 		echo $csv;
 		exit;
 	}

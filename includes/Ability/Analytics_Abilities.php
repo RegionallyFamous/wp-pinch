@@ -664,6 +664,7 @@ class Analytics_Abilities {
 		$term_taxonomy_ids = array_unique( $term_taxonomy_ids );
 		$by_taxonomy_ids   = array();
 		if ( ! empty( $term_taxonomy_ids ) ) {
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Placeholder string only (e.g. '%d,%d'); values passed to prepare().
 			$in_placeholders = implode( ',', array_fill( 0, count( $term_taxonomy_ids ), '%d' ) );
 			$by_taxonomy_ids = $wpdb->get_col(
 				$wpdb->prepare(

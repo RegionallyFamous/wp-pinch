@@ -502,6 +502,7 @@ class Chat {
 			}
 			exit;
 		}
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- Remote SSE stream; WP_Filesystem does not support HTTP streams.
 		$stream = @fopen( $stream_url, 'r', false, $context );
 		if ( ! $stream ) {
 			Circuit_Breaker::record_failure();
@@ -524,6 +525,7 @@ class Chat {
 			}
 		}
 		if ( $stream_status >= 400 ) {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Paired with fopen for remote stream.
 			fclose( $stream );
 			Circuit_Breaker::record_failure();
 			echo "event: error\n";
@@ -544,6 +546,7 @@ class Chat {
 			$max_response_len = 0;
 		}
 		while ( ! feof( $stream ) ) {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fread -- Reading remote SSE stream.
 			$chunk = fread( $stream, 4096 );
 			if ( false === $chunk || '' === $chunk ) {
 				break;
@@ -558,6 +561,7 @@ class Chat {
 			$sse_buffer              .= $clean;
 			list( $out, $sse_buffer ) = Helpers::process_sse_buffer( $sse_buffer );
 			if ( '' !== $out ) {
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- SSE stream; controlled server-sent data.
 				echo $out;
 				$forwarded_events = true;
 				if ( ob_get_level() ) {
@@ -569,13 +573,16 @@ class Chat {
 		if ( '' !== $sse_buffer ) {
 			list( $out, $_ ) = Helpers::process_sse_buffer( $sse_buffer . "\n" );
 			if ( '' !== $out ) {
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- SSE stream; controlled server-sent data.
 				echo $out;
 				$forwarded_events = true;
 			} else {
+				// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- SSE stream; controlled server-sent data.
 				echo $sse_buffer;
 				$forwarded_events = true;
 			}
 		}
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- Paired with fopen for remote stream.
 		fclose( $stream );
 		if ( ! $forwarded_events ) {
 			$data  = json_decode( $full_response, true );

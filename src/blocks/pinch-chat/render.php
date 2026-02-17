@@ -83,10 +83,10 @@ wp_interactivity_state(
 );
 ?>
 <div
-	<?php echo get_block_wrapper_attributes( array( 'class' => 'wp-pinch-chat' ) ); ?>
+	<?php echo get_block_wrapper_attributes( array( 'class' => 'wp-pinch-chat' ) ); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Block wrapper API returns safe markup. */ ?>
 	data-wp-interactive="wp-pinch/chat"
 	data-wp-init="callbacks.init"
-	<?php echo wp_interactivity_data_wp_context( array( 'id' => $unique_id ) ); ?>
+	<?php echo wp_interactivity_data_wp_context( array( 'id' => $unique_id ) ); /* phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Interactivity API returns safe data attribute. */ ?>
 	id="<?php echo esc_attr( $unique_id ); ?>"
 >
 	<?php if ( $show_header ) : ?>
