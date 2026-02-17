@@ -68,6 +68,30 @@ class Helpers {
 	}
 
 	/**
+	 * Per-IP rate limit (transient-based).
+	 *
+	 * @param string $prefix        Transient key prefix (e.g. 'wp_pinch_health_rate_').
+	 * @param int    $limit_per_minute Max requests per minute per IP.
+	 * @return bool True if within limit, false if rate limited.
+	 */
+	public static function check_ip_rate_limit( string $prefix, int $limit_per_minute ): bool {
+		$ip   = self::get_client_ip();
+		$salt = wp_salt();
+		$key  = $prefix . substr( hash_hmac( 'sha256', $ip, $salt ), 0, 16 );
+
+		$count = (int) get_transient( $key );
+		if ( $count >= $limit_per_minute ) {
+			return false;
+		}
+		if ( 0 === $count ) {
+			set_transient( $key, 1, 60 );
+		} else {
+			set_transient( $key, $count + 1, 60 );
+		}
+		return true;
+	}
+
+	/**
 	 * Get the client IP address, respecting common proxy headers.
 	 *
 	 * @return string Client IP address.

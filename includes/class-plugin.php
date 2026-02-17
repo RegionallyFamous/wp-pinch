@@ -283,6 +283,7 @@ final class Plugin {
 			'2.5.0' => array( $this, 'migrate_2_5_0' ),
 			'2.6.0' => array( $this, 'migrate_2_6_0' ),
 			'2.7.0' => array( $this, 'migrate_2_7_0' ),
+			'3.0.0' => array( $this, 'migrate_3_0_0' ),
 		);
 
 		foreach ( $migrations as $version => $callback ) {
@@ -404,6 +405,15 @@ final class Plugin {
 				update_option( $option, $value, 'no' );
 			}
 		}
+	}
+
+	/**
+	 * Migration for v3.0.0.
+	 *
+	 * - Adds user_id column to audit table for privacy export/erase queries.
+	 */
+	private function migrate_3_0_0(): void {
+		Audit_Table::create_table();
 	}
 
 	// =========================================================================

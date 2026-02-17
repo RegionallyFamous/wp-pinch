@@ -39,6 +39,16 @@ class Incoming_Hook {
 				503
 			);
 		}
+		$limit = (int) apply_filters( 'wp_pinch_incoming_rate_limit', 120 );
+		if ( $limit > 0 && ! Helpers::check_ip_rate_limit( 'wp_pinch_incoming_', $limit ) ) {
+			return new \WP_REST_Response(
+				array(
+					'code'    => 'rate_limited',
+					'message' => __( 'Too many requests. Please wait a moment.', 'wp-pinch' ),
+				),
+				429
+			);
+		}
 		$action   = $request->get_param( 'action' );
 		$trace_id = Rest_Controller::get_trace_id();
 		Audit_Table::insert(
@@ -197,6 +207,30 @@ class Incoming_Hook {
 						__( 'The "batch" parameter must be a non-empty array of { ability, params }.', 'wp-pinch' ),
 						array( 'status' => 400 )
 					);
+				}
+				foreach ( $batch as $idx => $item ) {
+					if ( empty( $item['ability'] ) || ! is_string( $item['ability'] ) ) {
+						return new \WP_Error(
+							'invalid_batch_item',
+							sprintf(
+								/* translators: %d: batch item index (1-based) */
+								__( 'Batch item %d must have a string "ability" field.', 'wp-pinch' ),
+								$idx + 1
+							),
+							array( 'status' => 400 )
+						);
+					}
+					if ( isset( $item['params'] ) && ! is_array( $item['params'] ) ) {
+						return new \WP_Error(
+							'invalid_batch_item',
+							sprintf(
+								/* translators: %d: batch item index (1-based) */
+								__( 'Batch item %d "params" must be an array.', 'wp-pinch' ),
+								$idx + 1
+							),
+							array( 'status' => 400 )
+						);
+					}
 				}
 				$execution_user = OpenClaw_Role::get_execution_user_id();
 				if ( 0 === $execution_user ) {

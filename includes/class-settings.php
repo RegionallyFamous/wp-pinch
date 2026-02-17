@@ -918,7 +918,7 @@ class Settings {
 			wp_die( esc_html__( 'Nonce verification failed.', 'wp-pinch' ) );
 		}
 
-		// Export already verified by nonce above; args are sanitized and scoped to export.
+		// Nonce verified above; params below are sanitized and used only for export filtering.
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
 		$args = array(
 			'event_type' => sanitize_key( $_GET['event_type'] ?? '' ),
@@ -927,7 +927,7 @@ class Settings {
 			'date_from'  => sanitize_text_field( wp_unslash( $_GET['date_from'] ?? '' ) ),
 			'date_to'    => sanitize_text_field( wp_unslash( $_GET['date_to'] ?? '' ) ),
 		);
-		// phpcs:enable
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 		$csv      = Audit_Table::export_csv( $args );
 		$filename = 'wp-pinch-audit-' . gmdate( 'Y-m-d' ) . '.csv';

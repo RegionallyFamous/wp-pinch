@@ -56,11 +56,13 @@ class Audit_Table {
 			source varchar(64) NOT NULL DEFAULT '',
 			message text NOT NULL,
 			context longtext,
+			user_id bigint(20) unsigned NULL DEFAULT NULL,
 			created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY  (id),
 			KEY event_type (event_type),
 			KEY source (source),
-			KEY created_at (created_at)
+			KEY created_at (created_at),
+			KEY user_id (user_id)
 		) {$charset};";
 
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
@@ -121,6 +123,12 @@ class Audit_Table {
 			return false;
 		}
 
+		$user_id = null;
+		if ( isset( $entry['context']['user_id'] ) && is_numeric( $entry['context']['user_id'] ) ) {
+			$user_id = absint( $entry['context']['user_id'] );
+			$user_id = $user_id > 0 ? $user_id : null;
+		}
+
 		$result = $wpdb->insert(
 			self::table_name(),
 			array(
@@ -128,9 +136,10 @@ class Audit_Table {
 				'source'     => sanitize_key( $entry['source'] ),
 				'message'    => sanitize_text_field( $entry['message'] ),
 				'context'    => wp_json_encode( $entry['context'] ),
+				'user_id'    => $user_id,
 				'created_at' => current_time( 'mysql', true ),
 			),
-			array( '%s', '%s', '%s', '%s', '%s' )
+			array( '%s', '%s', '%s', '%s', '%d', '%s' )
 		);
 
 		if ( $result ) {
@@ -216,18 +225,24 @@ class Audit_Table {
 			return $cached;
 		}
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- $table, $orderby, $order from whitelist; $where_sql from prepare().
-		$total = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}` WHERE {$where_sql}" );
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table via %i; $where_sql from prepare(); $orderby/$order whitelisted.
+		$total = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM %i WHERE {$where_sql}",
+				$table
+			)
+		);
 
 		$items = $wpdb->get_results(
 			$wpdb->prepare(
-				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table, $orderby, $order whitelisted; $where_sql from prepare().
-				"SELECT * FROM `{$table}` WHERE {$where_sql} ORDER BY {$orderby} {$order} LIMIT %d OFFSET %d",
+				"SELECT * FROM %i WHERE {$where_sql} ORDER BY {$orderby} {$order} LIMIT %d OFFSET %d",
+				$table,
 				$per_page,
 				$offset
 			),
 			ARRAY_A
 		);
+		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 		// Decode JSON context.
 		foreach ( $items as &$item ) {
@@ -259,8 +274,8 @@ class Audit_Table {
 
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
-				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table from table_name().
-				"SELECT context, created_at FROM `{$table}` WHERE event_type = %s AND created_at >= %s ORDER BY created_at DESC LIMIT %d",
+				'SELECT context, created_at FROM %i WHERE event_type = %s AND created_at >= %s ORDER BY created_at DESC LIMIT %d',
+				$table,
 				'ability_executed',
 				$date_from,
 				$max_rows
@@ -356,6 +371,31 @@ class Audit_Table {
 				wp_cache_flush_group( 'wp_pinch_audit' );
 			} catch ( \Throwable $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch -- Object cache may not support flush_group.
 			}
+		}
+
+		// Prune expired wp_pinch_* transients.
+		self::cleanup_expired_transients();
+	}
+
+	/**
+	 * Delete expired wp_pinch_* transients from the options table.
+	 */
+	public static function cleanup_expired_transients(): void {
+		global $wpdb;
+
+		$now  = time();
+		$like = $wpdb->esc_like( '_transient_timeout_wp_pinch_' ) . '%';
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s AND option_value < %d",
+				$like,
+				$now
+			)
+		);
+
+		foreach ( (array) $rows as $row ) {
+			$transient = str_replace( '_transient_timeout_', '', $row->option_name );
+			delete_transient( $transient );
 		}
 	}
 }

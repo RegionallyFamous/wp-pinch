@@ -198,7 +198,12 @@ function renderMarkdown( text ) {
 	// Links [text](url) — only allow http/https URLs.
 	html = html.replace(
 		/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g,
-		'<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'
+		( match, linkText, url ) => {
+			if ( ! /^https?:\/\//i.test( url ) ) {
+				return match;
+			}
+			return `<a href="${ url }" target="_blank" rel="noopener noreferrer">${ linkText }</a>`;
+		}
 	);
 
 	// Restore code blocks.

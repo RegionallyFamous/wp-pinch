@@ -104,6 +104,19 @@ class Status {
 				503
 			);
 		}
+		$limit = (int) apply_filters( 'wp_pinch_health_rate_limit', 60 );
+		if ( $limit > 0 && ! Helpers::check_ip_rate_limit( 'wp_pinch_health_rate_', $limit ) ) {
+			$response = new \WP_REST_Response(
+				array(
+					'status'  => 'rate_limited',
+					'code'    => 'rate_limited',
+					'message' => __( 'Too many requests. Please wait a moment.', 'wp-pinch' ),
+				),
+				429
+			);
+			$response->header( 'Retry-After', '60' );
+			return $response;
+		}
 		$configured    = ! empty( get_option( 'wp_pinch_gateway_url', '' ) ) && ! empty( Settings::get_api_token() );
 		$circuit_state = Circuit_Breaker::get_state();
 		$retry_after   = Circuit_Breaker::get_retry_after();

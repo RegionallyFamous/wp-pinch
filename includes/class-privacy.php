@@ -102,17 +102,19 @@ class Privacy {
 			);
 		}
 
-		$table  = Audit_Table::table_name();
-		$offset = ( $page - 1 ) * self::BATCH_SIZE;
+		$table      = Audit_Table::table_name();
+		$offset     = ( $page - 1 ) * self::BATCH_SIZE;
+		$like_comma = '%' . $wpdb->esc_like( '"user_id":' . $user->ID . ',' ) . '%';
+		$like_brace = '%' . $wpdb->esc_like( '"user_id":' . $user->ID . '}' ) . '%';
 
-		// Search for user_id in the JSON context column.
-		// Match exactly "user_id":N followed by , or } to avoid partial matches (e.g. 1 matching 10).
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from Audit_Table::table_name().
+		// Prefer indexed user_id column; fall back to context JSON for legacy rows.
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table from Audit_Table::table_name().
 		$entries = $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT * FROM {$table} WHERE ( context LIKE %s OR context LIKE %s ) ORDER BY id ASC LIMIT %d OFFSET %d",
-				'%' . $wpdb->esc_like( '"user_id":' . $user->ID . ',' ) . '%',
-				'%' . $wpdb->esc_like( '"user_id":' . $user->ID . '}' ) . '%',
+				"SELECT * FROM {$table} WHERE user_id = %d OR ( user_id IS NULL AND ( context LIKE %s OR context LIKE %s ) ) ORDER BY id ASC LIMIT %d OFFSET %d",
+				$user->ID,
+				$like_comma,
+				$like_brace,
 				self::BATCH_SIZE,
 				$offset
 			),
@@ -200,17 +202,16 @@ class Privacy {
 			);
 		}
 
-		$table = Audit_Table::table_name();
-
-		// Build precise LIKE patterns that won't match user_id:1 when looking for user_id:10.
+		$table      = Audit_Table::table_name();
 		$like_comma = '%' . $wpdb->esc_like( '"user_id":' . $user->ID . ',' ) . '%';
 		$like_brace = '%' . $wpdb->esc_like( '"user_id":' . $user->ID . '}' ) . '%';
 
-		// Count matching rows before deletion.
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from Audit_Table::table_name().
+		// Prefer indexed user_id column; fall back to context JSON for legacy rows.
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table from Audit_Table::table_name().
 		$count = (int) $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT COUNT(*) FROM {$table} WHERE ( context LIKE %s OR context LIKE %s )",
+				"SELECT COUNT(*) FROM {$table} WHERE user_id = %d OR ( user_id IS NULL AND ( context LIKE %s OR context LIKE %s ) )",
+				$user->ID,
 				$like_comma,
 				$like_brace
 			)
@@ -227,10 +228,11 @@ class Privacy {
 		}
 
 		// Delete in batches to avoid timeouts.
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table comes from Audit_Table::table_name().
+		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table from Audit_Table::table_name().
 		$deleted = $wpdb->query(
 			$wpdb->prepare(
-				"DELETE FROM {$table} WHERE ( context LIKE %s OR context LIKE %s ) LIMIT %d",
+				"DELETE FROM {$table} WHERE user_id = %d OR ( user_id IS NULL AND ( context LIKE %s OR context LIKE %s ) ) LIMIT %d",
+				$user->ID,
 				$like_comma,
 				$like_brace,
 				self::BATCH_SIZE

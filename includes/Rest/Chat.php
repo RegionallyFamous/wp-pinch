@@ -331,6 +331,20 @@ class Chat {
 	 * @return \WP_REST_Response
 	 */
 	public static function handle_session_reset( \WP_REST_Request $request ): \WP_REST_Response {
+		if ( ! is_user_logged_in() ) {
+			$limit = (int) apply_filters( 'wp_pinch_session_reset_rate_limit', 10 );
+			if ( $limit > 0 && ! Helpers::check_ip_rate_limit( 'wp_pinch_session_reset_', $limit ) ) {
+				$response = new \WP_REST_Response(
+					array(
+						'code'    => 'rate_limited',
+						'message' => __( 'Too many requests. Please wait a moment.', 'wp-pinch' ),
+					),
+					429
+				);
+				$response->header( 'Retry-After', '60' );
+				return $response;
+			}
+		}
 		if ( is_user_logged_in() ) {
 			$session_key = 'wp-pinch-chat-' . get_current_user_id() . '-' . time();
 		} else {
@@ -435,6 +449,8 @@ class Chat {
 				}
 			);
 		}
+		// Cap how long a single SSE request can run; prevents stale connections from consuming resources.
+		set_time_limit( (int) apply_filters( 'wp_pinch_sse_timeout_seconds', 300 ) );
 		header( 'Content-Type: text/event-stream' );
 		header( 'Cache-Control: no-cache' );
 		header( 'Connection: keep-alive' );
