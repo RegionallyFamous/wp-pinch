@@ -667,8 +667,7 @@ class Analytics_Abilities {
 			$in_placeholders = implode( ',', array_fill( 0, count( $term_taxonomy_ids ), '%d' ) );
 			$by_taxonomy_ids = $wpdb->get_col(
 				$wpdb->prepare(
-					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $in_placeholders is placeholder list only (e.g. '%d,%d'); values in array_merge.
-					'SELECT object_id FROM ' . $wpdb->term_relationships . ' WHERE object_id != %d AND term_taxonomy_id IN (' . $in_placeholders . ') LIMIT %d',
+					'SELECT object_id FROM ' . $wpdb->term_relationships . ' WHERE object_id != %d AND term_taxonomy_id IN (' . $in_placeholders . ') LIMIT %d', // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $in_placeholders is placeholder list only ('%d,%d'); values in array_merge.
 					array_merge( array( $post_id ), $term_taxonomy_ids, array( $limit ) )
 				)
 			);
