@@ -237,14 +237,14 @@ class RAG_Index {
 		$placeholders = implode( ',', array_fill( 0, count( $types ), '%s' ) );
 		$args         = array_merge( $types, array( $like, $limit ) );
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $prepared is the return value of $wpdb->prepare().
 		$prepared = $wpdb->prepare(
 			"SELECT c.id, c.post_id, c.post_type, c.chunk_index, c.content FROM `{$table}` c " .
 			"WHERE c.post_type IN ($placeholders) AND c.content LIKE %s " .
 			'ORDER BY c.post_id, c.chunk_index LIMIT %d',
 			$args
 		);
-		$rows     = $wpdb->get_results( $prepared, ARRAY_A );
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $prepared is the return value of $wpdb->prepare() above.
+		$rows = $wpdb->get_results( $prepared, ARRAY_A );
 
 		$out = array();
 		foreach ( (array) $rows as $row ) {

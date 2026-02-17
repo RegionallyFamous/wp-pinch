@@ -664,10 +664,10 @@ class Analytics_Abilities {
 		$term_taxonomy_ids = array_unique( $term_taxonomy_ids );
 		$by_taxonomy_ids   = array();
 		if ( ! empty( $term_taxonomy_ids ) ) {
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Placeholder string only (e.g. '%d,%d'); values passed to prepare().
 			$in_placeholders = implode( ',', array_fill( 0, count( $term_taxonomy_ids ), '%d' ) );
 			$by_taxonomy_ids = $wpdb->get_col(
 				$wpdb->prepare(
+					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $in_placeholders is placeholder list only (e.g. '%d,%d'); values in array_merge.
 					'SELECT object_id FROM ' . $wpdb->term_relationships . ' WHERE object_id != %d AND term_taxonomy_id IN (' . $in_placeholders . ') LIMIT %d',
 					array_merge( array( $post_id ), $term_taxonomy_ids, array( $limit ) )
 				)
