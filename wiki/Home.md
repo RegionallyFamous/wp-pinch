@@ -6,6 +6,8 @@ One plugin. Connect [OpenClaw](https://github.com/openclaw/openclaw) (or any MCP
 
 **One line:** Your site isn't another tab — it's in the same chat. You talk; your assistant has the keys. [Install & connect →](Configuration)
 
+This wiki goes deeper than the README—start with [Configuration](Configuration) or [Recipes](Recipes).
+
 ---
 
 ## Why WP Pinch?

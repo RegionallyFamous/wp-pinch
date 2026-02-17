@@ -35,8 +35,9 @@ class Security_Scan {
 			$findings['plugin_updates_count'] = count( $plugin_updates );
 			$findings['plugin_updates']       = array();
 			foreach ( $plugin_updates as $file => $data ) {
+				$plugin_name                  = isset( $data->Name ) ? (string) $data->Name : '';
 				$findings['plugin_updates'][] = array(
-					'name' => $data->Name, // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+					'name' => $plugin_name,
 				);
 			}
 		}

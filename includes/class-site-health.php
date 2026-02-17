@@ -137,13 +137,11 @@ class Site_Health {
 		global $wpdb;
 		$table = Audit_Table::table_name();
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) );
 
 		if ( ! $exists ) {
 			$result = __( 'Table does not exist', 'wp-pinch' );
 		} else {
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table is from Audit_Table::table_name(), not user input.
 			$count  = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}`" );
 			$result = sprintf(
 				/* translators: %d: number of entries */

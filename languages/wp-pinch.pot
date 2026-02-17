@@ -2,14 +2,14 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: WP Pinch 3.0.1\n"
+"Project-Id-Version: WP Pinch 3.0.2\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wp-pinch\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-02-17T11:31:03+00:00\n"
+"POT-Creation-Date: 2026-02-17T13:41:40+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: wp-pinch\n"
@@ -19,14 +19,14 @@ msgstr ""
 #: includes/class-abilities.php:205
 #: includes/class-network-settings.php:35
 #: includes/class-network-settings.php:36
-#: includes/class-network-settings.php:133
+#: includes/class-network-settings.php:132
 #: includes/class-privacy.php:55
 #: includes/class-settings.php:150
 #: includes/class-settings.php:151
 #: includes/class-site-health.php:51
-#: includes/class-site-health.php:200
-#: includes/class-site-health.php:296
-#: includes/class-site-health.php:335
+#: includes/class-site-health.php:198
+#: includes/class-site-health.php:294
+#: includes/class-site-health.php:333
 msgid "WP Pinch"
 msgstr ""
 
@@ -145,91 +145,119 @@ msgstr ""
 msgid "Ability \"%s\" not found."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:32
+#: includes/Ability/Analytics_Abilities.php:35
 msgid "Site Health"
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:33
+#: includes/Ability/Analytics_Abilities.php:36
 msgid "Get site health summary: PHP, WordPress, database, disk usage."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:46
+#: includes/Ability/Analytics_Abilities.php:49
 msgid "Content Health Report"
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:47
+#: includes/Ability/Analytics_Abilities.php:50
 msgid "Get a content health report: missing alt text, broken internal links, thin content, orphaned media."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:71
+#: includes/Ability/Analytics_Abilities.php:74
 msgid "Recent Activity"
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:72
+#: includes/Ability/Analytics_Abilities.php:75
 msgid "Get recent posts, comments, and user registrations."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:90
+#: includes/Ability/Analytics_Abilities.php:93
 msgid "Search Content"
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:91
+#: includes/Ability/Analytics_Abilities.php:94
 msgid "Full-text search across posts, pages, and custom post types."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:115
+#: includes/Ability/Analytics_Abilities.php:118
 msgid "Export Data"
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:116
+#: includes/Ability/Analytics_Abilities.php:119
 msgid "Export post, user, or comment data as JSON."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:143
+#: includes/Ability/Analytics_Abilities.php:146
 msgid "Memory Bait (Site Digest)"
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:144
+#: includes/Ability/Analytics_Abilities.php:147
 msgid "Compact export of recent posts: title, excerpt, and key taxonomy terms. For agent memory-core or system prompt so the agent knows your site."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:166
+#: includes/Ability/Analytics_Abilities.php:169
 msgid "Echo Net (Related Posts)"
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:167
+#: includes/Ability/Analytics_Abilities.php:170
 msgid "Given a post ID, return posts that link to it (backlinks) or share taxonomy terms. Enables \"you wrote about X before\" and graph-like discovery."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:190
+#: includes/Ability/Analytics_Abilities.php:193
 msgid "Weave (Synthesize)"
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:191
+#: includes/Ability/Analytics_Abilities.php:194
 msgid "Given a query, search posts, fetch matching content, and return a payload for LLM synthesis. First-draft synthesis; human refines."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:335
+#: includes/Ability/Analytics_Abilities.php:218
+msgid "Analytics Narratives"
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:219
+msgid "Turn site digest or recent activity data into a brief narrative: what happened this week, what is new."
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:226
+msgid "Data source: site_digest or recent_activity."
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:237
+msgid "Submit Conversational Form"
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:238
+msgid "Submit collected form data from a conversation. Provide fields (name/value pairs) and optionally a webhook URL to POST the payload to."
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:245
+msgid "Form fields: array of objects with \"name\" and \"value\"."
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:256
+msgid "Optional URL to POST the form payload to (JSON)."
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:387
 #: includes/Ability/Menu_Meta_Revisions_Abilities.php:632
 msgid "Unknown"
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:367
+#: includes/Ability/Analytics_Abilities.php:419
 #: includes/Ability/Content_Abilities.php:252
 msgid "Insufficient permissions for this post type."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:484
+#: includes/Ability/Analytics_Abilities.php:536
 msgid "Invalid export type."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:499
-#: includes/Ability/Analytics_Abilities.php:679
+#: includes/Ability/Analytics_Abilities.php:551
+#: includes/Ability/Analytics_Abilities.php:731
 #: includes/Ability/QuickWin_Abilities.php:764
 msgid "Invalid post type or insufficient permissions."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:570
+#: includes/Ability/Analytics_Abilities.php:622
 #: includes/Ability/QuickWin_Abilities.php:396
 #: includes/Ability/QuickWin_Abilities.php:423
 #: includes/Ability/QuickWin_Abilities.php:496
@@ -238,8 +266,73 @@ msgstr ""
 msgid "Post not found or insufficient permissions."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:675
+#: includes/Ability/Analytics_Abilities.php:727
 msgid "Query is required."
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:785
+#: includes/Ability/GEO_SEO_Abilities.php:183
+#: includes/Ability/GEO_SEO_Abilities.php:358
+#: includes/Ability/GEO_SEO_Abilities.php:638
+#: includes/Ability/GEO_SEO_Abilities.php:748
+#: includes/class-ghost-writer.php:238
+#: includes/class-ghost-writer.php:594
+#: includes/class-molt.php:143
+msgid "WP Pinch gateway is not configured."
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:788
+msgid "API is in read-only mode."
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:791
+#: includes/Ability/GEO_SEO_Abilities.php:191
+#: includes/Ability/GEO_SEO_Abilities.php:469
+#: includes/Ability/GEO_SEO_Abilities.php:641
+#: includes/Ability/GEO_SEO_Abilities.php:751
+#: includes/class-ghost-writer.php:246
+#: includes/class-ghost-writer.php:602
+#: includes/class-molt.php:151
+#: includes/Rest/Chat.php:378
+msgid "The AI gateway is temporarily unavailable."
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:825
+#: includes/Ability/GEO_SEO_Abilities.php:225
+#: includes/Ability/GEO_SEO_Abilities.php:501
+#: includes/Ability/GEO_SEO_Abilities.php:672
+#: includes/Ability/GEO_SEO_Abilities.php:785
+#: includes/class-ghost-writer.php:284
+#: includes/class-ghost-writer.php:648
+#: includes/class-molt.php:192
+#: includes/Rest/Chat.php:114
+#: includes/Rest/Chat.php:276
+#: includes/Rest/Chat.php:497
+#: includes/Rest/Status.php:79
+msgid "Gateway URL failed security validation."
+msgstr ""
+
+#. translators: %d: HTTP status code
+#: includes/Ability/Analytics_Abilities.php:851
+#: includes/Ability/GEO_SEO_Abilities.php:254
+#: includes/Ability/GEO_SEO_Abilities.php:531
+#: includes/Ability/GEO_SEO_Abilities.php:698
+#: includes/Ability/GEO_SEO_Abilities.php:811
+#: includes/Ability/QuickWin_Abilities.php:369
+#, php-format
+msgid "Gateway returned HTTP %d."
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:878
+msgid "fields must be an array of { name, value } objects."
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:891
+msgid "(empty)"
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:897
+msgid "No valid fields provided."
 msgstr ""
 
 #: includes/Ability/Content_Abilities.php:26
@@ -309,7 +402,7 @@ msgstr ""
 #: includes/Ability/Menu_Meta_Revisions_Abilities.php:526
 #: includes/Ability/Menu_Meta_Revisions_Abilities.php:596
 #: includes/class-ghost-writer.php:501
-#: includes/class-molt.php:73
+#: includes/class-molt.php:75
 #: includes/Rest/Preview_Approve.php:43
 msgid "Post not found."
 msgstr ""
@@ -367,6 +460,151 @@ msgstr ""
 msgid "No valid blocks provided. Each block needs blockName (e.g. core/paragraph) and optionally attrs, innerContent, innerBlocks."
 msgstr ""
 
+#: includes/Ability/GEO_SEO_Abilities.php:46
+msgid "Generate llms.txt"
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:47
+msgid "Generate an llms.txt file for AI crawlers (GEO). Uses site name, description, and structure. Optionally write to the site root."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:54
+msgid "If true, write the generated content to llms.txt at the site root."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:65
+msgid "Get llms.txt"
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:66
+msgid "Read the current llms.txt file content from the site root, if it exists."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:76
+msgid "Bulk SEO Metadata"
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:77
+msgid "Generate SEO titles and meta descriptions for multiple posts. Provide post_ids or a query (post_type, limit). Optionally apply updates."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:84
+msgid "Specific post IDs to process."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:97
+msgid "If true, update posts with generated title and meta description."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:108
+msgid "Suggest Internal Links"
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:109
+msgid "Given a post ID or search query, return topically related posts to link to (uses RAG index when enabled)."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:115
+msgid "Post ID to suggest links for (uses its title/excerpt as query)."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:119
+msgid "Search query when post_id is not provided."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:135
+msgid "Generate Schema Markup"
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:136
+msgid "Analyze post content and return JSON-LD schema (Article, Product, FAQ, HowTo, Recipe, etc.)."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:143
+msgid "Post ID to generate schema for."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:154
+msgid "Suggest SEO Improvements"
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:155
+msgid "Analyze a post for inline SEO: keyword density, heading structure, and meta title/description suggestions."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:162
+msgid "Post ID to analyze."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:187
+#: includes/class-abilities.php:408
+msgid "API is in read-only mode. Write operations are disabled."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:288
+msgid "llms.txt generated and written to site root."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:312
+msgid "llms.txt path must be under the site root."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:317
+msgid "Could not write llms.txt file."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:362
+msgid "API is in read-only mode. Set apply to false or disable read-only mode."
+msgstr ""
+
+#. translators: %d: number of posts
+#: includes/Ability/GEO_SEO_Abilities.php:443
+#, php-format
+msgid "Bulk SEO metadata applied to %d posts."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:541
+#: includes/class-ghost-writer.php:698
+#: includes/class-molt.php:242
+msgid "The AI returned an empty response."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:550
+msgid "The AI response was not valid JSON."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:573
+#: includes/Ability/GEO_SEO_Abilities.php:632
+#: includes/Ability/GEO_SEO_Abilities.php:742
+msgid "Post not found or access denied."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:585
+#: includes/Ability/QuickWin_Abilities.php:429
+#: includes/Ability/QuickWin_Abilities.php:879
+msgid "Provide post_id or query."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:592
+msgid "Enable RAG indexing in Features to use internal link suggestions."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:627
+#: includes/Ability/GEO_SEO_Abilities.php:737
+#: includes/Ability/QuickWin_Abilities.php:587
+msgid "post_id is required."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:709
+#: includes/Ability/GEO_SEO_Abilities.php:822
+msgid "Empty gateway response."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:716
+#: includes/Ability/GEO_SEO_Abilities.php:829
+msgid "Response was not valid JSON."
+msgstr ""
+
 #: includes/Ability/GhostWriter_Molt_Abilities.php:33
 msgid "Analyze Author Voice"
 msgstr ""
@@ -413,7 +651,7 @@ msgid "A valid post_id is required."
 msgstr ""
 
 #: includes/Ability/GhostWriter_Molt_Abilities.php:209
-#: includes/class-molt.php:81
+#: includes/class-molt.php:83
 #: includes/Rest/Molt.php:60
 msgid "You do not have permission to read this post."
 msgstr ""
@@ -471,7 +709,7 @@ msgstr ""
 msgid "Provide featured_image_url or featured_image_base64."
 msgstr ""
 
-#: includes/Ability/Media_Abilities.php:313
+#: includes/Ability/Media_Abilities.php:312
 msgid "Invalid base64 image data."
 msgstr ""
 
@@ -828,27 +1066,12 @@ msgstr ""
 msgid "Gateway URL failed validation."
 msgstr ""
 
-#. translators: %d: HTTP status code
-#: includes/Ability/QuickWin_Abilities.php:369
-#, php-format
-msgid "Gateway returned HTTP %d."
-msgstr ""
-
 #: includes/Ability/QuickWin_Abilities.php:382
 msgid "Gateway returned an empty response."
 msgstr ""
 
-#: includes/Ability/QuickWin_Abilities.php:429
-#: includes/Ability/QuickWin_Abilities.php:879
-msgid "Provide post_id or query."
-msgstr ""
-
 #: includes/Ability/QuickWin_Abilities.php:502
 msgid "Provide post_id or content."
-msgstr ""
-
-#: includes/Ability/QuickWin_Abilities.php:587
-msgid "post_id is required."
 msgstr ""
 
 #: includes/Ability/QuickWin_Abilities.php:629
@@ -1063,8 +1286,10 @@ msgstr ""
 msgid "Abilities for content, media, options, and site management via OpenClaw."
 msgstr ""
 
-#: includes/class-abilities.php:397
-msgid "API is in read-only mode. Write operations are disabled."
+#. translators: %d: attachment ID
+#: includes/class-alt-text-generator.php:184
+#, php-format
+msgid "Alt text generated for attachment #%d."
 msgstr ""
 
 #. translators: %d: number of pending approvals
@@ -1091,7 +1316,7 @@ msgstr ""
 
 #: includes/class-approval-queue.php:177
 #: includes/class-dashboard-widget.php:124
-#: includes/class-network-settings.php:222
+#: includes/class-network-settings.php:221
 #: includes/Settings/Tabs/Abilities_Tab.php:39
 #: includes/Settings/Tabs/Usage_Tab.php:54
 msgid "Ability"
@@ -1124,12 +1349,12 @@ msgstr ""
 
 #: includes/class-approval-queue.php:223
 #: includes/class-approval-queue.php:276
-#: includes/class-settings.php:658
-#: includes/class-settings.php:718
+#: includes/class-settings.php:657
+#: includes/class-settings.php:717
 msgid "Permission denied."
 msgstr ""
 
-#: includes/class-audit-table.php:292
+#: includes/class-audit-table.php:291
 msgid "(unknown)"
 msgstr ""
 
@@ -1186,29 +1411,6 @@ msgstr ""
 msgid "This author has no published posts to analyze."
 msgstr ""
 
-#: includes/class-ghost-writer.php:238
-#: includes/class-ghost-writer.php:594
-#: includes/class-molt.php:141
-msgid "WP Pinch gateway is not configured."
-msgstr ""
-
-#: includes/class-ghost-writer.php:246
-#: includes/class-ghost-writer.php:602
-#: includes/class-molt.php:149
-#: includes/Rest/Chat.php:377
-msgid "The AI gateway is temporarily unavailable."
-msgstr ""
-
-#: includes/class-ghost-writer.php:284
-#: includes/class-ghost-writer.php:648
-#: includes/class-molt.php:190
-#: includes/Rest/Chat.php:113
-#: includes/Rest/Chat.php:275
-#: includes/Rest/Chat.php:481
-#: includes/Rest/Status.php:79
-msgid "Gateway URL failed security validation."
-msgstr ""
-
 #: includes/class-ghost-writer.php:305
 msgid "Unable to reach the AI gateway for voice analysis."
 msgstr ""
@@ -1245,40 +1447,39 @@ msgstr ""
 msgid "Ghostwrite request returned HTTP %d."
 msgstr ""
 
-#: includes/class-ghost-writer.php:698
-#: includes/class-molt.php:240
-msgid "The AI returned an empty response."
-msgstr ""
-
-#: includes/class-governance.php:227
+#: includes/class-governance.php:229
 msgid "Content Freshness — flag posts not updated in 180+ days"
 msgstr ""
 
-#: includes/class-governance.php:228
-msgid "SEO Health — check titles, alt text, content length"
-msgstr ""
-
-#: includes/class-governance.php:229
-msgid "Comment Sweep — pending moderation and spam count"
-msgstr ""
-
 #: includes/class-governance.php:230
-msgid "Broken Links — check for dead links in content"
+msgid "Semantic Content Freshness — AI check for factually stale content"
 msgstr ""
 
 #: includes/class-governance.php:231
-msgid "Security Scan — outdated software, debug mode, file editing"
+msgid "SEO Health — check titles, alt text, content length"
 msgstr ""
 
 #: includes/class-governance.php:232
-msgid "Draft Necromancer — surface abandoned drafts worth resurrecting"
+msgid "Comment Sweep — pending moderation and spam count"
 msgstr ""
 
 #: includes/class-governance.php:233
-msgid "Spaced Resurfacing — notes not updated in N days (revisit list)"
+msgid "Broken Links — check for dead links in content"
 msgstr ""
 
 #: includes/class-governance.php:234
+msgid "Security Scan — outdated software, debug mode, file editing"
+msgstr ""
+
+#: includes/class-governance.php:235
+msgid "Draft Necromancer — surface abandoned drafts worth resurrecting"
+msgstr ""
+
+#: includes/class-governance.php:236
+msgid "Spaced Resurfacing — notes not updated in N days (revisit list)"
+msgstr ""
+
+#: includes/class-governance.php:237
 msgid "Tide Report — daily digest: drafts, SEO, comments in one webhook"
 msgstr ""
 
@@ -1290,104 +1491,104 @@ msgstr ""
 msgid "Full WordPress site management for OpenClaw and AI agents."
 msgstr ""
 
-#: includes/class-molt.php:94
+#: includes/class-molt.php:96
 msgid "No valid output formats specified."
 msgstr ""
 
-#: includes/class-molt.php:211
+#: includes/class-molt.php:213
 msgid "Unable to reach the AI gateway for Molt."
 msgstr ""
 
 #. translators: %d: HTTP status code
-#: includes/class-molt.php:226
+#: includes/class-molt.php:228
 #, php-format
 msgid "Molt request returned HTTP %d."
 msgstr ""
 
-#: includes/class-molt.php:304
+#: includes/class-molt.php:308
 msgid "Could not parse Molt response as JSON."
 msgstr ""
 
-#: includes/class-network-settings.php:84
+#: includes/class-network-settings.php:83
 msgid "You do not have permission to access this page."
 msgstr ""
 
-#: includes/class-network-settings.php:92
+#: includes/class-network-settings.php:91
 msgid "WP Pinch (Network)"
 msgstr ""
 
-#: includes/class-network-settings.php:95
+#: includes/class-network-settings.php:94
 msgid "Network defaults saved."
 msgstr ""
 
-#: includes/class-network-settings.php:99
+#: includes/class-network-settings.php:98
 msgid "Network defaults"
 msgstr ""
 
-#: includes/class-network-settings.php:100
+#: includes/class-network-settings.php:99
 msgid "Sites can use these when \"Use network default\" is enabled in their Connection tab."
 msgstr ""
 
-#: includes/class-network-settings.php:106
+#: includes/class-network-settings.php:105
 #: includes/class-site-health.php:59
-#: includes/Settings/Wizard.php:126
+#: includes/Settings/Wizard.php:123
 msgid "Gateway URL"
 msgstr ""
 
-#: includes/class-network-settings.php:113
+#: includes/class-network-settings.php:112
 #: includes/Settings/Tabs/Connection_Tab.php:41
-#: includes/Settings/Wizard.php:145
+#: includes/Settings/Wizard.php:142
 msgid "API Token"
 msgstr ""
 
-#: includes/class-network-settings.php:116
+#: includes/class-network-settings.php:115
 msgid "(leave blank to keep current)"
 msgstr ""
 
-#: includes/class-network-settings.php:121
+#: includes/class-network-settings.php:120
 msgid "Save network defaults"
 msgstr ""
 
-#: includes/class-network-settings.php:127
+#: includes/class-network-settings.php:126
 msgid "Sites"
 msgstr ""
 
-#: includes/class-network-settings.php:128
+#: includes/class-network-settings.php:127
 msgid "Configure WP Pinch per site from each site's admin."
 msgstr ""
 
-#: includes/class-network-settings.php:132
-#: includes/class-network-settings.php:221
+#: includes/class-network-settings.php:131
+#: includes/class-network-settings.php:220
 msgid "Site"
 msgstr ""
 
-#: includes/class-network-settings.php:153
+#: includes/class-network-settings.php:152
 msgid "Open WP Pinch"
 msgstr ""
 
-#: includes/class-network-settings.php:161
+#: includes/class-network-settings.php:160
 msgid "Cross-site audit (recent)"
 msgstr ""
 
-#: includes/class-network-settings.php:162
+#: includes/class-network-settings.php:161
 msgid "Last 50 ability executions across all sites."
 msgstr ""
 
-#: includes/class-network-settings.php:213
+#: includes/class-network-settings.php:212
 #: includes/Settings/Tabs/Usage_Tab.php:68
 msgid "No ability executions in this period."
 msgstr ""
 
-#: includes/class-network-settings.php:220
-#: includes/class-privacy.php:151
-#: includes/Settings/Tabs/Audit_Tab.php:124
+#: includes/class-network-settings.php:219
+#: includes/class-privacy.php:149
+#: includes/Settings/Tabs/Audit_Tab.php:122
 #: includes/Settings/Tabs/Usage_Tab.php:78
 msgid "Date"
 msgstr ""
 
-#: includes/class-network-settings.php:223
-#: includes/class-privacy.php:139
-#: includes/Settings/Tabs/Audit_Tab.php:126
+#: includes/class-network-settings.php:222
+#: includes/class-privacy.php:137
+#: includes/Settings/Tabs/Audit_Tab.php:124
 msgid "Source"
 msgstr ""
 
@@ -1443,56 +1644,56 @@ msgstr ""
 msgid "Failed to create user."
 msgstr ""
 
-#: includes/class-plugin.php:238
+#: includes/class-plugin.php:241
 msgid "WordPress Abilities API (requires WordPress 6.9+)"
 msgstr ""
 
-#: includes/class-plugin.php:250
-#: includes/class-plugin.php:466
-#: includes/class-plugin.php:514
-#: includes/class-plugin.php:554
+#: includes/class-plugin.php:253
+#: includes/class-plugin.php:469
+#: includes/class-plugin.php:516
+#: includes/class-plugin.php:556
 #: includes/class-rest-availability.php:115
 msgid "WP Pinch:"
 msgstr ""
 
-#: includes/class-plugin.php:251
+#: includes/class-plugin.php:254
 msgid "The following dependencies are missing:"
 msgstr ""
 
-#: includes/class-plugin.php:467
+#: includes/class-plugin.php:470
 msgid "The gateway URL and API token aren't configured yet. No claws, no pinch — chat, webhooks, and governance won't work until you connect."
 msgstr ""
 
-#: includes/class-plugin.php:469
+#: includes/class-plugin.php:472
 msgid "Let's get pinching &rarr;"
 msgstr ""
 
-#: includes/class-plugin.php:515
+#: includes/class-plugin.php:517
 msgid "Governance schedules, webhook retries, and audit log cleanup require the Action Scheduler plugin. Install it from WooCommerce or"
 msgstr ""
 
-#: includes/class-plugin.php:517
+#: includes/class-plugin.php:519
 msgid "standalone"
 msgstr ""
 
-#: includes/class-plugin.php:522
+#: includes/class-plugin.php:524
 #: includes/class-rest-availability.php:124
 msgid "Dismiss"
 msgstr ""
 
 #. translators: 1: seconds until retry, 2: URL to features tab
-#: includes/class-plugin.php:560
+#: includes/class-plugin.php:562
 #, php-format
 msgid "Claws are up — the AI gateway is unreachable. Chat requests are failing fast to protect your site. We'll probe again in %1$d seconds. %2$s"
 msgstr ""
 
-#: includes/class-plugin.php:565
-#: includes/class-plugin.php:575
+#: includes/class-plugin.php:567
+#: includes/class-plugin.php:577
 msgid "View status &rarr;"
 msgstr ""
 
 #. translators: %s: URL to features tab
-#: includes/class-plugin.php:571
+#: includes/class-plugin.php:573
 #, php-format
 msgid "We're poking a claw out to test the waters. The next request will tell us if the gateway has recovered. %s"
 msgstr ""
@@ -1518,27 +1719,27 @@ msgid "Webhook events may include limited user information (such as user ID and 
 msgstr ""
 
 #: includes/class-privacy.php:78
-#: includes/class-privacy.php:176
+#: includes/class-privacy.php:174
 msgid "WP Pinch Audit Log"
 msgstr ""
 
-#: includes/class-privacy.php:130
+#: includes/class-privacy.php:128
 msgid "WP Pinch Activity Log"
 msgstr ""
 
-#: includes/class-privacy.php:131
+#: includes/class-privacy.php:129
 msgid "Records of your interactions with the WP Pinch AI assistant."
 msgstr ""
 
-#: includes/class-privacy.php:135
+#: includes/class-privacy.php:133
 msgid "Event Type"
 msgstr ""
 
-#: includes/class-privacy.php:143
+#: includes/class-privacy.php:141
 msgid "Description"
 msgstr ""
 
-#: includes/class-privacy.php:147
+#: includes/class-privacy.php:145
 msgid "Context"
 msgstr ""
 
@@ -1553,7 +1754,7 @@ msgstr ""
 
 #: includes/class-rest-availability.php:122
 #: includes/class-settings.php:842
-#: includes/class-site-health.php:347
+#: includes/class-site-health.php:345
 msgid "WP Pinch Settings"
 msgstr ""
 
@@ -1599,7 +1800,7 @@ msgstr ""
 
 #. translators: 1: current step number, 2: total steps
 #: includes/class-settings.php:611
-#: includes/Settings/Wizard.php:79
+#: includes/Settings/Wizard.php:76
 #, php-format
 msgid "Step %1$d of %2$d"
 msgstr ""
@@ -1630,66 +1831,70 @@ msgstr ""
 msgid "Snatched!"
 msgstr ""
 
-#: includes/class-settings.php:664
+#: includes/class-settings.php:663
 msgid "Please wait a few seconds before testing again."
 msgstr ""
 
-#: includes/class-settings.php:672
+#: includes/class-settings.php:671
 msgid "Gateway URL is not configured."
 msgstr ""
 
-#: includes/class-settings.php:677
+#: includes/class-settings.php:676
 msgid "Gateway URL failed security validation. Use a public HTTP or HTTPS URL."
 msgstr ""
 
-#: includes/class-settings.php:693
+#: includes/class-settings.php:692
 msgid "Unable to reach the gateway. Check the URL and try again."
 msgstr ""
 
-#: includes/class-settings.php:701
+#: includes/class-settings.php:700
 msgid "Connection secured. Claws at the ready!"
 msgstr ""
 
 #. translators: %d: HTTP status code returned by the gateway.
-#: includes/class-settings.php:707
+#: includes/class-settings.php:706
 #, php-format
 msgid "Connection failed (HTTP %d)."
 msgstr ""
 
-#: includes/class-settings.php:729
+#: includes/class-settings.php:728
 msgid "OpenClaw agent user created. Go to Users → Profile to generate an application password for this user."
 msgstr ""
 
-#: includes/class-settings.php:756
+#: includes/class-settings.php:755
 msgid "Agent identity (least privilege)"
 msgstr ""
 
-#: includes/class-settings.php:758
+#: includes/class-settings.php:757
 msgid "Abilities executed via the incoming webhook run as a WordPress user. Use a dedicated OpenClaw agent with limited capabilities for better security."
 msgstr ""
 
-#: includes/class-settings.php:763
+#: includes/class-settings.php:762
 msgid "Webhook execution user"
 msgstr ""
 
-#: includes/class-settings.php:768
+#: includes/class-settings.php:767
 msgid "Use first administrator (default)"
 msgstr ""
 
-#: includes/class-settings.php:780
+#: includes/class-settings.php:779
 msgid "Create OpenClaw agent user"
 msgstr ""
 
-#: includes/class-settings.php:785
+#: includes/class-settings.php:784
 msgid "Create an application password for the agent user in Users → Profile. Use it for MCP/REST connections."
 msgstr ""
 
-#: includes/class-settings.php:790
+#: includes/class-settings.php:789
 msgid "Capability groups"
 msgstr ""
 
-#: includes/class-settings.php:802
+#: includes/class-settings.php:801
 msgid "Controls what the OpenClaw agent role can do. Only affects users with the OpenClaw Agent role."
+msgstr ""
+
+#: includes/class-settings.php:830
+msgid "Dashboard"
 msgstr ""
 
 #: includes/class-settings.php:831
@@ -1717,7 +1922,7 @@ msgid "Features"
 msgstr ""
 
 #: includes/class-settings.php:838
-#: includes/Settings/Tabs/Audit_Tab.php:48
+#: includes/Settings/Tabs/Audit_Tab.php:46
 msgid "Audit Log"
 msgstr ""
 
@@ -1729,7 +1934,7 @@ msgstr ""
 msgid "Settings tabs"
 msgstr ""
 
-#: includes/class-settings.php:918
+#: includes/class-settings.php:921
 msgid "Nonce verification failed."
 msgstr ""
 
@@ -1820,110 +2025,110 @@ msgstr ""
 msgid "MCP endpoint"
 msgstr ""
 
-#: includes/class-site-health.php:144
+#: includes/class-site-health.php:143
 msgid "Table does not exist"
 msgstr ""
 
 #. translators: %d: number of entries
-#: includes/class-site-health.php:150
+#: includes/class-site-health.php:148
 #, php-format
 msgid "%d entries"
 msgstr ""
 
-#: includes/class-site-health.php:170
+#: includes/class-site-health.php:168
 msgid "WP Pinch gateway connectivity"
 msgstr ""
 
-#: includes/class-site-health.php:175
+#: includes/class-site-health.php:173
 msgid "WP Pinch configuration"
 msgstr ""
 
-#: includes/class-site-health.php:180
+#: includes/class-site-health.php:178
 msgid "WP Pinch REST API availability"
 msgstr ""
 
-#: includes/class-site-health.php:197
+#: includes/class-site-health.php:195
 msgid "WP Pinch can reach the AI gateway"
 msgstr ""
 
-#: includes/class-site-health.php:207
-#: includes/class-site-health.php:306
+#: includes/class-site-health.php:205
+#: includes/class-site-health.php:304
 msgid "Manage WP Pinch settings"
 msgstr ""
 
-#: includes/class-site-health.php:214
+#: includes/class-site-health.php:212
 msgid "WP Pinch gateway is not configured"
 msgstr ""
 
-#: includes/class-site-health.php:217
+#: includes/class-site-health.php:215
 msgid "The WP Pinch gateway URL and API token have not been set. AI chat and webhook features will not work until configured."
 msgstr ""
 
-#: includes/class-site-health.php:234
+#: includes/class-site-health.php:232
 msgid "WP Pinch cannot reach the AI gateway"
 msgstr ""
 
 #. translators: %s: error message
-#: includes/class-site-health.php:239
+#: includes/class-site-health.php:237
 #, php-format
 msgid "Connection failed: %s"
 msgstr ""
 
-#: includes/class-site-health.php:251
+#: includes/class-site-health.php:249
 msgid "WP Pinch AI gateway returned an error"
 msgstr ""
 
 #. translators: %d: HTTP status code
-#: includes/class-site-health.php:256
+#: includes/class-site-health.php:254
 #, php-format
 msgid "The AI gateway returned HTTP %d. Check your API token and gateway URL."
 msgstr ""
 
-#: includes/class-site-health.php:266
+#: includes/class-site-health.php:264
 msgid "The WP Pinch AI gateway is reachable and responding correctly."
 msgstr ""
 
-#: includes/class-site-health.php:281
+#: includes/class-site-health.php:279
 msgid "The WordPress Abilities API is not available. WP Pinch requires WordPress 6.9 or later."
 msgstr ""
 
-#: includes/class-site-health.php:285
+#: includes/class-site-health.php:283
 msgid "Action Scheduler is not available. Background tasks (governance, webhook retries) will not run."
 msgstr ""
 
-#: includes/class-site-health.php:289
+#: includes/class-site-health.php:287
 msgid "The MCP Adapter plugin is not active. AI agents will not be able to discover WP Pinch abilities via MCP."
 msgstr ""
 
-#: includes/class-site-health.php:293
+#: includes/class-site-health.php:291
 msgid "WP Pinch is fully configured"
 msgstr ""
 
-#: includes/class-site-health.php:301
+#: includes/class-site-health.php:299
 msgid "All WP Pinch dependencies and configuration are in order."
 msgstr ""
 
-#: includes/class-site-health.php:313
+#: includes/class-site-health.php:311
 msgid "WP Pinch has configuration recommendations"
 msgstr ""
 
-#: includes/class-site-health.php:331
+#: includes/class-site-health.php:329
 msgid "WP Pinch REST API is reachable"
 msgstr ""
 
-#: includes/class-site-health.php:332
+#: includes/class-site-health.php:330
 msgid "WP Pinch REST API appears blocked"
 msgstr ""
 
-#: includes/class-site-health.php:339
+#: includes/class-site-health.php:337
 msgid "The WP Pinch REST API is reachable. Chat, MCP, webhooks, and abilities can function."
 msgstr ""
 
-#: includes/class-site-health.php:342
+#: includes/class-site-health.php:340
 msgid "The WordPress REST API appears disabled or blocked. WP Pinch requires the REST API for MCP, chat, webhooks, and ability execution. Check for plugins that disable the REST API, security plugins that block /wp-json/ requests, WAF rules, or page cache. See the Troubleshooting wiki for details."
 msgstr ""
 
-#: includes/class-site-health.php:349
+#: includes/class-site-health.php:347
 msgid "Troubleshooting"
 msgstr ""
 
@@ -1956,6 +2161,14 @@ msgstr ""
 #, php-format
 msgid "%d abandoned drafts found worth resurrecting. The draft graveyard has company."
 msgstr ""
+
+#. translators: %d: number of posts
+#: includes/Governance/Tasks/Semantic_Content_Freshness.php:151
+#, php-format
+msgid "%d post may be factually stale (AI assessment)."
+msgid_plural "%d posts may be factually stale (AI assessment)."
+msgstr[0] ""
+msgstr[1] ""
 
 #. translators: %1$d: number of posts, %2$d: days
 #: includes/Governance/Tasks/Spaced_Resurfacing.php:33
@@ -1993,8 +2206,8 @@ msgstr ""
 
 #: includes/Rest/Capture.php:35
 #: includes/Rest/Capture.php:134
-#: includes/Rest/Chat.php:35
-#: includes/Rest/Chat.php:191
+#: includes/Rest/Chat.php:36
+#: includes/Rest/Chat.php:192
 #: includes/Rest/Ghostwrite.php:31
 #: includes/Rest/Incoming_Hook.php:37
 #: includes/Rest/Molt.php:31
@@ -2048,10 +2261,10 @@ msgstr ""
 msgid "No user found to execute the ability. Create an OpenClaw agent user or ensure an administrator exists."
 msgstr ""
 
-#: includes/Rest/Chat.php:44
-#: includes/Rest/Chat.php:224
-#: includes/Rest/Chat.php:340
-#: includes/Rest/Chat.php:367
+#: includes/Rest/Chat.php:45
+#: includes/Rest/Chat.php:225
+#: includes/Rest/Chat.php:341
+#: includes/Rest/Chat.php:368
 #: includes/Rest/Ghostwrite.php:40
 #: includes/Rest/Incoming_Hook.php:47
 #: includes/Rest/Molt.php:40
@@ -2060,65 +2273,65 @@ msgstr ""
 msgid "Too many requests. Please wait a moment."
 msgstr ""
 
-#: includes/Rest/Chat.php:56
+#: includes/Rest/Chat.php:57
 msgid "WP Pinch is not configured. Please set your Gateway URL and API token in the WP Pinch settings."
 msgstr ""
 
-#: includes/Rest/Chat.php:65
+#: includes/Rest/Chat.php:66
 msgid "The AI gateway is temporarily unavailable. Please try again shortly."
 msgstr ""
 
-#: includes/Rest/Chat.php:139
+#: includes/Rest/Chat.php:140
 msgid "Unable to reach the AI gateway. Please try again later."
 msgstr ""
 
 #. translators: %d: HTTP status code returned by OpenClaw gateway.
-#: includes/Rest/Chat.php:152
+#: includes/Rest/Chat.php:153
 #, php-format
 msgid "OpenClaw returned HTTP %d."
 msgstr ""
 
-#: includes/Rest/Chat.php:162
+#: includes/Rest/Chat.php:163
 msgid "Received an unexpected response from the gateway."
 msgstr ""
 
-#: includes/Rest/Chat.php:201
+#: includes/Rest/Chat.php:202
 msgid "Chat is not available at this time."
 msgstr ""
 
-#: includes/Rest/Chat.php:210
+#: includes/Rest/Chat.php:211
 msgid "Chat is temporarily unavailable. Please try again shortly."
 msgstr ""
 
-#: includes/Rest/Chat.php:294
+#: includes/Rest/Chat.php:295
 msgid "Unable to process your request. Please try again later."
 msgstr ""
 
-#: includes/Rest/Chat.php:305
+#: includes/Rest/Chat.php:306
 msgid "Chat is temporarily unavailable."
 msgstr ""
 
-#: includes/Rest/Chat.php:313
+#: includes/Rest/Chat.php:314
 msgid "No response received."
 msgstr ""
 
-#: includes/Rest/Chat.php:389
+#: includes/Rest/Chat.php:390
 msgid "WP Pinch is not configured."
 msgstr ""
 
-#: includes/Rest/Chat.php:439
+#: includes/Rest/Chat.php:455
 msgid "Too many streaming connections. Please close other chat windows and try again."
 msgstr ""
 
-#: includes/Rest/Chat.php:494
+#: includes/Rest/Chat.php:509
 msgid "Unable to reach the AI gateway."
 msgstr ""
 
-#: includes/Rest/Chat.php:516
+#: includes/Rest/Chat.php:530
 msgid "The AI gateway returned an error."
 msgstr ""
 
-#: includes/Rest/Chat.php:541
+#: includes/Rest/Chat.php:554
 msgid "Response too large. Try a shorter message."
 msgstr ""
 
@@ -2162,7 +2375,7 @@ msgstr ""
 msgid "Invalid action. Use \"list\" or \"write\"."
 msgstr ""
 
-#: includes/Rest/Helpers.php:340
+#: includes/Rest/Helpers.php:337
 msgid "Response truncated for length."
 msgstr ""
 
@@ -2332,110 +2545,110 @@ msgstr ""
 msgid "Check the box to DISABLE the ability. Leave unchecked to keep it enabled."
 msgstr ""
 
-#: includes/Settings/Tabs/Audit_Tab.php:56
+#: includes/Settings/Tabs/Audit_Tab.php:54
 msgid "Search:"
 msgstr ""
 
-#: includes/Settings/Tabs/Audit_Tab.php:59
+#: includes/Settings/Tabs/Audit_Tab.php:57
 msgid "Search messages..."
 msgstr ""
 
-#: includes/Settings/Tabs/Audit_Tab.php:62
+#: includes/Settings/Tabs/Audit_Tab.php:60
 msgid "Event:"
 msgstr ""
 
-#: includes/Settings/Tabs/Audit_Tab.php:64
+#: includes/Settings/Tabs/Audit_Tab.php:62
 msgid "All events"
 msgstr ""
 
-#: includes/Settings/Tabs/Audit_Tab.php:65
+#: includes/Settings/Tabs/Audit_Tab.php:63
 msgid "Ability executed"
 msgstr ""
 
-#: includes/Settings/Tabs/Audit_Tab.php:66
+#: includes/Settings/Tabs/Audit_Tab.php:64
 msgid "Batch executed"
 msgstr ""
 
-#: includes/Settings/Tabs/Audit_Tab.php:67
+#: includes/Settings/Tabs/Audit_Tab.php:65
 msgid "Post created"
 msgstr ""
 
-#: includes/Settings/Tabs/Audit_Tab.php:68
+#: includes/Settings/Tabs/Audit_Tab.php:66
 msgid "Post updated"
 msgstr ""
 
-#: includes/Settings/Tabs/Audit_Tab.php:69
+#: includes/Settings/Tabs/Audit_Tab.php:67
 msgid "Preview approved"
 msgstr ""
 
-#: includes/Settings/Tabs/Audit_Tab.php:70
+#: includes/Settings/Tabs/Audit_Tab.php:68
 msgid "Webhook sent"
 msgstr ""
 
-#: includes/Settings/Tabs/Audit_Tab.php:71
+#: includes/Settings/Tabs/Audit_Tab.php:69
 msgid "Webhook failed"
 msgstr ""
 
-#: includes/Settings/Tabs/Audit_Tab.php:72
+#: includes/Settings/Tabs/Audit_Tab.php:70
 msgid "Chat message"
 msgstr ""
 
-#: includes/Settings/Tabs/Audit_Tab.php:73
+#: includes/Settings/Tabs/Audit_Tab.php:71
 msgid "Incoming hook"
 msgstr ""
 
-#: includes/Settings/Tabs/Audit_Tab.php:76
+#: includes/Settings/Tabs/Audit_Tab.php:74
 msgid "Source:"
 msgstr ""
 
-#: includes/Settings/Tabs/Audit_Tab.php:79
+#: includes/Settings/Tabs/Audit_Tab.php:77
 msgid "e.g. webhook"
 msgstr ""
 
-#: includes/Settings/Tabs/Audit_Tab.php:84
+#: includes/Settings/Tabs/Audit_Tab.php:82
 msgid "From:"
 msgstr ""
 
-#: includes/Settings/Tabs/Audit_Tab.php:88
+#: includes/Settings/Tabs/Audit_Tab.php:86
 msgid "To:"
 msgstr ""
 
-#: includes/Settings/Tabs/Audit_Tab.php:92
+#: includes/Settings/Tabs/Audit_Tab.php:90
 msgid "Filter"
 msgstr ""
 
-#: includes/Settings/Tabs/Audit_Tab.php:96
+#: includes/Settings/Tabs/Audit_Tab.php:94
 msgid "Reset"
 msgstr ""
 
 #. translators: %d: total number of log entries
-#: includes/Settings/Tabs/Audit_Tab.php:106
+#: includes/Settings/Tabs/Audit_Tab.php:104
 #, php-format
 msgid "%d entries found. Entries older than 90 days are automatically removed."
 msgstr ""
 
-#: includes/Settings/Tabs/Audit_Tab.php:114
+#: includes/Settings/Tabs/Audit_Tab.php:112
 msgid "Export CSV"
 msgstr ""
 
-#: includes/Settings/Tabs/Audit_Tab.php:125
+#: includes/Settings/Tabs/Audit_Tab.php:123
 #: includes/Settings/Tabs/Webhooks_Tab.php:34
 msgid "Event"
 msgstr ""
 
-#: includes/Settings/Tabs/Audit_Tab.php:127
+#: includes/Settings/Tabs/Audit_Tab.php:125
 msgid "Message"
 msgstr ""
 
-#: includes/Settings/Tabs/Audit_Tab.php:128
+#: includes/Settings/Tabs/Audit_Tab.php:126
 msgid "Details"
 msgstr ""
 
-#: includes/Settings/Tabs/Audit_Tab.php:188
+#: includes/Settings/Tabs/Audit_Tab.php:186
 msgid "Nothing in the log yet — the waters are calm."
 msgstr ""
 
-#: includes/Settings/Tabs/Audit_Tab.php:189
+#: includes/Settings/Tabs/Audit_Tab.php:187
 msgid "Events will pinch in once webhooks run or the chat block is used. Try adjusting filters or scuttle back later."
 msgstr ""
 
@@ -2789,7 +3002,7 @@ msgid "Optional comma-separated source allowlist. Leave empty to allow all sourc
 msgstr ""
 
 #: includes/Settings/Tabs/Connection_Tab.php:450
-#: includes/Settings/Wizard.php:165
+#: includes/Settings/Wizard.php:162
 msgid "Test Connection"
 msgstr ""
 
@@ -2814,13 +3027,84 @@ msgid "Copy the WP Pinch skill so your OpenClaw agent knows when and how to use 
 msgstr ""
 
 #: includes/Settings/Tabs/Connection_Tab.php:474
-#: includes/Settings/Wizard.php:213
+#: includes/Settings/Wizard.php:210
 msgid "Copy skill to clipboard"
 msgstr ""
 
 #: includes/Settings/Tabs/Connection_Tab.php:475
-#: includes/Settings/Wizard.php:213
+#: includes/Settings/Wizard.php:210
 msgid "Copy skill"
+msgstr ""
+
+#: includes/Settings/Tabs/Dashboard_Tab.php:32
+#: includes/Settings/Tabs/Features_Tab.php:79
+msgid "Closed (normal)"
+msgstr ""
+
+#: includes/Settings/Tabs/Dashboard_Tab.php:33
+#: includes/Settings/Tabs/Features_Tab.php:80
+msgid "Claws up (failing fast)"
+msgstr ""
+
+#: includes/Settings/Tabs/Dashboard_Tab.php:34
+msgid "Half-Open (probing)"
+msgstr ""
+
+#: includes/Settings/Tabs/Dashboard_Tab.php:52
+msgid "AI Dashboard"
+msgstr ""
+
+#: includes/Settings/Tabs/Dashboard_Tab.php:53
+msgid "At-a-glance status for your WP Pinch setup."
+msgstr ""
+
+#: includes/Settings/Tabs/Dashboard_Tab.php:58
+msgid "Circuit breaker"
+msgstr ""
+
+#. translators: %d: seconds until retry
+#: includes/Settings/Tabs/Dashboard_Tab.php:66
+#: includes/Settings/Tabs/Features_Tab.php:98
+#, php-format
+msgid "Retry in %d seconds."
+msgstr ""
+
+#: includes/Settings/Tabs/Dashboard_Tab.php:75
+msgid "Feature flags enabled"
+msgstr ""
+
+#. translators: 1: number of enabled flags, 2: total number of flags
+#: includes/Settings/Tabs/Dashboard_Tab.php:80
+#, php-format
+msgid "%1$d of %2$d"
+msgstr ""
+
+#: includes/Settings/Tabs/Dashboard_Tab.php:85
+msgid "Manage"
+msgstr ""
+
+#: includes/Settings/Tabs/Dashboard_Tab.php:89
+msgid "Audit events (last 7 days)"
+msgstr ""
+
+#: includes/Settings/Tabs/Dashboard_Tab.php:92
+msgid "View log"
+msgstr ""
+
+#: includes/Settings/Tabs/Dashboard_Tab.php:96
+msgid "Abilities available"
+msgstr ""
+
+#: includes/Settings/Tabs/Dashboard_Tab.php:99
+msgid "Configure"
+msgstr ""
+
+#: includes/Settings/Tabs/Dashboard_Tab.php:103
+msgid "Governance tasks"
+msgstr ""
+
+#: includes/Settings/Tabs/Dashboard_Tab.php:106
+msgid "Schedule"
 msgstr ""
 
 #: includes/Settings/Tabs/Features_Tab.php:26
@@ -2872,57 +3156,51 @@ msgid "Molt (content repackager)"
 msgstr ""
 
 #: includes/Settings/Tabs/Features_Tab.php:38
-msgid "Prompt sanitizer (mitigate instruction injection in content sent to LLMs)"
+msgid "Auto alt text (generate alt text for new image uploads via AI)"
 msgstr ""
 
 #: includes/Settings/Tabs/Features_Tab.php:39
+msgid "RAG indexing (index post content for chat and internal linking)"
+msgstr ""
+
+#: includes/Settings/Tabs/Features_Tab.php:40
+msgid "Prompt sanitizer (mitigate instruction injection in content sent to LLMs)"
+msgstr ""
+
+#: includes/Settings/Tabs/Features_Tab.php:41
 msgid "Approval workflow (queue destructive abilities for admin approval)"
 msgstr ""
 
-#: includes/Settings/Tabs/Features_Tab.php:45
+#: includes/Settings/Tabs/Features_Tab.php:47
 msgid "Feature Flags"
 msgstr ""
 
-#: includes/Settings/Tabs/Features_Tab.php:46
+#: includes/Settings/Tabs/Features_Tab.php:48
 msgid "Flip the switches. Enable what you need — we take our features as seriously as a lobster takes its territory."
 msgstr ""
 
-#: includes/Settings/Tabs/Features_Tab.php:57
+#: includes/Settings/Tabs/Features_Tab.php:59
 #: includes/Settings/Tabs/Governance_Tab.php:60
 #: includes/Settings/Tabs/Webhooks_Tab.php:35
 msgid "Enabled"
 msgstr ""
 
-#: includes/Settings/Tabs/Features_Tab.php:65
+#: includes/Settings/Tabs/Features_Tab.php:67
 msgid "Feature flags can also be overridden via the wp_pinch_feature_flag filter in code."
 msgstr ""
 
-#: includes/Settings/Tabs/Features_Tab.php:72
+#: includes/Settings/Tabs/Features_Tab.php:74
 msgid "Circuit Breaker Status"
 msgstr ""
 
-#: includes/Settings/Tabs/Features_Tab.php:77
-msgid "Closed (normal)"
-msgstr ""
-
-#: includes/Settings/Tabs/Features_Tab.php:78
-msgid "Claws up (failing fast)"
-msgstr ""
-
-#: includes/Settings/Tabs/Features_Tab.php:79
+#: includes/Settings/Tabs/Features_Tab.php:81
 msgid "Half-Open (poking a claw out)"
 msgstr ""
 
 #. translators: %s: circuit state label
-#: includes/Settings/Tabs/Features_Tab.php:86
+#: includes/Settings/Tabs/Features_Tab.php:88
 #, php-format
 msgid "State: %s"
-msgstr ""
-
-#. translators: %d: seconds until retry
-#: includes/Settings/Tabs/Features_Tab.php:96
-#, php-format
-msgid "Retry in %d seconds."
 msgstr ""
 
 #: includes/Settings/Tabs/Governance_Tab.php:30
@@ -3073,151 +3351,151 @@ msgstr ""
 msgid "Full Abilities Reference (the whole claw)"
 msgstr ""
 
-#: includes/Settings/Wizard.php:73
+#: includes/Settings/Wizard.php:70
 msgid "Welcome to WP Pinch — your site's got claws"
 msgstr ""
 
-#: includes/Settings/Wizard.php:86
+#: includes/Settings/Wizard.php:83
 msgid "Connect WordPress to OpenClaw"
 msgstr ""
 
-#: includes/Settings/Wizard.php:88
+#: includes/Settings/Wizard.php:85
 msgid "WP Pinch bridges your WordPress site with OpenClaw, letting you manage your site from WhatsApp, Telegram, Slack, Discord, or any messaging platform OpenClaw supports."
 msgstr ""
 
-#: includes/Settings/Wizard.php:90
+#: includes/Settings/Wizard.php:87
 msgid "What you'll need (no claws required):"
 msgstr ""
 
-#: includes/Settings/Wizard.php:92
+#: includes/Settings/Wizard.php:89
 msgid "OpenClaw installed and running (local or remote)"
 msgstr ""
 
-#: includes/Settings/Wizard.php:93
+#: includes/Settings/Wizard.php:90
 msgid "Your OpenClaw gateway URL and API token"
 msgstr ""
 
 #. translators: %s: link to OpenClaw install docs
-#: includes/Settings/Wizard.php:99
+#: includes/Settings/Wizard.php:96
 #, php-format
 msgid "Don't have OpenClaw yet? %s"
 msgstr ""
 
-#: includes/Settings/Wizard.php:100
+#: includes/Settings/Wizard.php:97
 msgid "Install it here"
 msgstr ""
 
-#: includes/Settings/Wizard.php:106
+#: includes/Settings/Wizard.php:103
 msgid "Let's get pinching"
 msgstr ""
 
-#: includes/Settings/Wizard.php:110
+#: includes/Settings/Wizard.php:107
 msgid "I'll scuttle back later"
 msgstr ""
 
-#: includes/Settings/Wizard.php:118
+#: includes/Settings/Wizard.php:115
 msgid "Configure Connection"
 msgstr ""
 
-#: includes/Settings/Wizard.php:139
+#: includes/Settings/Wizard.php:136
 msgid "The URL of your OpenClaw gateway (usually http://127.0.0.1:18789 for local installs)."
 msgstr ""
 
-#: includes/Settings/Wizard.php:157
+#: includes/Settings/Wizard.php:154
 msgid "Your OpenClaw gateway token (OPENCLAW_GATEWAY_TOKEN)."
 msgstr ""
 
-#: includes/Settings/Wizard.php:172
+#: includes/Settings/Wizard.php:169
 msgid "Your MCP Endpoint"
 msgstr ""
 
-#: includes/Settings/Wizard.php:174
+#: includes/Settings/Wizard.php:171
 msgid "Use this URL to connect OpenClaw to your WordPress site via MCP:"
 msgstr ""
 
-#: includes/Settings/Wizard.php:178
+#: includes/Settings/Wizard.php:175
 msgid "Copy MCP URL"
 msgstr ""
 
-#: includes/Settings/Wizard.php:178
-#: includes/Settings/Wizard.php:186
+#: includes/Settings/Wizard.php:175
+#: includes/Settings/Wizard.php:183
 msgid "Copy"
 msgstr ""
 
-#: includes/Settings/Wizard.php:182
+#: includes/Settings/Wizard.php:179
 msgid "Or run this command in your OpenClaw CLI:"
 msgstr ""
 
-#: includes/Settings/Wizard.php:186
+#: includes/Settings/Wizard.php:183
 msgid "Copy command"
 msgstr ""
 
-#: includes/Settings/Wizard.php:192
+#: includes/Settings/Wizard.php:189
 msgid "Back"
 msgstr ""
 
-#: includes/Settings/Wizard.php:194
+#: includes/Settings/Wizard.php:191
 msgid "Save & Continue"
 msgstr ""
 
-#: includes/Settings/Wizard.php:203
+#: includes/Settings/Wizard.php:200
 msgid "Time to pinch"
 msgstr ""
 
-#: includes/Settings/Wizard.php:205
+#: includes/Settings/Wizard.php:202
 msgid "Send a message from WhatsApp, Telegram, Slack, or Discord to your OpenClaw agent. Your agent can now pinch your WordPress site via the MCP endpoint below."
 msgstr ""
 
-#: includes/Settings/Wizard.php:208
+#: includes/Settings/Wizard.php:205
 msgid "Install the WP Pinch skill"
 msgstr ""
 
-#: includes/Settings/Wizard.php:210
+#: includes/Settings/Wizard.php:207
 msgid "Copy the skill so your agent knows when and how to use each ability. Save to ~/.openclaw/workspace/skills/wp-pinch/SKILL.md"
 msgstr ""
 
-#: includes/Settings/Wizard.php:218
+#: includes/Settings/Wizard.php:215
 msgid "Try this first"
 msgstr ""
 
-#: includes/Settings/Wizard.php:220
+#: includes/Settings/Wizard.php:217
 msgid "PinchDrop: Send a sentence to your channel and ask the assistant to turn it into a draft pack."
 msgstr ""
 
-#: includes/Settings/Wizard.php:221
+#: includes/Settings/Wizard.php:218
 msgid "Molt: Say \"Molt 123\" (or \"Turn post 123 into social and meta\") to get multiple formats from one post."
 msgstr ""
 
 #. translators: %s: link to Recipes wiki
-#: includes/Settings/Wizard.php:227
+#: includes/Settings/Wizard.php:224
 #, php-format
 msgid "Step-by-step flows: %s"
 msgstr ""
 
-#: includes/Settings/Wizard.php:228
+#: includes/Settings/Wizard.php:225
 msgid "Recipes"
 msgstr ""
 
 #. translators: %s: link to OpenClaw docs
-#: includes/Settings/Wizard.php:239
+#: includes/Settings/Wizard.php:236
 #, php-format
 msgid "Need help connecting a channel? See the %s."
 msgstr ""
 
-#: includes/Settings/Wizard.php:240
+#: includes/Settings/Wizard.php:237
 msgid "OpenClaw docs"
 msgstr ""
 
-#: includes/Settings/Wizard.php:245
+#: includes/Settings/Wizard.php:242
 msgid "Enter the warren"
 msgstr ""
 
-#: wp-pinch.php:163
+#: wp-pinch.php:165
 msgid "Important:"
 msgstr ""
 
 #. translators: %s: new version number
-#: wp-pinch.php:167
+#: wp-pinch.php:169
 #, php-format
 msgid "WP Pinch %s is a major release with breaking changes. Please review the changelog and back up your site before updating."
 msgstr ""

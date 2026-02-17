@@ -47,7 +47,6 @@ class Network_Settings {
 		if ( ! current_user_can( 'manage_network' ) ) {
 			return;
 		}
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing
 		if ( empty( $_POST['wp_pinch_network_save'] ) ) {
 			return;
 		}
@@ -91,7 +90,7 @@ class Network_Settings {
 		<div class="wrap">
 			<h1><?php esc_html_e( 'WP Pinch (Network)', 'wp-pinch' ); ?></h1>
 
-			<?php if ( isset( $_GET['updated'] ) && '1' === $_GET['updated'] ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
+			<?php if ( isset( $_GET['updated'] ) && '1' === $_GET['updated'] ) : ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Network defaults saved.', 'wp-pinch' ); ?></p></div>
 			<?php endif; ?>
 

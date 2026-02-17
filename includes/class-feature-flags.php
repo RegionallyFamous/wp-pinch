@@ -44,6 +44,8 @@ class Feature_Flags {
 		'molt'               => false,
 		'prompt_sanitizer'   => true,
 		'approval_workflow'  => false,
+		'auto_alt_text'      => false,
+		'rag_indexing'       => false,
 	);
 
 	/**

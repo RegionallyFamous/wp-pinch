@@ -33,10 +33,10 @@ class Test_Governance extends WP_UnitTestCase {
 	// =========================================================================
 
 	/**
-	 * Test DEFAULT_INTERVALS contains all governance tasks (currently 8).
+	 * Test DEFAULT_INTERVALS contains all governance tasks (currently 9).
 	 */
 	public function test_default_intervals_count(): void {
-		$this->assertCount( 8, Governance::DEFAULT_INTERVALS );
+		$this->assertCount( 9, Governance::DEFAULT_INTERVALS );
 	}
 
 	/**
@@ -45,6 +45,7 @@ class Test_Governance extends WP_UnitTestCase {
 	public function test_default_intervals_keys(): void {
 		$expected = array(
 			'content_freshness',
+			'semantic_content_freshness',
 			'seo_health',
 			'comment_sweep',
 			'broken_links',
@@ -78,7 +79,7 @@ class Test_Governance extends WP_UnitTestCase {
 	public function test_get_enabled_tasks_default_all(): void {
 		delete_option( 'wp_pinch_governance_tasks' );
 
-		$enabled = Governance::get_enabled_tasks();
+		$enabled  = Governance::get_enabled_tasks();
 		$expected = count( Governance::DEFAULT_INTERVALS );
 
 		$this->assertCount( $expected, $enabled );
@@ -104,12 +105,12 @@ class Test_Governance extends WP_UnitTestCase {
 	// =========================================================================
 
 	/**
-	 * Test get_available_tasks returns all 8 tasks with labels.
+	 * Test get_available_tasks returns all 9 tasks with labels.
 	 */
 	public function test_get_available_tasks(): void {
 		$tasks = Governance::get_available_tasks();
 
-		$this->assertCount( 8, $tasks );
+		$this->assertCount( 9, $tasks );
 		foreach ( $tasks as $key => $label ) {
 			$this->assertIsString( $label );
 			$this->assertNotEmpty( $label );
@@ -126,10 +127,7 @@ class Test_Governance extends WP_UnitTestCase {
 	public function test_maybe_schedule_tasks_stores_hash(): void {
 		delete_option( 'wp_pinch_governance_schedule_hash' );
 
-		// Only call if Action Scheduler is available (it may not be in test env).
-		if ( ! function_exists( 'as_has_scheduled_action' ) ) {
-			$this->markTestSkipped( 'Action Scheduler not available.' );
-		}
+		$this->assertTrue( function_exists( 'as_has_scheduled_action' ), 'Action Scheduler must be available (composer require woocommerce/action-scheduler --dev).' );
 
 		Governance::maybe_schedule_tasks();
 
@@ -141,9 +139,7 @@ class Test_Governance extends WP_UnitTestCase {
 	 * Test maybe_schedule_tasks uses the cached hash on subsequent calls.
 	 */
 	public function test_maybe_schedule_tasks_uses_cache(): void {
-		if ( ! function_exists( 'as_has_scheduled_action' ) ) {
-			$this->markTestSkipped( 'Action Scheduler not available.' );
-		}
+		$this->assertTrue( function_exists( 'as_has_scheduled_action' ), 'Action Scheduler must be available (composer require woocommerce/action-scheduler --dev).' );
 
 		Governance::maybe_schedule_tasks();
 
@@ -160,9 +156,7 @@ class Test_Governance extends WP_UnitTestCase {
 	 * Test maybe_schedule_tasks regenerates hash when tasks change.
 	 */
 	public function test_maybe_schedule_tasks_regenerates_on_task_change(): void {
-		if ( ! function_exists( 'as_has_scheduled_action' ) ) {
-			$this->markTestSkipped( 'Action Scheduler not available.' );
-		}
+		$this->assertTrue( function_exists( 'as_has_scheduled_action' ), 'Action Scheduler must be available (composer require woocommerce/action-scheduler --dev).' );
 
 		// Set a known initial task list and clear hash so first call computes it.
 		$all_tasks = array_keys( Governance::DEFAULT_INTERVALS );
@@ -226,19 +220,22 @@ class Test_Governance extends WP_UnitTestCase {
 
 		// Suppress webhook delivery.
 		delete_option( 'wp_pinch_gateway_url' );
-		add_filter( 'wp_pinch_governance_findings', function ( $findings ) {
-			// Verify the findings include an SEO issue about short title.
-			foreach ( $findings as $finding ) {
-				if ( isset( $finding['issues'] ) ) {
-					foreach ( $finding['issues'] as $issue ) {
-						if ( stripos( $issue, 'shorter than 20' ) !== false ) {
-							return $findings;
+		add_filter(
+			'wp_pinch_governance_findings',
+			function ( $findings ) {
+				// Verify the findings include an SEO issue about short title.
+				foreach ( $findings as $finding ) {
+					if ( isset( $finding['issues'] ) ) {
+						foreach ( $finding['issues'] as $issue ) {
+							if ( stripos( $issue, 'shorter than 20' ) !== false ) {
+								return $findings;
+							}
 						}
 					}
 				}
+				return $findings;
 			}
-			return $findings;
-		} );
+		);
 
 		SEO_Health::run();
 		$this->assertTrue( true );

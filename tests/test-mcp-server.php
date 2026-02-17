@@ -66,7 +66,7 @@ class Test_MCP_Server extends WP_UnitTestCase {
 	 * Test that core abilities get mcp.public = true.
 	 */
 	public function test_expose_core_abilities_sets_public_flag(): void {
-		$args = array();
+		$args   = array();
 		$result = MCP_Server::expose_core_abilities( $args, 'core/get-site-info' );
 
 		$this->assertTrue( $result['meta']['mcp']['public'] );
@@ -76,7 +76,7 @@ class Test_MCP_Server extends WP_UnitTestCase {
 	 * Test that non-core abilities are NOT modified.
 	 */
 	public function test_expose_core_abilities_ignores_non_core(): void {
-		$args = array( 'some' => 'data' );
+		$args   = array( 'some' => 'data' );
 		$result = MCP_Server::expose_core_abilities( $args, 'wp-pinch/list-posts' );
 
 		$this->assertArrayNotHasKey( 'meta', $result );
@@ -87,7 +87,7 @@ class Test_MCP_Server extends WP_UnitTestCase {
 	 * Test that expose_core_abilities preserves existing meta.
 	 */
 	public function test_expose_core_abilities_preserves_existing_meta(): void {
-		$args = array(
+		$args   = array(
 			'meta' => array(
 				'custom' => 'value',
 			),
@@ -102,7 +102,7 @@ class Test_MCP_Server extends WP_UnitTestCase {
 	 * Test that expose_core_abilities preserves existing mcp meta.
 	 */
 	public function test_expose_core_abilities_preserves_existing_mcp_meta(): void {
-		$args = array(
+		$args   = array(
 			'meta' => array(
 				'mcp' => array(
 					'custom_flag' => true,
@@ -182,10 +182,12 @@ class Test_MCP_Server extends WP_UnitTestCase {
 
 		$mock->expects( $this->once() )
 			->method( 'create_server' )
-			->willReturnCallback( function () use ( &$captured_abilities ) {
-				$args = func_get_args();
-				$captured_abilities = $args[9]; // 10th argument = abilities.
-			} );
+			->willReturnCallback(
+				function () use ( &$captured_abilities ) {
+					$args               = func_get_args();
+					$captured_abilities = $args[9]; // 10th argument = abilities.
+				}
+			);
 
 		MCP_Server::register_server( $mock );
 
@@ -204,15 +206,20 @@ class Test_MCP_Server extends WP_UnitTestCase {
 
 		$mock->expects( $this->once() )
 			->method( 'create_server' )
-			->willReturnCallback( function () use ( &$captured_abilities ) {
-				$args = func_get_args();
-				$captured_abilities = $args[9];
-			} );
+			->willReturnCallback(
+				function () use ( &$captured_abilities ) {
+					$args               = func_get_args();
+					$captured_abilities = $args[9];
+				}
+			);
 
-		add_filter( 'wp_pinch_mcp_server_abilities', function ( $abilities ) {
-			$abilities[] = 'custom/my-ability';
-			return $abilities;
-		} );
+		add_filter(
+			'wp_pinch_mcp_server_abilities',
+			function ( $abilities ) {
+				$abilities[] = 'custom/my-ability';
+				return $abilities;
+			}
+		);
 
 		MCP_Server::register_server( $mock );
 

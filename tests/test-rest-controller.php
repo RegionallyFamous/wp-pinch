@@ -223,11 +223,9 @@ class Test_Rest_Controller extends WP_UnitTestCase {
 	 * SECURITY: Test write ability returns error when read-only mode is active.
 	 */
 	public function test_execute_ability_blocks_write_when_read_only(): void {
-		// Skip when abilities are not in the registry (e.g. WP 6.9 ability registration compatibility).
-		$ability = function_exists( 'wp_get_ability' ) ? wp_get_ability( 'wp-pinch/update-option' ) : null;
-		if ( ! $ability ) {
-			$this->markTestSkipped( 'wp-pinch/update-option ability not registered in this test environment.' );
-		}
+		$this->assertTrue( function_exists( 'wp_get_ability' ), 'Abilities API (WP 6.9+) required.' );
+		$ability = wp_get_ability( 'wp-pinch/update-option' );
+		$this->assertNotNull( $ability, 'wp-pinch/update-option must be registered (plugin loaded).' );
 
 		update_option( 'wp_pinch_read_only_mode', true );
 		update_option( 'wp_pinch_gateway_url', 'http://localhost:3000' );
@@ -236,7 +234,13 @@ class Test_Rest_Controller extends WP_UnitTestCase {
 		$request = new WP_REST_Request( 'POST', '/wp-pinch/v1/hook' );
 		$request->set_param( 'action', 'execute_ability' );
 		$request->set_param( 'ability', 'wp-pinch/update-option' );
-		$request->set_param( 'params', array( 'key' => 'blogname', 'value' => 'Read-only test' ) );
+		$request->set_param(
+			'params',
+			array(
+				'key'   => 'blogname',
+				'value' => 'Read-only test',
+			)
+		);
 
 		$response = Incoming_Hook::handle_incoming_hook( $request );
 
@@ -341,10 +345,9 @@ class Test_Rest_Controller extends WP_UnitTestCase {
 	 * Test PinchDrop idempotency deduplicates repeated request IDs.
 	 */
 	public function test_pinchdrop_capture_idempotency(): void {
-		$ability = function_exists( 'wp_get_ability' ) ? wp_get_ability( 'wp-pinch/create-post' ) : null;
-		if ( ! $ability ) {
-			$this->markTestSkipped( 'wp-pinch/create-post ability not registered in this test environment.' );
-		}
+		$this->assertTrue( function_exists( 'wp_get_ability' ), 'Abilities API (WP 6.9+) required.' );
+		$ability = wp_get_ability( 'wp-pinch/create-post' );
+		$this->assertNotNull( $ability, 'wp-pinch/create-post must be registered (plugin loaded).' );
 
 		wp_set_current_user( $this->admin_id );
 		update_option( 'wp_pinch_feature_flags', array( 'pinchdrop_engine' => true ) );
@@ -402,10 +405,9 @@ class Test_Rest_Controller extends WP_UnitTestCase {
 	 * Test incoming hook returns 429 when daily write cap is exceeded.
 	 */
 	public function test_daily_write_budget_returns_429_when_exceeded(): void {
-		$ability = function_exists( 'wp_get_ability' ) ? wp_get_ability( 'wp-pinch/create-post' ) : null;
-		if ( ! $ability ) {
-			$this->markTestSkipped( 'wp-pinch/create-post ability not registered in this test environment.' );
-		}
+		$this->assertTrue( function_exists( 'wp_get_ability' ), 'Abilities API (WP 6.9+) required.' );
+		$ability = wp_get_ability( 'wp-pinch/create-post' );
+		$this->assertNotNull( $ability, 'wp-pinch/create-post must be registered (plugin loaded).' );
 
 		wp_set_current_user( $this->admin_id );
 		update_option( 'wp_pinch_api_token', 'test-token' );
@@ -423,7 +425,10 @@ class Test_Rest_Controller extends WP_UnitTestCase {
 				array(
 					'action'  => 'execute_ability',
 					'ability' => 'wp-pinch/create-post',
-					'params'  => array( 'title' => 'First', 'status' => 'draft' ),
+					'params'  => array(
+						'title'  => 'First',
+						'status' => 'draft',
+					),
 				)
 			)
 		);
@@ -463,7 +468,7 @@ class Test_Rest_Controller extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'Another safe line', $out );
 
 		// HTML comments are stripped when present.
-		$with_comment = "Hello <!-- secret --> world.";
+		$with_comment = 'Hello <!-- secret --> world.';
 		$out2         = $method->invoke( null, $with_comment );
 		$this->assertStringNotContainsString( '<!--', $out2 );
 		$this->assertStringNotContainsString( 'secret', $out2 );

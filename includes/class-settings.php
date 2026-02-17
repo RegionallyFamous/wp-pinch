@@ -643,7 +643,6 @@ class Settings {
 		if ( ! file_exists( $path ) || ! is_readable( $path ) ) {
 			return '';
 		}
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Local file, not remote.
 		$content = file_get_contents( $path );
 		return is_string( $content ) ? $content : '';
 	}
@@ -826,8 +825,9 @@ class Settings {
 		}
 
 		// Tab is UI state only; sanitized and allowlisted below. No sensitive action.
-		$active_tab = sanitize_key( $_GET['tab'] ?? 'connection' ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$active_tab = sanitize_key( $_GET['tab'] ?? 'dashboard' );
 		$tabs       = array(
+			'dashboard'     => __( 'Dashboard', 'wp-pinch' ),
 			'what_can_i_do' => __( 'What can I pinch?', 'wp-pinch' ),
 			'connection'    => __( 'Connection', 'wp-pinch' ),
 			'webhooks'      => __( 'Webhooks', 'wp-pinch' ),
@@ -843,7 +843,7 @@ class Settings {
 
 			<?php
 			// Display-only; value compared to literal 'true'. No sensitive action.
-			if ( isset( $_GET['settings-updated'] ) && 'true' === $_GET['settings-updated'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( isset( $_GET['settings-updated'] ) && 'true' === $_GET['settings-updated'] ) {
 				add_settings_error(
 					'wp_pinch_messages',
 					'settings_updated',
@@ -866,6 +866,9 @@ class Settings {
 			<div class="wp-pinch-tab-content">
 				<?php
 				switch ( $active_tab ) {
+					case 'dashboard':
+						\WP_Pinch\Settings\Tabs\Dashboard_Tab::render();
+						break;
 					case 'what_can_i_do':
 						\WP_Pinch\Settings\Tabs\What_Can_I_Do_Tab::render();
 						break;
@@ -919,7 +922,6 @@ class Settings {
 		}
 
 		// Nonce verified above; params below are sanitized and used only for export filtering.
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended
 		$args = array(
 			'event_type' => sanitize_key( $_GET['event_type'] ?? '' ),
 			'source'     => sanitize_key( $_GET['source'] ?? '' ),
@@ -927,7 +929,6 @@ class Settings {
 			'date_from'  => sanitize_text_field( wp_unslash( $_GET['date_from'] ?? '' ) ),
 			'date_to'    => sanitize_text_field( wp_unslash( $_GET['date_to'] ?? '' ) ),
 		);
-		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 		$csv      = Audit_Table::export_csv( $args );
 		$filename = 'wp-pinch-audit-' . gmdate( 'Y-m-d' ) . '.csv';
@@ -942,7 +943,7 @@ class Settings {
 		header( 'X-Content-Type-Options: nosniff' );
 		header( "Content-Security-Policy: default-src 'none'" );
 
-		echo $csv; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSV export to file download.
+		echo $csv;
 		exit;
 	}
 }

@@ -903,7 +903,7 @@ class Menu_Meta_Revisions_Abilities {
 						),
 					);
 				}
-				do_action( $hook ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
+				do_action( $hook );
 				Audit_Table::insert(
 					'cron_run',
 					'ability',

@@ -64,6 +64,7 @@ final class Plugin {
 	 */
 	public function activate(): void {
 		Audit_Table::create_table();
+		RAG_Index::create_table();
 		update_option( 'wp_pinch_version', WP_PINCH_VERSION );
 		update_option( 'wp_pinch_activation_redirect', true );
 
@@ -164,6 +165,8 @@ final class Plugin {
 		OpenClaw_Role::init();
 		MCP_Server::init();
 		Abilities::init();
+		Alt_Text_Generator::init();
+		RAG_Index::init();
 		Webhook_Dispatcher::init();
 		Governance::init();
 		Rest_Controller::init();
@@ -276,6 +279,7 @@ final class Plugin {
 
 		// Always run dbDelta to ensure table schema is current.
 		Audit_Table::create_table();
+		RAG_Index::create_table();
 
 		// Version-specific migrations — add new entries below for each release.
 		$migrations = array(
@@ -439,7 +443,6 @@ final class Plugin {
 		}
 
 		// Handle dismissal via AJAX-free approach (query param).
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( isset( $_GET['wp_pinch_dismiss_notice'] ) && '1' === $_GET['wp_pinch_dismiss_notice'] ) {
 			if ( wp_verify_nonce( sanitize_key( $_GET['_wpnonce'] ?? '' ), 'wp_pinch_dismiss_notice' ) ) {
 				update_user_meta( get_current_user_id(), 'wp_pinch_dismissed_config_notice', WP_PINCH_VERSION );
@@ -494,7 +497,6 @@ final class Plugin {
 		}
 
 		// Handle dismissal.
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( isset( $_GET['wp_pinch_dismiss_as_notice'] ) && '1' === $_GET['wp_pinch_dismiss_as_notice'] ) {
 			if ( wp_verify_nonce( sanitize_key( $_GET['_wpnonce'] ?? '' ), 'wp_pinch_dismiss_as_notice' ) ) {
 				update_user_meta( get_current_user_id(), 'wp_pinch_dismissed_as_notice', WP_PINCH_VERSION );

@@ -20,7 +20,6 @@ class Wizard {
 	 * Handle "Finish wizard" link: set wizard completed and redirect to settings.
 	 */
 	public static function maybe_finish_wizard(): void {
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( ! isset( $_GET['wp_pinch_finish_wizard'] ) || '1' !== $_GET['wp_pinch_finish_wizard'] ) {
 			return;
 		}
@@ -39,14 +38,12 @@ class Wizard {
 	 * Handle "Skip setup" link: set wizard completed and redirect to settings.
 	 */
 	public static function maybe_skip_wizard(): void {
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( ! isset( $_GET['wp_pinch_skip_wizard'] ) || '1' !== $_GET['wp_pinch_skip_wizard'] ) {
 			return;
 		}
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( ! wp_verify_nonce( sanitize_key( $_GET['_wpnonce'] ?? '' ), 'wp_pinch_skip_wizard' ) ) {
 			return;
 		}

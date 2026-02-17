@@ -7,6 +7,20 @@
  * @package WP_Pinch
  */
 
+// Suppress Action Scheduler "called before data store initialized" notices for a clean run.
+set_error_handler(
+	function ( $severity, $message, $file, $line ) {
+		if ( E_USER_NOTICE === $severity && (
+			strpos( $message, 'Action Scheduler' ) !== false ||
+			strpos( $message, 'data store was initialized' ) !== false
+		) ) {
+			return true;
+		}
+		return false;
+	},
+	E_USER_NOTICE
+);
+
 $_tests_dir = getenv( 'WP_TESTS_DIR' );
 
 if ( ! $_tests_dir ) {
@@ -29,9 +43,11 @@ require_once "{$_tests_dir}/includes/functions.php";
 
 /**
  * Load Action Scheduler before the plugin (Governance tests need as_has_scheduled_action).
+ * Prefer vendor copy (composer dev dependency) so tests never skip for missing AS.
  */
 function _manually_load_action_scheduler() {
 	$paths = array(
+		dirname( __DIR__ ) . '/vendor/woocommerce/action-scheduler/action-scheduler.php',
 		WP_CONTENT_DIR . '/plugins/action-scheduler/action-scheduler.php',
 		WP_CONTENT_DIR . '/plugins/action-scheduler.latest-stable/action-scheduler.php',
 	);

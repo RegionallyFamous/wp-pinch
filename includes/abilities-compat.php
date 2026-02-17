@@ -20,7 +20,7 @@ if ( ! function_exists( 'wp_execute_ability' ) && function_exists( 'wp_get_abili
 	 * @param array  $params       Optional. Input parameters for the ability. Default empty array.
 	 * @return mixed The ability result, or WP_Error on failure.
 	 */
-	function wp_execute_ability( string $ability_name, array $params = array() ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound -- Polyfill for core.
+	function wp_execute_ability( string $ability_name, array $params = array() ) {
 		$ability = wp_get_ability( $ability_name );
 		if ( ! $ability ) {
 			return new \WP_Error(

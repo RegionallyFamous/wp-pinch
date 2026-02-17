@@ -4,7 +4,7 @@ Tags: ai, agent, openclaw, mcp, automation
 Requires at least: 6.9
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 3.0.1
+Stable tag: 3.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -126,6 +126,14 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 5. Audit log showing recent ability executions, webhooks, and chat messages.
 
 == Changelog ==
+
+= 3.0.2 =
+* New: Molt output types — newsletter (blog-to-newsletter) and sections.
+* New: Abilities — analytics-narratives, suggest-seo-improvements, submit-conversational-form.
+* New: Governance task Semantic Content Freshness; schedule hash for version/settings change.
+* New: AI Dashboard settings tab (first tab, default view).
+* Changed: PHPCS — all inline ignores removed; exclusions in phpcs.xml.dist; 300 tests, 0 skipped; Action Scheduler in test bootstrap; clean test output.
+* Fixed: install-wp-tests.sh portable sed; site health and governance test expectations.
 
 = 3.0.0 =
 * New: REST request handling moved to includes/Rest/ (Auth, Chat, Status, Incoming_Hook, Capture, Ghostwrite, Molt, Preview_Approve, Schemas, Helpers, Write_Budget). Route registration stays in class-rest-controller.php.

@@ -21,14 +21,12 @@ class Audit_Tab {
 	 */
 	public static function render(): void {
 		// Filter params are sanitized; export is protected by nonce below. Admin-only (manage_options).
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended
 		$page      = max( 1, absint( $_GET['audit_page'] ?? 1 ) );
 		$filter    = sanitize_key( $_GET['event_type'] ?? '' );
 		$source    = sanitize_key( $_GET['source'] ?? '' );
 		$search    = sanitize_text_field( wp_unslash( $_GET['audit_search'] ?? '' ) );
 		$date_from = sanitize_text_field( wp_unslash( $_GET['date_from'] ?? '' ) );
 		$date_to   = sanitize_text_field( wp_unslash( $_GET['date_to'] ?? '' ) );
-		// phpcs:enable
 
 		$query_args = array(
 			'event_type' => $filter,

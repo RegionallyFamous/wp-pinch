@@ -34,7 +34,15 @@ So: *"Publish the Q3 recap."* → Done. *"Turn post 123 into a Twitter thread an
 
 No extra logins. No "I'll do it at my desk." You talk; your assistant has the keys. Your site isn't another tab — it's in the same chat. Self-hosted. Your data. (We gave the AI the keys; we gave it a bouncer too. More in [Security](https://github.com/RegionallyFamous/wp-pinch/wiki/Security).)
 
-**Who it's for:** Solo creators, small teams, anyone who talks to an AI in chat and wants their WordPress site *there*. If you've ever thought "I'll publish that when I'm at my laptop," stop context-switching and start pinching. This is for you.
+**Who it's for:** Solo creators, small teams, anyone who talks to an AI in chat and wants their WordPress site *there*. If you've ever thought "I'll publish that when I'm at my laptop," stop context-switching and start pinching. This is for you. I built this because I wanted to publish from Telegram without opening WordPress.
+
+---
+
+## Things to know before you install
+
+- **You need OpenClaw (or another MCP client).** WP Pinch is the WordPress bridge; it's not a turnkey cloud service. Your assistant runs elsewhere and talks to your site via MCP.
+- **Test Connection often fails** when the gateway URL has a trailing slash or the token doesn't have MCP scope. No trailing slash; use an application password or token that can access the MCP endpoint.
+- **Governance (Tide Report, scheduled tasks)** requires [Action Scheduler](https://github.com/woocommerce/action-scheduler)—install it standalone or via WooCommerce.
 
 ---
 
@@ -132,6 +140,8 @@ We're not a replacement for WordPress or a hosted AI SaaS. We're the **bridge**:
 
 ## License
 
-[GPL-2.0-or-later](LICENSE). Built by [Nick Hamze](https://github.com/RegionallyFamous). Your site, your assistant, one conversation — and no lobsters were harmed.
+[GPL-2.0-or-later](LICENSE). Built by [Nick Hamze](https://github.com/RegionallyFamous). Your site, your assistant, one conversation — and no lobsters were harmed. Thanks to the OpenClaw team and everyone who's reported bugs.
+
+Spot a typo or outdated doc? A PR or issue is welcome.
 
 **[wp-pinch.com](https://wp-pinch.com)**

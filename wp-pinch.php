@@ -3,7 +3,7 @@
  * Plugin Name:       WP Pinch
  * Plugin URI:        https://wp-pinch.com
  * Description:       OpenClaw + WordPress integration — bidirectional MCP, autonomous governance, conversational site management from any messaging app.
- * Version:           3.0.1
+ * Version:           3.0.2
  * Requires at least: 6.9
  * Requires PHP:      8.1
  * Author:            Nick Hamze
@@ -41,7 +41,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-defined( 'WP_PINCH_VERSION' ) || define( 'WP_PINCH_VERSION', '3.0.1' );
+defined( 'WP_PINCH_VERSION' ) || define( 'WP_PINCH_VERSION', '3.0.2' );
 defined( 'WP_PINCH_FILE' ) || define( 'WP_PINCH_FILE', __FILE__ );
 defined( 'WP_PINCH_DIR' ) || define( 'WP_PINCH_DIR', plugin_dir_path( __FILE__ ) );
 defined( 'WP_PINCH_URL' ) || define( 'WP_PINCH_URL', plugin_dir_url( __FILE__ ) );
@@ -77,6 +77,7 @@ require_once WP_PINCH_DIR . 'includes/Ability/GhostWriter_Molt_Abilities.php';
 require_once WP_PINCH_DIR . 'includes/class-webhook-dispatcher.php';
 require_once WP_PINCH_DIR . 'includes/class-governance.php';
 require_once WP_PINCH_DIR . 'includes/Governance/Tasks/Content_Freshness.php';
+require_once WP_PINCH_DIR . 'includes/Governance/Tasks/Semantic_Content_Freshness.php';
 require_once WP_PINCH_DIR . 'includes/Governance/Tasks/SEO_Health.php';
 require_once WP_PINCH_DIR . 'includes/Governance/Tasks/Comment_Sweep.php';
 require_once WP_PINCH_DIR . 'includes/Governance/Tasks/Draft_Necromancer.php';
@@ -87,6 +88,7 @@ require_once WP_PINCH_DIR . 'includes/Governance/Tasks/Security_Scan.php';
 require_once WP_PINCH_DIR . 'includes/class-settings.php';
 require_once WP_PINCH_DIR . 'includes/Settings/Token_Storage.php';
 require_once WP_PINCH_DIR . 'includes/Settings/Wizard.php';
+require_once WP_PINCH_DIR . 'includes/Settings/Tabs/Dashboard_Tab.php';
 require_once WP_PINCH_DIR . 'includes/Settings/Tabs/What_Can_I_Do_Tab.php';
 require_once WP_PINCH_DIR . 'includes/Settings/Tabs/Connection_Tab.php';
 require_once WP_PINCH_DIR . 'includes/Settings/Tabs/Webhooks_Tab.php';

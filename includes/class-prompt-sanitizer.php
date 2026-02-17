@@ -86,7 +86,7 @@ class Prompt_Sanitizer {
 		$redacted = __( '[redacted]', 'wp-pinch' );
 		foreach ( $lines as $i => $line ) {
 			foreach ( $patterns as $pattern ) {
-				if ( @preg_match( $pattern, $line ) ) { // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+				if ( @preg_match( $pattern, $line ) ) {
 					$lines[ $i ] = $redacted;
 					break;
 				}
@@ -118,7 +118,7 @@ class Prompt_Sanitizer {
 		$patterns = apply_filters( 'wp_pinch_prompt_sanitizer_title_patterns', self::TITLE_PATTERNS );
 
 		foreach ( $patterns as $pattern ) {
-			if ( @preg_match( $pattern, $content ) ) { // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+			if ( @preg_match( $pattern, $content ) ) {
 				return __( '[redacted]', 'wp-pinch' );
 			}
 		}

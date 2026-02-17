@@ -109,9 +109,12 @@ class Test_Plugin extends WP_UnitTestCase {
 	 */
 	public function test_activation_fires_action(): void {
 		$fired = false;
-		add_action( 'wp_pinch_activated', function () use ( &$fired ) {
-			$fired = true;
-		} );
+		add_action(
+			'wp_pinch_activated',
+			function () use ( &$fired ) {
+				$fired = true;
+			}
+		);
 
 		Plugin::instance()->activate();
 
@@ -127,9 +130,12 @@ class Test_Plugin extends WP_UnitTestCase {
 	 */
 	public function test_deactivation_fires_action(): void {
 		$fired = false;
-		add_action( 'wp_pinch_deactivated', function () use ( &$fired ) {
-			$fired = true;
-		} );
+		add_action(
+			'wp_pinch_deactivated',
+			function () use ( &$fired ) {
+				$fired = true;
+			}
+		);
 
 		Plugin::instance()->deactivate();
 
@@ -185,7 +191,6 @@ class Test_Plugin extends WP_UnitTestCase {
 
 		$this->assertSame( WP_PINCH_VERSION, get_option( 'wp_pinch_version' ), 'Version should be updated to current.' );
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$autoload = $wpdb->get_var(
 			$wpdb->prepare(
 				"SELECT autoload FROM {$wpdb->options} WHERE option_name = %s",
@@ -206,7 +211,10 @@ class Test_Plugin extends WP_UnitTestCase {
 	public function test_translation_setup(): void {
 		$headers = get_file_data(
 			WP_PINCH_FILE,
-			array( 'Text Domain' => 'Text Domain', 'Domain Path' => 'Domain Path' ),
+			array(
+				'Text Domain' => 'Text Domain',
+				'Domain Path' => 'Domain Path',
+			),
 			'plugin'
 		);
 		$this->assertSame( 'wp-pinch', $headers['Text Domain'], 'Text domain should be wp-pinch' );

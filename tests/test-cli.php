@@ -56,7 +56,7 @@ class Test_CLI extends WP_UnitTestCase {
 		$commands = array( 'status', 'webhook_test', 'governance', 'audit', 'abilities' );
 
 		foreach ( $commands as $command ) {
-			$ref = new ReflectionMethod( CLI::class, $command );
+			$ref    = new ReflectionMethod( CLI::class, $command );
 			$params = $ref->getParameters();
 
 			$this->assertGreaterThanOrEqual(

@@ -11,6 +11,7 @@ use WP_Pinch\Audit_Table;
 use WP_Pinch\Circuit_Breaker;
 use WP_Pinch\Feature_Flags;
 use WP_Pinch\Plugin;
+use WP_Pinch\RAG_Index;
 use WP_Pinch\Rest_Controller;
 use WP_Pinch\Settings;
 
@@ -427,6 +428,21 @@ class Chat {
 		if ( $req_agent ) {
 			$payload['agentId'] = sanitize_text_field( $req_agent );
 		}
+		// RAG: inject relevant site chunks so the model can answer from content.
+		if ( RAG_Index::is_available() && is_string( $message ) && '' !== trim( $message ) ) {
+			$chunks = RAG_Index::get_relevant_chunks( $message, 5 );
+			if ( ! empty( $chunks ) ) {
+				$context_parts = array();
+				foreach ( $chunks as $c ) {
+					$context_parts[] = sprintf( '[Post #%d: %s] %s', $c['post_id'], $c['title'], $c['content'] );
+				}
+				$payload['message'] = sprintf(
+					"Use the following site content to answer the user. Cite post IDs when relevant.\n\nSITE CONTENT:\n%s\n\nUSER QUESTION: %s",
+					implode( "\n\n", $context_parts ),
+					$message
+				);
+			}
+		}
 		$payload        = apply_filters( 'wp_pinch_chat_payload', $payload, $request );
 		$sse_max_per_ip = (int) get_option( 'wp_pinch_sse_max_connections_per_ip', 5 );
 		if ( $sse_max_per_ip > 0 ) {
@@ -486,7 +502,6 @@ class Chat {
 			}
 			exit;
 		}
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen, WordPress.PHP.NoSilencedErrors.Discouraged
 		$stream = @fopen( $stream_url, 'r', false, $context );
 		if ( ! $stream ) {
 			Circuit_Breaker::record_failure();
@@ -509,7 +524,6 @@ class Chat {
 			}
 		}
 		if ( $stream_status >= 400 ) {
-			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
 			fclose( $stream );
 			Circuit_Breaker::record_failure();
 			echo "event: error\n";
@@ -530,7 +544,6 @@ class Chat {
 			$max_response_len = 0;
 		}
 		while ( ! feof( $stream ) ) {
-			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fread
 			$chunk = fread( $stream, 4096 );
 			if ( false === $chunk || '' === $chunk ) {
 				break;
@@ -545,7 +558,7 @@ class Chat {
 			$sse_buffer              .= $clean;
 			list( $out, $sse_buffer ) = Helpers::process_sse_buffer( $sse_buffer );
 			if ( '' !== $out ) {
-				echo $out; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo $out;
 				$forwarded_events = true;
 				if ( ob_get_level() ) {
 					ob_flush();
@@ -556,14 +569,13 @@ class Chat {
 		if ( '' !== $sse_buffer ) {
 			list( $out, $_ ) = Helpers::process_sse_buffer( $sse_buffer . "\n" );
 			if ( '' !== $out ) {
-				echo $out; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo $out;
 				$forwarded_events = true;
 			} else {
-				echo $sse_buffer; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo $sse_buffer;
 				$forwarded_events = true;
 			}
 		}
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
 		fclose( $stream );
 		if ( ! $forwarded_events ) {
 			$data  = json_decode( $full_response, true );

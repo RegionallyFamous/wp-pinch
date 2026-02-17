@@ -88,7 +88,7 @@ class Test_Audit_Table extends WP_UnitTestCase {
 				'content_length_after'  => 200,
 			),
 			'request_summary' => array( 'title' => 'Test' ),
-			'result_summary'   => array( 'post_id' => 42 ),
+			'result_summary'  => array( 'post_id' => 42 ),
 		);
 
 		$id = Audit_Table::insert( 'post_updated', 'ability', 'Post 42 updated.', $context );

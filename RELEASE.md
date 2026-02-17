@@ -1,6 +1,6 @@
 # Release Procedure
 
-A rock-solid checklist to cut a WP Pinch release. Nothing ships until every step passes.
+Checklist I use before tagging a release. Nothing ships until every step passes.
 
 ---
 

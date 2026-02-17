@@ -59,9 +59,12 @@ class Test_Utils extends WP_UnitTestCase {
 	 * Test get_preferred_content_format is filterable.
 	 */
 	public function test_get_preferred_content_format_filter(): void {
-		add_filter( 'wp_pinch_preferred_content_format', function () {
-			return 'html';
-		} );
+		add_filter(
+			'wp_pinch_preferred_content_format',
+			function () {
+				return 'html';
+			}
+		);
 
 		$this->assertSame( 'html', Utils::get_preferred_content_format() );
 

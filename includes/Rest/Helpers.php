@@ -149,9 +149,7 @@ class Helpers {
 
 		$abspath = defined( 'ABSPATH' ) ? ABSPATH : '';
 		if ( '' !== $abspath && function_exists( 'disk_free_space' ) && function_exists( 'disk_total_space' ) ) {
-			// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
-			$free = @disk_free_space( $abspath );
-			// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+			$free  = @disk_free_space( $abspath );
 			$total = @disk_total_space( $abspath );
 			if ( false !== $free && false !== $total && $total > 0 ) {
 				$out['disk_free_bytes']  = $free;
@@ -185,8 +183,7 @@ class Helpers {
 		if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG && defined( 'WP_CONTENT_DIR' ) ) {
 			$log_file = WP_CONTENT_DIR . '/debug.log';
 			if ( is_readable( $log_file ) && is_file( $log_file ) ) {
-				$lines = array();
-				// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged, WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+				$lines  = array();
 				$handle = @fopen( $log_file, 'r' );
 				if ( $handle ) {
 					$size  = fstat( $handle )['size'] ?? 0;
@@ -195,11 +192,11 @@ class Helpers {
 						fseek( $handle, -$chunk, SEEK_END );
 						fgets( $handle );
 					}
-					// phpcs:ignore Generic.CodeAnalysis.AssignmentInCondition.FoundInWhileCondition
-					while ( ( $line = fgets( $handle ) ) !== false ) {
+					$line = fgets( $handle );
+					while ( false !== $line ) {
 						$lines[] = $line;
+						$line    = fgets( $handle );
 					}
-					// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
 					fclose( $handle );
 					$lines                 = array_slice( $lines, -20 );
 					$max_len               = 200;

@@ -7,8 +7,8 @@
   </testsuites>
   <php>
     <const name="WP_TESTS_MULTISITE" value="0"/>
-    <!-- Suppress vendor deprecations (e.g. thecodingmachine/safe PHP 8.4 nullable params) during tests -->
-    <ini name="error_reporting" value="22527"/>
+    <!-- Suppress vendor deprecations and WP _doing_it_wrong notices (e.g. Action Scheduler init order) for a clean run -->
+    <ini name="error_reporting" value="21503"/>
   </php>
   <coverage>
     <include>

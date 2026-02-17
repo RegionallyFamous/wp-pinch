@@ -110,11 +110,14 @@ class Test_Abilities extends WP_UnitTestCase {
 		$this->factory->post->create_many( 5 );
 
 		$result = Abilities::execute_list_posts(
-			array( 'per_page' => 0, 'page' => 0 )
+			array(
+				'per_page' => 0,
+				'page'     => 0,
+			)
 		);
 
 		$this->assertEquals( 1, $result['page'], 'page=0 should be clamped to 1.' );
-		// per_page=0 → max(1, min(0, 100)) = max(1, 0) = 1
+		// per_page=0 is clamped to 1 by the ability.
 		$this->assertCount( 1, $result['posts'], 'per_page=0 should be clamped to 1.' );
 	}
 
@@ -212,7 +215,12 @@ class Test_Abilities extends WP_UnitTestCase {
 	 * Test update-post with non-existent ID returns error.
 	 */
 	public function test_update_post_not_found(): void {
-		$result = Abilities::execute_update_post( array( 'id' => 99999, 'title' => 'X' ) );
+		$result = Abilities::execute_update_post(
+			array(
+				'id'    => 99999,
+				'title' => 'X',
+			)
+		);
 		$this->assertArrayHasKey( 'error', $result );
 	}
 
@@ -228,7 +236,12 @@ class Test_Abilities extends WP_UnitTestCase {
 		// WordPress uses second precision for post_modified; wait so the update gets a different timestamp.
 		sleep( 2 );
 		// Simulate another user/process updating the post (changes post_modified).
-		wp_update_post( array( 'ID' => $post_id, 'post_title' => 'Changed by someone else' ) );
+		wp_update_post(
+			array(
+				'ID'         => $post_id,
+				'post_title' => 'Changed by someone else',
+			)
+		);
 
 		$result = Abilities::execute_update_post(
 			array(
@@ -288,7 +301,12 @@ class Test_Abilities extends WP_UnitTestCase {
 	public function test_delete_post_force(): void {
 		$post_id = $this->factory->post->create();
 
-		$result = Abilities::execute_delete_post( array( 'id' => $post_id, 'force' => true ) );
+		$result = Abilities::execute_delete_post(
+			array(
+				'id'    => $post_id,
+				'force' => true,
+			)
+		);
 
 		$this->assertTrue( $result['deleted'] );
 		$this->assertTrue( $result['force'] );
@@ -414,7 +432,12 @@ class Test_Abilities extends WP_UnitTestCase {
 	 * Test list-users returns correct structure.
 	 */
 	public function test_list_users(): void {
-		$result = Abilities::execute_list_users( array( 'per_page' => 10, 'page' => 1 ) );
+		$result = Abilities::execute_list_users(
+			array(
+				'per_page' => 10,
+				'page'     => 1,
+			)
+		);
 
 		$this->assertArrayHasKey( 'users', $result );
 		$this->assertArrayHasKey( 'total', $result );
@@ -447,7 +470,10 @@ class Test_Abilities extends WP_UnitTestCase {
 		$subscriber_id = $this->factory->user->create( array( 'role' => 'subscriber' ) );
 
 		$result = Abilities::execute_update_user_role(
-			array( 'id' => $subscriber_id, 'role' => 'author' )
+			array(
+				'id'   => $subscriber_id,
+				'role' => 'author',
+			)
 		);
 
 		$this->assertArrayHasKey( 'updated', $result );
@@ -462,7 +488,10 @@ class Test_Abilities extends WP_UnitTestCase {
 		$subscriber_id = $this->factory->user->create( array( 'role' => 'subscriber' ) );
 
 		$result = Abilities::execute_update_user_role(
-			array( 'id' => $subscriber_id, 'role' => 'administrator' )
+			array(
+				'id'   => $subscriber_id,
+				'role' => 'administrator',
+			)
 		);
 
 		$this->assertArrayHasKey( 'error', $result );
@@ -478,7 +507,10 @@ class Test_Abilities extends WP_UnitTestCase {
 	 */
 	public function test_update_user_role_blocks_self_change(): void {
 		$result = Abilities::execute_update_user_role(
-			array( 'id' => $this->admin_id, 'role' => 'author' )
+			array(
+				'id'   => $this->admin_id,
+				'role' => 'author',
+			)
 		);
 
 		$this->assertArrayHasKey( 'error', $result );
@@ -492,7 +524,10 @@ class Test_Abilities extends WP_UnitTestCase {
 		$subscriber_id = $this->factory->user->create( array( 'role' => 'subscriber' ) );
 
 		$result = Abilities::execute_update_user_role(
-			array( 'id' => $subscriber_id, 'role' => 'nonexistent_role' )
+			array(
+				'id'   => $subscriber_id,
+				'role' => 'nonexistent_role',
+			)
 		);
 
 		$this->assertArrayHasKey( 'error', $result );
@@ -506,13 +541,19 @@ class Test_Abilities extends WP_UnitTestCase {
 		$subscriber_id = $this->factory->user->create( array( 'role' => 'subscriber' ) );
 
 		// Block 'editor' role too via filter.
-		add_filter( 'wp_pinch_blocked_roles', function ( $roles ) {
-			$roles[] = 'editor';
-			return $roles;
-		} );
+		add_filter(
+			'wp_pinch_blocked_roles',
+			function ( $roles ) {
+				$roles[] = 'editor';
+				return $roles;
+			}
+		);
 
 		$result = Abilities::execute_update_user_role(
-			array( 'id' => $subscriber_id, 'role' => 'editor' )
+			array(
+				'id'   => $subscriber_id,
+				'role' => 'editor',
+			)
 		);
 
 		$this->assertArrayHasKey( 'error', $result );
@@ -549,7 +590,11 @@ class Test_Abilities extends WP_UnitTestCase {
 		$this->factory->comment->create_many( 5, array( 'comment_post_ID' => $post_id ) );
 
 		$result = Abilities::execute_list_comments(
-			array( 'per_page' => 2, 'page' => 1, 'post_id' => $post_id )
+			array(
+				'per_page' => 2,
+				'page'     => 1,
+				'post_id'  => $post_id,
+			)
 		);
 
 		$this->assertCount( 2, $result['comments'], 'Page should have 2 comments.' );
@@ -569,7 +614,10 @@ class Test_Abilities extends WP_UnitTestCase {
 		);
 
 		$result = Abilities::execute_moderate_comment(
-			array( 'id' => $comment_id, 'status' => 'approve' )
+			array(
+				'id'     => $comment_id,
+				'status' => 'approve',
+			)
 		);
 
 		$this->assertArrayHasKey( 'moderated', $result );
@@ -582,7 +630,10 @@ class Test_Abilities extends WP_UnitTestCase {
 	 */
 	public function test_moderate_comment_not_found(): void {
 		$result = Abilities::execute_moderate_comment(
-			array( 'id' => 99999, 'status' => 'approve' )
+			array(
+				'id'     => 99999,
+				'status' => 'approve',
+			)
 		);
 
 		$this->assertArrayHasKey( 'error', $result );
@@ -597,7 +648,10 @@ class Test_Abilities extends WP_UnitTestCase {
 		$comment_id = $this->factory->comment->create( array( 'comment_post_ID' => $post_id ) );
 
 		$result = Abilities::execute_moderate_comment(
-			array( 'id' => $comment_id, 'status' => 'invalid_status' )
+			array(
+				'id'     => $comment_id,
+				'status' => 'invalid_status',
+			)
 		);
 
 		$this->assertArrayHasKey( 'error', $result );
@@ -810,7 +864,12 @@ class Test_Abilities extends WP_UnitTestCase {
 	 */
 	public function test_export_data_posts(): void {
 		$this->factory->post->create_many( 3 );
-		$result = Abilities::execute_export_data( array( 'type' => 'posts', 'per_page' => 10 ) );
+		$result = Abilities::execute_export_data(
+			array(
+				'type'     => 'posts',
+				'per_page' => 10,
+			)
+		);
 
 		$this->assertEquals( 'posts', $result['type'] );
 		$this->assertArrayHasKey( 'data', $result );
@@ -928,7 +987,10 @@ class Test_Abilities extends WP_UnitTestCase {
 		update_post_meta( $post_id, 'test_key', 'test_value' );
 
 		$result = Abilities::execute_get_post_meta(
-			array( 'post_id' => $post_id, 'key' => 'test_key' )
+			array(
+				'post_id' => $post_id,
+				'key'     => 'test_key',
+			)
 		);
 
 		$this->assertEquals( 'test_value', $result['value'] );
@@ -941,7 +1003,10 @@ class Test_Abilities extends WP_UnitTestCase {
 		$post_id = $this->factory->post->create();
 
 		$result = Abilities::execute_get_post_meta(
-			array( 'post_id' => $post_id, 'key' => '_edit_lock' )
+			array(
+				'post_id' => $post_id,
+				'key'     => '_edit_lock',
+			)
 		);
 
 		$this->assertArrayHasKey( 'error', $result );
@@ -955,7 +1020,11 @@ class Test_Abilities extends WP_UnitTestCase {
 		$post_id = $this->factory->post->create();
 
 		$result = Abilities::execute_update_post_meta(
-			array( 'post_id' => $post_id, 'key' => 'my_custom_field', 'value' => 'hello' )
+			array(
+				'post_id' => $post_id,
+				'key'     => 'my_custom_field',
+				'value'   => 'hello',
+			)
 		);
 
 		$this->assertTrue( $result['updated'] );
@@ -967,7 +1036,11 @@ class Test_Abilities extends WP_UnitTestCase {
 	 */
 	public function test_update_post_meta_post_not_found(): void {
 		$result = Abilities::execute_update_post_meta(
-			array( 'post_id' => 99999, 'key' => 'test', 'value' => 'x' )
+			array(
+				'post_id' => 99999,
+				'key'     => 'test',
+				'value'   => 'x',
+			)
 		);
 
 		$this->assertArrayHasKey( 'error', $result );
@@ -1081,8 +1154,18 @@ class Test_Abilities extends WP_UnitTestCase {
 	 */
 	public function test_restore_revision_requires_edit_post(): void {
 		$post_id = $this->factory->post->create( array( 'post_author' => $this->admin_id ) );
-		wp_update_post( array( 'ID' => $post_id, 'post_content' => 'Updated once.' ) );
-		wp_update_post( array( 'ID' => $post_id, 'post_content' => 'Updated twice.' ) );
+		wp_update_post(
+			array(
+				'ID'           => $post_id,
+				'post_content' => 'Updated once.',
+			)
+		);
+		wp_update_post(
+			array(
+				'ID'           => $post_id,
+				'post_content' => 'Updated twice.',
+			)
+		);
 		$revisions = wp_get_post_revisions( $post_id );
 		$rev_id    = ! empty( $revisions ) ? (int) array_key_first( $revisions ) : 0;
 		$this->assertGreaterThan( 0, $rev_id, 'Revision should exist.' );
@@ -1123,12 +1206,17 @@ class Test_Abilities extends WP_UnitTestCase {
 	 * Test update-post returns preview_url and url.
 	 */
 	public function test_update_post_returns_preview_url(): void {
-		$post_id = $this->factory->post->create( array( 'post_title' => 'Original', 'post_status' => 'draft' ) );
+		$post_id = $this->factory->post->create(
+			array(
+				'post_title'  => 'Original',
+				'post_status' => 'draft',
+			)
+		);
 
 		$result = Abilities::execute_update_post(
 			array(
-				'id'      => $post_id,
-				'title'  => 'Updated',
+				'id'    => $post_id,
+				'title' => 'Updated',
 			)
 		);
 
@@ -1183,18 +1271,16 @@ class Test_Abilities extends WP_UnitTestCase {
 	 * Test create-post with blocks array produces block markup when serialize_blocks exists.
 	 */
 	public function test_create_post_with_blocks(): void {
-		if ( ! function_exists( 'serialize_blocks' ) ) {
-			$this->markTestSkipped( 'serialize_blocks not available.' );
-		}
+		$this->assertTrue( function_exists( 'serialize_blocks' ), 'serialize_blocks (WP 5.0+) must be available.' );
 
 		$result = Abilities::execute_create_post(
 			array(
 				'title'  => 'Block post',
 				'blocks' => array(
 					array(
-						'blockName'     => 'core/paragraph',
-						'attrs'         => array(),
-						'innerContent'  => array( 'Hello from block.' ),
+						'blockName'    => 'core/paragraph',
+						'attrs'        => array(),
+						'innerContent' => array( 'Hello from block.' ),
 					),
 				),
 			)
@@ -1212,9 +1298,7 @@ class Test_Abilities extends WP_UnitTestCase {
 	 * Test create-post with invalid blocks (no valid blockName) returns error.
 	 */
 	public function test_create_post_with_invalid_blocks_returns_error(): void {
-		if ( ! function_exists( 'serialize_blocks' ) ) {
-			$this->markTestSkipped( 'serialize_blocks not available.' );
-		}
+		$this->assertTrue( function_exists( 'serialize_blocks' ), 'serialize_blocks (WP 5.0+) must be available.' );
 
 		$result = Abilities::execute_create_post(
 			array(
@@ -1238,7 +1322,10 @@ class Test_Abilities extends WP_UnitTestCase {
 	 */
 	public function test_execute_content_health_report_returns_structure(): void {
 		$result = Abilities::execute_content_health_report(
-			array( 'limit' => 5, 'min_words' => 100 )
+			array(
+				'limit'     => 5,
+				'min_words' => 100,
+			)
 		);
 
 		$this->assertArrayHasKey( 'missing_alt', $result );
@@ -1298,7 +1385,12 @@ class Test_Abilities extends WP_UnitTestCase {
 			)
 		);
 
-		$result = Abilities::execute_suggest_terms( array( 'post_id' => $post_id, 'limit' => 5 ) );
+		$result = Abilities::execute_suggest_terms(
+			array(
+				'post_id' => $post_id,
+				'limit'   => 5,
+			)
+		);
 
 		$this->assertArrayNotHasKey( 'error', $result );
 		$this->assertArrayHasKey( 'suggested_categories', $result );

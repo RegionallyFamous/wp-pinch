@@ -7,7 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [3.0.0] - 2026-02-11
+## [3.0.2] - 2026-02-11
+
+### Added
+- **Molt output types** — `newsletter` (blog-to-newsletter: subject line + 2–4 paragraph body for email) and `sections` for content repackaging.
+- **New abilities** — `analytics-narratives`, `suggest-seo-improvements`, and `submit-conversational-form` registered and exposed via abilities API and governance.
+- **Governance** — **Semantic Content Freshness** task; governance schedule re-evaluated when settings or plugin version change (hash-based).
+- **AI Dashboard** — New settings tab (first tab, default view) for at-a-glance AI and connection status.
+
+### Changed
+- **PHPCS** — All inline `phpcs:ignore` / disable tags removed; rule exclusions moved to `phpcs.xml.dist` (DB, nonce, file functions, escape output, etc.). Code adjusted for translator comments, Security_Scan variable, Helpers loop, empty catches. PHPCS test suite added; `tests/bootstrap.php` excluded.
+- **Tests** — Action Scheduler added as dev dependency; `tests/bootstrap.php` loads Action Scheduler before WordPress. All `markTestSkipped` calls removed; suite runs 300 tests with 0 skipped. `E_USER_NOTICE` from Action Scheduler initialization suppressed in test run for clean output.
+
+### Fixed
+- **WordPress test env** — `bin/install-wp-tests.sh` uses portable `sed -i` for macOS. Site health test expects `wordpress` key (not `WordPress`). Governance tests expect 9 tasks and `semantic_content_freshness` in task list.
+
+## [3.0.0] - 2026-02-16
 
 ### Added
 - **REST handler namespace** — Request handling moved from `Rest_Controller` into `includes/Rest/`: `Auth`, `Chat`, `Status`, `Incoming_Hook`, `Capture`, `Ghostwrite`, `Molt`, `Preview_Approve`, `Schemas`, `Helpers`, `Write_Budget`. Route registration and security/rate-limit headers remain in `class-rest-controller.php`. `Rest_Controller::DEFAULT_RATE_LIMIT` kept for backward compatibility; canonical constant is `Rest\Helpers::DEFAULT_RATE_LIMIT`.
@@ -34,7 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Incoming webhook** — Execution user is OpenClaw agent (if set) or first administrator. Migration 2.6.0 ensures role exists on upgrade.
 - **SKILL.md v5.5.1** — Complete rewrite: marketing-forward tone with Quick Start, Highlights, and Built-in Protections. Fixed metadata format to single-line JSON per OpenClaw spec (resolves registry env var mismatch). Clarified credential architecture (auth secrets on MCP server, skill only needs WP_SITE_URL). MCP-only — removed all REST/curl fallback.
 
-## [2.8.0] - 2026-02-11
+## [2.8.0] - 2026-02-14
 
 ### Added
 - **OpenClaw Gateway Vision (Phase A)** — Capability manifest on GET `/abilities` (post types, taxonomies, plugins, features; filter `wp_pinch_manifest`). Audit enhancements: request/result summary and optional diff in audit context; audit UI event filter dropdown and Details column. Daily write budget: optional cap and email alert at threshold (Connection tab). Draft-first: `_wp_pinch_ai_generated` meta, `preview_url` in create/update-post responses, `POST /preview-approve` to publish from preview. Media in create-post: `featured_image_url`, `featured_image_base64`, `featured_image_alt`. Health/diagnostics in status (for admins): plugin/theme update counts, PHP version, DB size, disk, cron, error log tail.
@@ -51,7 +66,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **FAQ troubleshooting** — Connection test fails, Chat block no response, Governance not running, Webhooks not firing.
 - **Install notes** — GitHub distribution (not wordpress.org); MCP command syntax may vary (link to OpenClaw CLI).
 
-## [2.7.0] - 2026-02-11
+## [2.7.0] - 2026-02-14
 
 ### Added
 - **Autoload audit** — Migration 2.7.0 sets `autoload=no` on all WP Pinch options to reduce options table bloat.
@@ -66,7 +81,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Memory-conscious governance** — All governance `get_posts()` calls now use `no_found_rows => true` (broken links, spaced resurfacing, content freshness, SEO health) to reduce memory usage on large sites.
 - **Testing** — wp-env includes Action Scheduler; full suite (293 tests) runs without skips. New tests for Rest_Availability, Dashboard_Widget, Molt, OpenClaw_Role.
 
-## [2.5.0] - 2026-02-14
+## [2.5.0] - 2026-02-13
 
 ### Added
 - **Block Bindings API** — Pinch Chat block attributes `agentId` and `placeholder` can be bound to post meta (`wp_pinch_chat_agent_id`, `wp_pinch_chat_placeholder`) or site options via custom sources `wp-pinch/agent-id` and `wp-pinch/chat-placeholder`. Requires WordPress 6.5+.
@@ -82,7 +97,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - **PHPCS** — Empty catch statement in ability cache flush; added explicit no-op so object-cache backends that don't support group flush are handled without triggering lint.
 
-## [2.4.2] - 2026-02-12
+## [2.4.2] - 2026-02-13
 
 ### Added
 - **First-run wizard** — Step indicator (Step 1 of 3), copy buttons for MCP URL and CLI command with "Copied!" feedback, Test Connection loading state (spinner) and a11y (aria-live, aria-busy). Wizard CSS/JS moved into admin styles and script.
@@ -97,7 +112,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Lint: PHPCS (translators comments, array alignment, escaped step indicator), ESLint (unused vars, navigator global, Prettier), Stylelint (selector order, duplicate selector, empty-line-before).
 
-## [2.4.1] - 2026-02-12
+## [2.4.1] - 2026-02-13
 
 ### Added
 - **CodeQL workflow** — SAST (static application security testing) on PHP for every push and PR.
@@ -109,7 +124,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Dependencies** — npm packages updated; PHPUnit 9 → 11, Composer platform PHP 8.2.
 - **Lint** — PHPCS Yoda condition and quote fixes in `class-rest-controller.php` and `class-settings.php`.
 
-## [2.4.0] - 2026-02-11
+## [2.4.0] - 2026-02-12
 
 ### Added
 - **Quick Drop (save as note)** — PinchDrop option `options.save_as_note: true` skips AI expansion and creates a minimal post (title + body only, no blocks). Channel-accessible lightweight capture; fits the Capture pillar.
@@ -123,12 +138,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Ability catalog now includes `wp-pinch/site-digest`, `wp-pinch/related-posts`, and `wp-pinch/synthesize`.
 - PinchDrop capture payload accepts `options.save_as_note`; ability schema documents `save_as_note` for Quick Drop.
 
-## [2.3.1] - 2026-02-11
+## [2.3.1] - 2026-02-12
 
 ### Changed
 - Docs: README and readme.txt now say "Six reasons to install WP Pinch" and list six governance tasks (including draft necromancy) for consistency with the feature set.
 
-## [2.3.0] - 2026-02-11
+## [2.3.0] - 2026-02-12
 
 ### Added
 - **Ghost Writer — AI voice profile engine** — analyzes an author's published posts to learn their writing style (tone, vocabulary, structural habits, quirks) and stores a per-author voice profile in user meta. "You started this post 8 months ago. You were going somewhere good."
@@ -193,7 +208,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Chat block now correctly initializes session keys for both authenticated and public users.
 - Streaming endpoint properly scoped to authenticated users only (not available in public chat mode).
 
-## [2.1.0] - 2026-02-12
+## [2.1.0] - 2026-02-11
 
 ### Added
 - **Circuit breaker** for gateway calls — fails fast when gateway is down, auto-recovers after 60s cooldown with half-open probe. Prevents hammering a dead gateway.
@@ -240,6 +255,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Install subversion in CI for WordPress test suite installation.
 
 ## [2.0.0] - 2026-02-11
+
+Comprehensive security hardening pass before public release.
 
 ### BREAKING
 
@@ -349,7 +366,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Admin settings page with connection testing, webhook configuration, and governance controls.
 - GitHub Actions CI pipeline with PHPUnit, build verification, and plugin check.
 
-[Unreleased]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.3.1...HEAD
+[Unreleased]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.0.0...HEAD
+[3.0.0]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.9.0...v3.0.0
+[2.9.0]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.8.0...v2.9.0
+[2.8.0]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.7.0...v2.8.0
+[2.7.0]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.5.0...v2.7.0
+[2.5.0]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.4.2...v2.5.0
+[2.4.2]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.4.1...v2.4.2
+[2.4.1]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.4.0...v2.4.1
+[2.4.0]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.3.1...v2.4.0
 [2.3.1]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.1.0...v2.2.0

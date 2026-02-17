@@ -131,7 +131,6 @@ class Rest_Availability {
 	 * Handle dismiss action.
 	 */
 	public static function handle_dismiss(): void {
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( ! isset( $_GET['wp_pinch_dismiss_rest_notice'] ) || '1' !== $_GET['wp_pinch_dismiss_rest_notice'] ) {
 			return;
 		}

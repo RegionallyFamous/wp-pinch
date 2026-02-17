@@ -8,9 +8,12 @@
 namespace WP_Pinch\Ability;
 
 use WP_Pinch\Abilities;
+use WP_Pinch\Circuit_Breaker;
 use WP_Pinch\Feature_Flags;
 use WP_Pinch\Governance;
+use WP_Pinch\Plugin;
 use WP_Pinch\Prompt_Sanitizer;
+use WP_Pinch\Settings;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -208,6 +211,55 @@ class Analytics_Abilities {
 			'edit_posts',
 			array( __CLASS__, 'execute_synthesize' ),
 			true
+		);
+
+		Abilities::register_ability(
+			'wp-pinch/analytics-narratives',
+			__( 'Analytics Narratives', 'wp-pinch' ),
+			__( 'Turn site digest or recent activity data into a brief narrative: what happened this week, what is new.', 'wp-pinch' ),
+			array(
+				'type'       => 'object',
+				'properties' => array(
+					'source' => array(
+						'type'        => 'string',
+						'default'     => 'site_digest',
+						'description' => __( 'Data source: site_digest or recent_activity.', 'wp-pinch' ),
+					),
+				),
+			),
+			array( 'type' => 'object' ),
+			'edit_posts',
+			array( __CLASS__, 'execute_analytics_narratives' )
+		);
+
+		Abilities::register_ability(
+			'wp-pinch/submit-conversational-form',
+			__( 'Submit Conversational Form', 'wp-pinch' ),
+			__( 'Submit collected form data from a conversation. Provide fields (name/value pairs) and optionally a webhook URL to POST the payload to.', 'wp-pinch' ),
+			array(
+				'type'       => 'object',
+				'required'   => array( 'fields' ),
+				'properties' => array(
+					'fields'      => array(
+						'type'        => 'array',
+						'description' => __( 'Form fields: array of objects with "name" and "value".', 'wp-pinch' ),
+						'items'       => array(
+							'type'       => 'object',
+							'properties' => array(
+								'name'  => array( 'type' => 'string' ),
+								'value' => array( 'type' => 'string' ),
+							),
+						),
+					),
+					'webhook_url' => array(
+						'type'        => 'string',
+						'description' => __( 'Optional URL to POST the form payload to (JSON).', 'wp-pinch' ),
+					),
+				),
+			),
+			array( 'type' => 'object' ),
+			'edit_posts',
+			array( __CLASS__, 'execute_submit_conversational_form' )
 		);
 	}
 
@@ -614,8 +666,8 @@ class Analytics_Abilities {
 		if ( ! empty( $term_taxonomy_ids ) ) {
 			$in_placeholders = implode( ',', array_fill( 0, count( $term_taxonomy_ids ), '%d' ) );
 			$by_taxonomy_ids = $wpdb->get_col(
-				$wpdb->prepare( // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- Dynamic IN.
-					'SELECT object_id FROM ' . $wpdb->term_relationships . ' WHERE object_id != %d AND term_taxonomy_id IN (' . $in_placeholders . ') LIMIT %d', // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$wpdb->prepare(
+					'SELECT object_id FROM ' . $wpdb->term_relationships . ' WHERE object_id != %d AND term_taxonomy_id IN (' . $in_placeholders . ') LIMIT %d',
 					array_merge( array( $post_id ), $term_taxonomy_ids, array( $limit ) )
 				)
 			);
@@ -717,6 +769,155 @@ class Analytics_Abilities {
 			'query' => $query,
 			'posts' => $posts,
 			'total' => $q->found_posts,
+		);
+	}
+
+	/**
+	 * Analytics narratives: turn site digest or recent activity into a brief narrative.
+	 *
+	 * @param array<string, mixed> $input Ability input.
+	 * @return array<string, mixed> Result with narrative; or error key.
+	 */
+	public static function execute_analytics_narratives( array $input ): array {
+		$gateway_url = get_option( 'wp_pinch_gateway_url', '' );
+		$api_token   = Settings::get_api_token();
+		if ( empty( $gateway_url ) || empty( $api_token ) ) {
+			return array( 'error' => __( 'WP Pinch gateway is not configured.', 'wp-pinch' ) );
+		}
+		if ( Plugin::is_read_only_mode() ) {
+			return array( 'error' => __( 'API is in read-only mode.', 'wp-pinch' ) );
+		}
+		if ( Feature_Flags::is_enabled( 'circuit_breaker' ) && ! Circuit_Breaker::is_available() ) {
+			return array( 'error' => __( 'The AI gateway is temporarily unavailable.', 'wp-pinch' ) );
+		}
+
+		$source = sanitize_key( (string) ( $input['source'] ?? 'site_digest' ) );
+		if ( 'recent_activity' === $source ) {
+			$data = self::execute_recent_activity( array( 'limit' => 15 ) );
+		} else {
+			$data = self::execute_site_digest(
+				array(
+					'per_page'  => 15,
+					'post_type' => 'post',
+				)
+			);
+		}
+		if ( isset( $data['error'] ) ) {
+			return array( 'error' => $data['error'] );
+		}
+
+		$prompt = 'Turn the following site data into a brief narrative (2–4 paragraphs): what happened recently, what is new, what matters. Be concise and editorial.' . "\n\n" .
+			'SITE DATA (JSON):' . "\n" . wp_json_encode( $data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
+
+		$payload  = array(
+			'message'    => $prompt,
+			'name'       => 'WordPress Analytics Narratives',
+			'sessionKey' => 'wp-pinch-analytics-narratives',
+			'wakeMode'   => 'now',
+		);
+		$agent_id = get_option( 'wp_pinch_agent_id', '' );
+		if ( '' !== $agent_id ) {
+			$payload['agentId'] = sanitize_text_field( $agent_id );
+		}
+
+		$hooks_url = trailingslashit( $gateway_url ) . 'hooks/agent';
+		if ( ! wp_http_validate_url( $hooks_url ) ) {
+			return array( 'error' => __( 'Gateway URL failed security validation.', 'wp-pinch' ) );
+		}
+
+		$response = wp_safe_remote_post(
+			$hooks_url,
+			array(
+				'timeout' => 45,
+				'headers' => array(
+					'Content-Type'  => 'application/json',
+					'Authorization' => 'Bearer ' . $api_token,
+				),
+				'body'    => wp_json_encode( $payload ),
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			Circuit_Breaker::record_failure();
+			return array( 'error' => $response->get_error_message() );
+		}
+
+		$status = wp_remote_retrieve_response_code( $response );
+		if ( $status < 200 || $status >= 300 ) {
+			Circuit_Breaker::record_failure();
+			return array(
+				'error' => sprintf(
+					/* translators: %d: HTTP status code */
+					__( 'Gateway returned HTTP %d.', 'wp-pinch' ),
+					$status
+				),
+			);
+		}
+
+		Circuit_Breaker::record_success();
+		$body      = wp_remote_retrieve_body( $response );
+		$data      = json_decode( $body, true );
+		$narrative = $data['response'] ?? $data['message'] ?? '';
+		$narrative = is_string( $narrative ) ? trim( $narrative ) : '';
+
+		return array(
+			'narrative' => $narrative,
+			'source'    => $source,
+		);
+	}
+
+	/**
+	 * Submit conversational form data; optionally POST to webhook.
+	 *
+	 * @param array<string, mixed> $input Ability input.
+	 * @return array<string, mixed> Result with sent, summary; or error key.
+	 */
+	public static function execute_submit_conversational_form( array $input ): array {
+		$fields = $input['fields'] ?? array();
+		if ( ! is_array( $fields ) ) {
+			return array( 'error' => __( 'fields must be an array of { name, value } objects.', 'wp-pinch' ) );
+		}
+
+		$payload = array();
+		$summary = array();
+		foreach ( $fields as $item ) {
+			if ( ! is_array( $item ) || ! isset( $item['name'] ) ) {
+				continue;
+			}
+			$name  = sanitize_text_field( (string) $item['name'] );
+			$value = isset( $item['value'] ) ? sanitize_text_field( (string) $item['value'] ) : '';
+			if ( '' !== $name ) {
+				$payload[ $name ] = $value;
+				$summary[]        = $name . ': ' . ( '' !== $value ? $value : __( '(empty)', 'wp-pinch' ) );
+			}
+		}
+
+		if ( empty( $payload ) ) {
+			return array(
+				'error' => __( 'No valid fields provided.', 'wp-pinch' ),
+				'sent'  => false,
+			);
+		}
+
+		$webhook_url = isset( $input['webhook_url'] ) ? esc_url_raw( (string) $input['webhook_url'] ) : '';
+		$sent        = false;
+
+		if ( '' !== $webhook_url && wp_http_validate_url( $webhook_url ) ) {
+			$response = wp_safe_remote_post(
+				$webhook_url,
+				array(
+					'timeout' => 15,
+					'headers' => array( 'Content-Type' => 'application/json' ),
+					'body'    => wp_json_encode( $payload ),
+				)
+			);
+			$sent     = ! is_wp_error( $response ) && wp_remote_retrieve_response_code( $response ) >= 200 && wp_remote_retrieve_response_code( $response ) < 300;
+		}
+
+		return array(
+			'sent'    => $sent,
+			'summary' => $summary,
+			'fields'  => array_keys( $payload ),
 		);
 	}
 }

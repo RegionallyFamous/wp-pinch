@@ -1,5 +1,7 @@
 # Contributor Covenant Code of Conduct
 
+We use the [Contributor Covenant](https://www.contributor-covenant.org/version/2/1/code_of_conduct.html). TL;DR: be respectful; harassment isn't welcome.
+
 ## Our Pledge
 
 We as members, contributors, and leaders pledge to make participation in our

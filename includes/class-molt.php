@@ -52,6 +52,8 @@ class Molt {
 			'pull_quote',
 			'key_takeaways',
 			'cta_variants',
+			'newsletter',
+			'sections',
 		);
 
 		return (array) apply_filters( 'wp_pinch_molt_output_types', $types );
@@ -270,6 +272,8 @@ class Molt {
 			'pull_quote'       => 'String - single compelling quote from the content.',
 			'key_takeaways'    => 'Array of strings - 3-5 bullet points.',
 			'cta_variants'     => 'Array of strings - 2-3 call-to-action options.',
+			'newsletter'       => 'String - blog-to-newsletter version: subject line plus 2-4 paragraph body suitable for email.',
+			'sections'         => 'Array of objects with "title" and "content" - atomized sections that can stand as separate pieces (e.g. for repurposing).',
 		);
 
 		foreach ( $output_types as $key ) {
@@ -395,6 +399,24 @@ class Molt {
 				}
 				return self::sanitize_block_markup( $value );
 
+			case 'newsletter':
+				return wp_kses_post( is_string( $value ) ? $value : '' );
+
+			case 'sections':
+				if ( ! is_array( $value ) ) {
+					return array();
+				}
+				$out = array();
+				foreach ( $value as $item ) {
+					if ( is_array( $item ) && ( isset( $item['title'] ) || isset( $item['content'] ) ) ) {
+						$out[] = array(
+							'title'   => sanitize_text_field( $item['title'] ?? '' ),
+							'content' => wp_kses_post( $item['content'] ?? '' ),
+						);
+					}
+				}
+				return $out;
+
 			case 'thread':
 			case 'key_takeaways':
 			case 'cta_variants':
@@ -487,6 +509,20 @@ class Molt {
 				$thread_lines[] = ( $i + 1 ) . '. ' . $tweet;
 			}
 			$parts[] = implode( "\n", $thread_lines );
+		}
+
+		if ( ! empty( $output['newsletter'] ) ) {
+			$parts[] = '**Newsletter:**' . "\n" . $output['newsletter'];
+		}
+
+		if ( ! empty( $output['sections'] ) && is_array( $output['sections'] ) ) {
+			$section_lines = array( '**Sections:**' );
+			foreach ( $output['sections'] as $i => $sec ) {
+				$title           = $sec['title'] ?? '';
+				$content         = $sec['content'] ?? '';
+				$section_lines[] = ( $i + 1 ) . '. **' . $title . '**' . ( $content ? "\n   " . wp_strip_all_tags( $content ) : '' );
+			}
+			$parts[] = implode( "\n", $section_lines );
 		}
 
 		return implode( "\n\n", $parts );

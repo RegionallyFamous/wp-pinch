@@ -257,6 +257,8 @@ class Abilities {
 			'wp-pinch/site-digest',
 			'wp-pinch/related-posts',
 			'wp-pinch/synthesize',
+			'wp-pinch/analytics-narratives',
+			'wp-pinch/submit-conversational-form',
 			'wp-pinch/generate-tldr',
 			'wp-pinch/suggest-links',
 			'wp-pinch/suggest-terms',
@@ -286,6 +288,14 @@ class Abilities {
 			// Cron Management.
 			'wp-pinch/list-cron-events',
 			'wp-pinch/manage-cron',
+
+			// GEO & SEO.
+			'wp-pinch/generate-llms-txt',
+			'wp-pinch/get-llms-txt',
+			'wp-pinch/bulk-seo-meta',
+			'wp-pinch/suggest-internal-links',
+			'wp-pinch/generate-schema-markup',
+			'wp-pinch/suggest-seo-improvements',
 		);
 
 		// WooCommerce abilities — only registered when WooCommerce is active.
@@ -315,6 +325,7 @@ class Abilities {
 		Ability\Menu_Meta_Revisions_Abilities::register();
 		Ability\Woo_Abilities::register();
 		Ability\GhostWriter_Molt_Abilities::register();
+		Ability\GEO_SEO_Abilities::register();
 	}
 
 	// =========================================================================
@@ -652,6 +663,16 @@ class Abilities {
 	/** @see \WP_Pinch\Ability\Analytics_Abilities::execute_synthesize */
 	public static function execute_synthesize( array $input ): array {
 		return Ability\Analytics_Abilities::execute_synthesize( $input );
+	}
+
+	/** @see \WP_Pinch\Ability\Analytics_Abilities::execute_analytics_narratives */
+	public static function execute_analytics_narratives( array $input ): array {
+		return Ability\Analytics_Abilities::execute_analytics_narratives( $input );
+	}
+
+	/** @see \WP_Pinch\Ability\Analytics_Abilities::execute_submit_conversational_form */
+	public static function execute_submit_conversational_form( array $input ): array {
+		return Ability\Analytics_Abilities::execute_submit_conversational_form( $input );
 	}
 
 	// =========================================================================

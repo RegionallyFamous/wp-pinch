@@ -35,6 +35,8 @@ class Features_Tab {
 			'pinchdrop_engine'   => __( 'PinchDrop engine (capture anywhere draft packs)', 'wp-pinch' ),
 			'ghost_writer'       => __( 'Ghost Writer (draft completion in author voice)', 'wp-pinch' ),
 			'molt'               => __( 'Molt (content repackager)', 'wp-pinch' ),
+			'auto_alt_text'      => __( 'Auto alt text (generate alt text for new image uploads via AI)', 'wp-pinch' ),
+			'rag_indexing'       => __( 'RAG indexing (index post content for chat and internal linking)', 'wp-pinch' ),
 			'prompt_sanitizer'   => __( 'Prompt sanitizer (mitigate instruction injection in content sent to LLMs)', 'wp-pinch' ),
 			'approval_workflow'  => __( 'Approval workflow (queue destructive abilities for admin approval)', 'wp-pinch' ),
 		);

@@ -109,11 +109,17 @@ install_db() {
 configure_wp_tests() {
 	if [ ! -f "$WP_TESTS_DIR/wp-tests-config.php" ]; then
 		download https://develop.svn.wordpress.org/${WP_TESTS_TAG}/wp-tests-config-sample.php "$WP_TESTS_DIR/wp-tests-config.php"
-		sed -i "s:dirname( __FILE__ ) . '/src/':'$WP_CORE_DIR':" "$WP_TESTS_DIR/wp-tests-config.php"
-		sed -i "s/youremptytestdbnamehere/$DB_NAME/" "$WP_TESTS_DIR/wp-tests-config.php"
-		sed -i "s/yourusernamehere/$DB_USER/" "$WP_TESTS_DIR/wp-tests-config.php"
-		sed -i "s/yourpasswordhere/$DB_PASS/" "$WP_TESTS_DIR/wp-tests-config.php"
-		sed -i "s|localhost|${DB_HOST}|" "$WP_TESTS_DIR/wp-tests-config.php"
+		# Portable sed -i (macOS BSD sed requires backup extension).
+		case "$(uname -s)" in
+			Darwin*) _sed_i=(-i .bak) ;;
+			*)       _sed_i=(-i) ;;
+		esac
+		sed "${_sed_i[@]}" "s:dirname( __FILE__ ) . '/src/':'$WP_CORE_DIR':" "$WP_TESTS_DIR/wp-tests-config.php"
+		sed "${_sed_i[@]}" "s/youremptytestdbnamehere/$DB_NAME/" "$WP_TESTS_DIR/wp-tests-config.php"
+		sed "${_sed_i[@]}" "s/yourusernamehere/$DB_USER/" "$WP_TESTS_DIR/wp-tests-config.php"
+		sed "${_sed_i[@]}" "s/yourpasswordhere/$DB_PASS/" "$WP_TESTS_DIR/wp-tests-config.php"
+		sed "${_sed_i[@]}" "s|localhost|${DB_HOST}|" "$WP_TESTS_DIR/wp-tests-config.php"
+		rm -f "$WP_TESTS_DIR/wp-tests-config.php.bak"
 	fi
 }
 

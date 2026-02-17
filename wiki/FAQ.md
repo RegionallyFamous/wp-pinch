@@ -119,8 +119,3 @@ You're running from source without built assets. Run `npm install && npm run bui
 - **Webhook events** — Enable the events you want in **WP Pinch → Webhooks** (post_status_change, new_comment, etc.).
 - **Outbound requests** — Your host must allow wp_remote_post. Some managed hosts restrict this.
 
----
-
-## Why lobster puns?
-
-Because the alternative was crab puns, and that felt a little... sideways. Plus, OpenClaw. Claw. Lobster. Pinch. It was destiny.

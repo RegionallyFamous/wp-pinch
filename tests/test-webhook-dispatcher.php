@@ -61,9 +61,12 @@ class Test_Webhook_Dispatcher extends WP_UnitTestCase {
 		update_option( 'wp_pinch_api_token', 'test-token' );
 
 		$fired = false;
-		add_action( 'wp_pinch_before_webhook', function () use ( &$fired ) {
-			$fired = true;
-		} );
+		add_action(
+			'wp_pinch_before_webhook',
+			function () use ( &$fired ) {
+				$fired = true;
+			}
+		);
 
 		// This will fail the HTTP request but the action should still fire.
 		Webhook_Dispatcher::dispatch( 'test', 'Test message' );
@@ -79,10 +82,13 @@ class Test_Webhook_Dispatcher extends WP_UnitTestCase {
 		update_option( 'wp_pinch_api_token', 'test-token' );
 
 		$filtered_payload = null;
-		add_filter( 'wp_pinch_webhook_payload', function ( $payload ) use ( &$filtered_payload ) {
-			$filtered_payload = $payload;
-			return $payload;
-		} );
+		add_filter(
+			'wp_pinch_webhook_payload',
+			function ( $payload ) use ( &$filtered_payload ) {
+				$filtered_payload = $payload;
+				return $payload;
+			}
+		);
 
 		Webhook_Dispatcher::dispatch( 'test', 'Filtered test', array( 'key' => 'value' ) );
 
@@ -100,9 +106,12 @@ class Test_Webhook_Dispatcher extends WP_UnitTestCase {
 		update_option( 'wp_pinch_api_token', 'test-token' );
 
 		$before_webhook_fired = false;
-		add_action( 'wp_pinch_before_webhook', function () use ( &$before_webhook_fired ) {
-			$before_webhook_fired = true;
-		} );
+		add_action(
+			'wp_pinch_before_webhook',
+			function () use ( &$before_webhook_fired ) {
+				$before_webhook_fired = true;
+			}
+		);
 
 		Webhook_Dispatcher::set_skip_webhooks_this_request( true );
 

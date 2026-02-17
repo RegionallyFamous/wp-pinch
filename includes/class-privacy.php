@@ -108,7 +108,6 @@ class Privacy {
 		$like_brace = '%' . $wpdb->esc_like( '"user_id":' . $user->ID . '}' ) . '%';
 
 		// Prefer indexed user_id column; fall back to context JSON for legacy rows.
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table from Audit_Table::table_name().
 		$entries = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT * FROM {$table} WHERE user_id = %d OR ( user_id IS NULL AND ( context LIKE %s OR context LIKE %s ) ) ORDER BY id ASC LIMIT %d OFFSET %d",
@@ -120,7 +119,6 @@ class Privacy {
 			),
 			ARRAY_A
 		);
-		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 		$export_items = array();
 
@@ -207,7 +205,6 @@ class Privacy {
 		$like_brace = '%' . $wpdb->esc_like( '"user_id":' . $user->ID . '}' ) . '%';
 
 		// Prefer indexed user_id column; fall back to context JSON for legacy rows.
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table from Audit_Table::table_name().
 		$count = (int) $wpdb->get_var(
 			$wpdb->prepare(
 				"SELECT COUNT(*) FROM {$table} WHERE user_id = %d OR ( user_id IS NULL AND ( context LIKE %s OR context LIKE %s ) )",
@@ -216,7 +213,6 @@ class Privacy {
 				$like_brace
 			)
 		);
-		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 		if ( 0 === $count ) {
 			return array(
@@ -228,7 +224,6 @@ class Privacy {
 		}
 
 		// Delete in batches to avoid timeouts.
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table from Audit_Table::table_name().
 		$deleted = $wpdb->query(
 			$wpdb->prepare(
 				"DELETE FROM {$table} WHERE user_id = %d OR ( user_id IS NULL AND ( context LIKE %s OR context LIKE %s ) ) LIMIT %d",
@@ -238,14 +233,14 @@ class Privacy {
 				self::BATCH_SIZE
 			)
 		);
-		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 		if ( $deleted ) {
 			wp_cache_delete( 'audit_table_status', 'wp_pinch_site_health' );
 			if ( function_exists( 'wp_cache_flush_group' ) ) {
 				try {
 					wp_cache_flush_group( 'wp_pinch_audit' );
-				} catch ( \Throwable $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch -- Object cache may not support flush_group.
+				} catch ( \Throwable $e ) {
+					// Object cache may not support flush_group; ignore.
 				}
 			}
 		}

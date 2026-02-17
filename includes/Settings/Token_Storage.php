@@ -45,7 +45,6 @@ class Token_Storage {
 		$key        = self::get_encryption_key();
 		$nonce      = random_bytes( SODIUM_CRYPTO_SECRETBOX_NONCEBYTES );
 		$ciphertext = sodium_crypto_secretbox( $token, $nonce, $key );
-		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- Used for token encryption storage.
 		return self::PREFIX . base64_encode( $nonce . $ciphertext );
 	}
 
@@ -60,7 +59,6 @@ class Token_Storage {
 			return null;
 		}
 		$payload = substr( $stored, strlen( self::PREFIX ) );
-		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode -- Used for token decryption.
 		$decoded = base64_decode( $payload, true );
 		if ( false === $decoded || strlen( $decoded ) < SODIUM_CRYPTO_SECRETBOX_NONCEBYTES ) {
 			return null;

@@ -307,7 +307,6 @@ class Media_Abilities {
 			}
 		}
 
-		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode -- Used for featured image upload from base64 API input.
 		$decoded = base64_decode( $data, true );
 		if ( false === $decoded || strlen( $decoded ) === 0 ) {
 			return new \WP_Error( 'invalid_base64', __( 'Invalid base64 image data.', 'wp-pinch' ) );

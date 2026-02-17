@@ -77,7 +77,7 @@ class Audit_Table {
 			} catch ( \Throwable $e ) {
 				// Cannot log to audit table here (would recurse), so use error_log.
 				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-					error_log( 'WP Pinch: Failed to schedule audit cleanup: ' . $e->getMessage() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+					error_log( 'WP Pinch: Failed to schedule audit cleanup: ' . $e->getMessage() );
 				}
 			}
 		}
@@ -147,7 +147,8 @@ class Audit_Table {
 			if ( function_exists( 'wp_cache_flush_group' ) ) {
 				try {
 					wp_cache_flush_group( 'wp_pinch_audit' );
-				} catch ( \Throwable $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch -- Object cache may not support flush_group.
+				} catch ( \Throwable $e ) {
+					// Object cache may not support flush_group; ignore.
 				}
 			}
 		}
@@ -225,7 +226,6 @@ class Audit_Table {
 			return $cached;
 		}
 
-		// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table via %i; $where_sql from prepare(); $orderby/$order whitelisted.
 		$total = (int) $wpdb->get_var(
 			$wpdb->prepare(
 				"SELECT COUNT(*) FROM %i WHERE {$where_sql}",
@@ -242,7 +242,6 @@ class Audit_Table {
 			),
 			ARRAY_A
 		);
-		// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
 		// Decode JSON context.
 		foreach ( $items as &$item ) {
@@ -320,7 +319,6 @@ class Audit_Table {
 		$result = self::query( $args );
 		$items  = $result['items'];
 
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- php://temp stream for CSV generation.
 		$output = fopen( 'php://temp', 'r+' );
 
 		// CSV header.
@@ -342,7 +340,6 @@ class Audit_Table {
 
 		rewind( $output );
 		$csv = stream_get_contents( $output );
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- closing php://temp stream.
 		fclose( $output );
 
 		return $csv;
@@ -369,7 +366,8 @@ class Audit_Table {
 		if ( function_exists( 'wp_cache_flush_group' ) ) {
 			try {
 				wp_cache_flush_group( 'wp_pinch_audit' );
-			} catch ( \Throwable $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch -- Object cache may not support flush_group.
+			} catch ( \Throwable $e ) {
+				// Object cache may not support flush_group; ignore.
 			}
 		}
 

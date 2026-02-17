@@ -53,7 +53,7 @@ class Test_Site_Health extends WP_UnitTestCase {
 	 * Test that debug info contains expected fields.
 	 */
 	public function test_debug_info_fields(): void {
-		$info = Site_Health::add_debug_info( array() );
+		$info   = Site_Health::add_debug_info( array() );
 		$fields = $info['wp-pinch']['fields'];
 
 		$expected_keys = array(
@@ -150,7 +150,7 @@ class Test_Site_Health extends WP_UnitTestCase {
 	public function test_add_debug_info_preserves_existing(): void {
 		$existing = array(
 			'existing-section' => array(
-				'label' => 'Existing',
+				'label'  => 'Existing',
 				'fields' => array(),
 			),
 		);

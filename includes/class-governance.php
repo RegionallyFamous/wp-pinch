@@ -28,14 +28,15 @@ class Governance {
 	 * @var array<string, int>
 	 */
 	const DEFAULT_INTERVALS = array(
-		'content_freshness'  => DAY_IN_SECONDS,
-		'seo_health'         => DAY_IN_SECONDS,
-		'comment_sweep'      => 6 * HOUR_IN_SECONDS,
-		'broken_links'       => WEEK_IN_SECONDS,
-		'security_scan'      => DAY_IN_SECONDS,
-		'draft_necromancer'  => WEEK_IN_SECONDS,
-		'spaced_resurfacing' => DAY_IN_SECONDS,
-		'tide_report'        => DAY_IN_SECONDS,
+		'content_freshness'          => DAY_IN_SECONDS,
+		'semantic_content_freshness' => WEEK_IN_SECONDS,
+		'seo_health'                 => DAY_IN_SECONDS,
+		'comment_sweep'              => 6 * HOUR_IN_SECONDS,
+		'broken_links'               => WEEK_IN_SECONDS,
+		'security_scan'              => DAY_IN_SECONDS,
+		'draft_necromancer'          => WEEK_IN_SECONDS,
+		'spaced_resurfacing'         => DAY_IN_SECONDS,
+		'tide_report'                => DAY_IN_SECONDS,
 	);
 
 	/**
@@ -43,6 +44,7 @@ class Governance {
 	 */
 	public static function init(): void {
 		add_action( 'wp_pinch_governance_content_freshness', array( \WP_Pinch\Governance\Tasks\Content_Freshness::class, 'run' ) );
+		add_action( 'wp_pinch_governance_semantic_content_freshness', array( \WP_Pinch\Governance\Tasks\Semantic_Content_Freshness::class, 'run' ) );
 		add_action( 'wp_pinch_governance_seo_health', array( \WP_Pinch\Governance\Tasks\SEO_Health::class, 'run' ) );
 		add_action( 'wp_pinch_governance_comment_sweep', array( \WP_Pinch\Governance\Tasks\Comment_Sweep::class, 'run' ) );
 		add_action( 'wp_pinch_governance_broken_links', array( \WP_Pinch\Governance\Tasks\Broken_Links::class, 'run' ) );
@@ -224,14 +226,15 @@ class Governance {
 	 */
 	public static function get_available_tasks(): array {
 		return array(
-			'content_freshness'  => __( 'Content Freshness — flag posts not updated in 180+ days', 'wp-pinch' ),
-			'seo_health'         => __( 'SEO Health — check titles, alt text, content length', 'wp-pinch' ),
-			'comment_sweep'      => __( 'Comment Sweep — pending moderation and spam count', 'wp-pinch' ),
-			'broken_links'       => __( 'Broken Links — check for dead links in content', 'wp-pinch' ),
-			'security_scan'      => __( 'Security Scan — outdated software, debug mode, file editing', 'wp-pinch' ),
-			'draft_necromancer'  => __( 'Draft Necromancer — surface abandoned drafts worth resurrecting', 'wp-pinch' ),
-			'spaced_resurfacing' => __( 'Spaced Resurfacing — notes not updated in N days (revisit list)', 'wp-pinch' ),
-			'tide_report'        => __( 'Tide Report — daily digest: drafts, SEO, comments in one webhook', 'wp-pinch' ),
+			'content_freshness'          => __( 'Content Freshness — flag posts not updated in 180+ days', 'wp-pinch' ),
+			'semantic_content_freshness' => __( 'Semantic Content Freshness — AI check for factually stale content', 'wp-pinch' ),
+			'seo_health'                 => __( 'SEO Health — check titles, alt text, content length', 'wp-pinch' ),
+			'comment_sweep'              => __( 'Comment Sweep — pending moderation and spam count', 'wp-pinch' ),
+			'broken_links'               => __( 'Broken Links — check for dead links in content', 'wp-pinch' ),
+			'security_scan'              => __( 'Security Scan — outdated software, debug mode, file editing', 'wp-pinch' ),
+			'draft_necromancer'          => __( 'Draft Necromancer — surface abandoned drafts worth resurrecting', 'wp-pinch' ),
+			'spaced_resurfacing'         => __( 'Spaced Resurfacing — notes not updated in N days (revisit list)', 'wp-pinch' ),
+			'tide_report'                => __( 'Tide Report — daily digest: drafts, SEO, comments in one webhook', 'wp-pinch' ),
 		);
 	}
 

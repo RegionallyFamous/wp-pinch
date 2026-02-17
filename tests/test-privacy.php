@@ -101,14 +101,20 @@ class Test_Privacy extends WP_UnitTestCase {
 			'chat_message',
 			'chat',
 			'User sent a chat message.',
-			array( 'user_id' => $this->user_id, 'action' => 'chat' )
+			array(
+				'user_id' => $this->user_id,
+				'action'  => 'chat',
+			)
 		);
 
 		Audit_Table::insert(
 			'ability_executed',
 			'ability',
 			'User ran list-posts.',
-			array( 'user_id' => $this->user_id, 'ability' => 'list-posts' )
+			array(
+				'user_id' => $this->user_id,
+				'ability' => 'list-posts',
+			)
 		);
 
 		$result = Privacy::export_personal_data( $this->user_email );
@@ -179,7 +185,7 @@ class Test_Privacy extends WP_UnitTestCase {
 	 */
 	public function test_export_no_partial_user_id_match(): void {
 		// Create user with a higher ID to test partial matching.
-		$user_10 = $this->factory->user->create( array( 'role' => 'subscriber' ) );
+		$user_10       = $this->factory->user->create( array( 'role' => 'subscriber' ) );
 		$user_10_email = get_userdata( $user_10 )->user_email;
 
 		// Insert for both users.
@@ -243,7 +249,7 @@ class Test_Privacy extends WP_UnitTestCase {
 
 		// Other user's entry should still exist.
 		$other_email = get_userdata( $other_user_id )->user_email;
-		$export = Privacy::export_personal_data( $other_email );
+		$export      = Privacy::export_personal_data( $other_email );
 		$this->assertCount( 1, $export['data'] );
 	}
 

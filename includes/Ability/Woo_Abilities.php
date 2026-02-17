@@ -121,7 +121,7 @@ class Woo_Abilities {
 		}
 
 		if ( ! empty( $input['category'] ) ) {
-			$args['tax_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+			$args['tax_query'] = array(
 				array(
 					'taxonomy' => 'product_cat',
 					'field'    => 'slug',
