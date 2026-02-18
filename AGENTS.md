@@ -21,7 +21,7 @@ OpenClaw (AI gateway, sessions, memory)
         ↓
 MCP / REST API (WP Pinch endpoints)
         ↓
-Abilities Engine (38+ tools) + Webhooks + Governance
+Abilities Engine (88+ tools) + Webhooks + Governance
         ↓
 WordPress (posts, taxonomies, options, etc.)
 ```
@@ -35,7 +35,7 @@ WordPress (posts, taxonomies, options, etc.)
 
 | Purpose | File(s) | Notes |
 |---------|---------|-------|
-| **Abilities** (tools the AI can call) | `includes/class-abilities.php` | 38+ abilities; each has `execute_*` method and `register()` |
+| **Abilities** (tools the AI can call) | `includes/class-abilities.php` | 88+ abilities; each has `execute_*` method and `register()` |
 | **REST API** | `includes/class-rest-controller.php` + `includes/Rest/` | Routes and security headers in class; handlers in `Rest\Auth`, `Rest\Chat`, `Rest\Status`, `Rest\Incoming_Hook`, `Rest\Capture`, Ghostwrite, Molt, etc. |
 | **Webhooks** (push events to OpenClaw) | `includes/class-webhook-dispatcher.php` | Configurable events, retry, rate limit, HMAC |
 | **Governance** (scheduled tasks) | `includes/class-governance.php` | Content freshness, SEO, comments, broken links, security, drafts, Tide Report |

@@ -1,6 +1,6 @@
 # OpenClaw Skill for WP Pinch
 
-**[WP Pinch](https://wp-pinch.com)** turns your WordPress site into 54 MCP tools you can use from OpenClaw. Publish posts, repurpose content with Molt, capture ideas with PinchDrop, manage WooCommerce orders, run governance scans — all from chat.
+**[WP Pinch](https://wp-pinch.com)** turns your WordPress site into 88+ MCP tools you can use from OpenClaw. Publish posts, repurpose content with Molt, capture ideas with PinchDrop, manage WooCommerce orders, and run governance scans — all from chat.
 
 [ClawHub](https://clawhub.ai/nickhamze/pinch-to-post) · [GitHub](https://github.com/RegionallyFamous/wp-pinch) · [Configuration](https://github.com/RegionallyFamous/wp-pinch/wiki/Configuration)
 

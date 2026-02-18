@@ -47,7 +47,7 @@
     "lint": "phpcs",
     "lint:fix": "phpcbf",
     "phpstan": "phpstan analyse --configuration=phpstan.neon.dist --memory-limit=2G",
-    "test": "phpunit",
+    "test": "npm run test:php",
     "infection": "infection --configuration=infection.json.dist",
     "lint:tests": "phpcs -p --standard=phpcs-tests.xml.dist tests/"
   }

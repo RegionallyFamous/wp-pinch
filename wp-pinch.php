@@ -3,7 +3,7 @@
  * Plugin Name:       WP Pinch
  * Plugin URI:        https://wp-pinch.com
  * Description:       OpenClaw + WordPress integration — bidirectional MCP, autonomous governance, conversational site management from any messaging app.
- * Version:           3.0.2
+ * Version:           3.0.3
  * Requires at least: 6.9
  * Requires PHP:      8.1
  * Author:            Nick Hamze
@@ -41,7 +41,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-defined( 'WP_PINCH_VERSION' ) || define( 'WP_PINCH_VERSION', '3.0.2' );
+defined( 'WP_PINCH_VERSION' ) || define( 'WP_PINCH_VERSION', '3.0.3' );
 defined( 'WP_PINCH_FILE' ) || define( 'WP_PINCH_FILE', __FILE__ );
 defined( 'WP_PINCH_DIR' ) || define( 'WP_PINCH_DIR', plugin_dir_path( __FILE__ ) );
 defined( 'WP_PINCH_URL' ) || define( 'WP_PINCH_URL', plugin_dir_url( __FILE__ ) );
@@ -65,10 +65,16 @@ require_once WP_PINCH_DIR . 'includes/class-audit-table.php';
 require_once WP_PINCH_DIR . 'includes/class-mcp-server.php';
 require_once WP_PINCH_DIR . 'includes/class-abilities.php';
 require_once WP_PINCH_DIR . 'includes/Ability/Content_Abilities.php';
+require_once WP_PINCH_DIR . 'includes/Ability/Content_Workflow_Abilities.php';
 require_once WP_PINCH_DIR . 'includes/Ability/Media_Abilities.php';
+require_once WP_PINCH_DIR . 'includes/Ability/Media_Extended_Abilities.php';
 require_once WP_PINCH_DIR . 'includes/Ability/User_Comment_Abilities.php';
+require_once WP_PINCH_DIR . 'includes/Ability/User_Comment_Extended_Abilities.php';
 require_once WP_PINCH_DIR . 'includes/Ability/Settings_Abilities.php';
+require_once WP_PINCH_DIR . 'includes/Ability/Extension_Lifecycle_Abilities.php';
 require_once WP_PINCH_DIR . 'includes/Ability/Analytics_Abilities.php';
+require_once WP_PINCH_DIR . 'includes/Ability/Site_Ops_Abilities.php';
+require_once WP_PINCH_DIR . 'includes/Ability/System_Admin_Abilities.php';
 require_once WP_PINCH_DIR . 'includes/Ability/QuickWin_Abilities.php';
 require_once WP_PINCH_DIR . 'includes/Ability/PinchDrop_Abilities.php';
 require_once WP_PINCH_DIR . 'includes/Ability/Menu_Meta_Revisions_Abilities.php';

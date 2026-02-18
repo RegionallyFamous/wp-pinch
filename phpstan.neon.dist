@@ -7,6 +7,10 @@ parameters:
         - includes/
         - wp-pinch.php
 
+    # WP-CLI command classes (only loaded when WP_CLI is defined); exclude from analysis.
+    excludePaths:
+        - includes/CLI/*
+
     # Don't fail when an ignored pattern has no matching errors (e.g. conditional code paths).
     reportUnmatchedIgnoredErrors: false
 

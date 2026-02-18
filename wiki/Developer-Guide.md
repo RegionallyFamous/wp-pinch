@@ -45,7 +45,7 @@ WP Pinch uses a multi-layered quality system. Think of it as a lobster cage with
 | **CI Pipeline** | GitHub Actions | PHPCS, PHPStan, PHPUnit, ESLint, Stylelint, Build |
 | **Static Analysis** | PHPStan Level 6 | Type mismatches, null access, undefined properties |
 | **Coding Standards** | PHPCS (WordPress-Extra + Security) | Security, escaping, sanitization, naming |
-| **Unit Tests** | PHPUnit (300+ tests) | Functional correctness, security guards, edge cases |
+| **Unit Tests** | PHPUnit (327 tests) | Functional correctness, security guards, edge cases |
 | **JS Lint** | ESLint (wp-scripts) | JavaScript errors, Prettier formatting |
 | **CSS Lint** | Stylelint (wp-scripts) | CSS errors, specificity issues |
 | **Branch Protection** | GitHub | All checks must pass before merging to main |
@@ -65,9 +65,12 @@ composer lint:fix  # Auto-fix what PHPCBF can
 npm run lint:js    # ESLint
 npm run lint:css   # Stylelint
 
-# Tests
-make test          # PHPUnit
+# Tests (requires WordPress test env: run `npx wp-env start` first)
+make test-wp-env   # PHPUnit inside wp-env (327 tests)
+make test          # Alias to composer test (wp-env PHPUnit)
 npm test           # Jest (frontend tests)
+npm run test:e2e   # Playwright end-to-end tests
+npm run test:plugin-check # WordPress Plugin Check (same path as CI)
 ```
 
 ---
@@ -90,10 +93,11 @@ We follow a test-first approach for bug fixes — because lobsters learn from th
 ```
 wp-pinch/
 ├── includes/                    # PHP classes
-│   ├── class-abilities.php      # 38+ WordPress abilities
+│   ├── class-abilities.php      # 88 core WordPress abilities
 │   ├── class-audit-table.php    # Audit log database table
 │   ├── class-circuit-breaker.php
-│   ├── class-cli.php            # WP-CLI commands
+│   ├── class-cli.php            # WP-CLI bootstrap (registers includes/CLI/*)
+│   ├── CLI/                      # WP-CLI command classes (one file per command)
 │   ├── class-feature-flags.php  # Feature toggle system
 │   ├── class-plugin.php         # Core plugin singleton
 │   ├── class-rest-controller.php # REST route registration, security/rate-limit headers

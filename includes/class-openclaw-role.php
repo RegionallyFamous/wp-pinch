@@ -185,7 +185,7 @@ class OpenClaw_Role {
 		if ( ! $role ) {
 			add_role(
 				self::ROLE_SLUG,
-				__( 'OpenClaw Agent', 'wp-pinch' ),
+				self::get_role_label(),
 				$all_caps
 			);
 			return;
@@ -264,5 +264,20 @@ class OpenClaw_Role {
 	 */
 	public static function remove_role(): void {
 		remove_role( self::ROLE_SLUG );
+	}
+
+	/**
+	 * Role label with safe timing for translation loading.
+	 *
+	 * During upgrades we may create the role before `init`; returning a plain
+	 * string avoids triggering just-in-time textdomain loading too early.
+	 *
+	 * @return string
+	 */
+	private static function get_role_label(): string {
+		if ( did_action( 'init' ) || doing_action( 'init' ) ) {
+			return __( 'OpenClaw Agent', 'wp-pinch' );
+		}
+		return 'OpenClaw Agent';
 	}
 }

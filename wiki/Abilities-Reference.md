@@ -1,24 +1,26 @@
 # Abilities Reference
 
-WP Pinch provides **core abilities** (standard WordPress operations the AI can perform) and **tools** (PinchDrop, Ghost Writer, Molt, and quick-win/high-leverage abilities). You get **48 core abilities** across 12 categories (content, media, users, comments, settings, plugins, themes, analytics, quick-win, high-leverage, advanced, menus/meta/revisions/cron), plus **PinchDrop** (1), plus **2 WooCommerce** when WooCommerce is active, plus **Ghost Writer** (3) and **Molt** (1) when feature flags enabled — **54 total** when all enabled. Every ability has built-in security guards: capability checks, input sanitization, existence validation, and audit logging. We don't let AI agents run around your site like unsupervised lobsters in a kitchen. *Someone* has to be the bouncer.
+WP Pinch provides **core abilities** (standard WordPress operations the AI can perform) and **tools** (PinchDrop, Ghost Writer, Molt, and quick-win/high-leverage abilities). You get **88 core abilities** across content, media, taxonomies, users, comments, settings, lifecycle, analytics, advanced operations, and system admin domains, plus **2 WooCommerce** when WooCommerce is active, plus **Ghost Writer** (3) and **Molt** (1) when feature flags enabled — **94 total** when all enabled. Every ability has built-in security guards: capability checks, input sanitization, existence validation, and audit logging. We don't let AI agents run around your site like unsupervised lobsters in a kitchen. *Someone* has to be the bouncer.
 
 ---
 
 ## Core Abilities
 
-Core abilities cover content, media, users, comments, settings, plugins/themes, analytics, menus, meta, revisions, bulk operations, and cron.
+Core abilities cover content, media, users, comments, settings, plugins/themes, analytics, menus, meta, revisions, bulk operations, cron, site ops, and system admin.
 
 | Category | What It Does | Abilities |
 |---|---|---|
-| **Content** | Full CRUD on posts & pages | `list-posts`, `get-post`, `create-post`, `update-post`, `delete-post` (optional **Block JSON**, **draft-first**, **featured image** — see below) |
-| **Media** | Library management | `list-media`, `upload-media`, `delete-media` |
+| **Content** | Full CRUD + workflow on posts & pages | `list-posts`, `get-post`, `create-post`, `update-post`, `delete-post`, `duplicate-post`, `schedule-post`, `find-replace-content`, `reorder-posts` (optional **Block JSON**, **draft-first**, **featured image** — see below) |
+| **Media** | Library and featured image management | `list-media`, `upload-media`, `delete-media`, `set-featured-image`, `list-unused-media`, `regenerate-media-thumbnails` |
 | **Taxonomies** | Terms and taxonomies | `list-taxonomies`, `manage-terms` |
-| **Users** | User management with safety guards | `list-users`, `get-user`, `update-user-role` |
-| **Comments** | Moderation and cleanup | `list-comments`, `moderate-comment` |
+| **Users** | User management with safety guards | `list-users`, `get-user`, `update-user-role`, `create-user`, `delete-user`, `reset-user-password` |
+| **Comments** | Moderation and full CRUD | `list-comments`, `moderate-comment`, `create-comment`, `update-comment`, `delete-comment` |
 | **Settings** | Read and update options (allowlisted) | `get-option`, `update-option` |
-| **Plugins & Themes** | Extension management | `list-plugins`, `toggle-plugin`, `list-themes`, `switch-theme` |
+| **Plugins & Themes** | Extension management | `list-plugins`, `toggle-plugin`, `list-themes`, `switch-theme`, `manage-plugin-lifecycle`, `manage-theme-lifecycle` |
 | **Analytics** | Site health, data export, context & discovery | `site-health`, `recent-activity`, `search-content`, `export-data`, `site-digest`, `related-posts`, `synthesize`, `content-health-report`, `suggest-terms` |
-| **Advanced** | Menus, meta, revisions, bulk ops, cron | `list-menus`, `manage-menu-item`, `get-post-meta`, `update-post-meta`, `list-revisions`, `restore-revision`, `bulk-edit-posts`, `list-cron-events`, `manage-cron` |
+| **Advanced** | Menus, meta, revisions, bulk ops, cron | `list-menus`, `manage-menu-item`, `get-post-meta`, `update-post-meta`, `list-revisions`, `restore-revision`, `compare-revisions`, `bulk-edit-posts`, `list-cron-events`, `manage-cron` |
+| **Site Ops** | Health, cache, diagnostics, and governance audits | `flush-cache`, `check-broken-links`, `get-php-error-log`, `list-posts-missing-meta`, `list-custom-post-types` |
+| **System Admin** | Platform operations with hard guards | `get-transient`, `set-transient`, `delete-transient`, `list-rewrite-rules`, `flush-rewrite-rules`, `maintenance-mode-status`, `set-maintenance-mode`, `search-replace-db-scoped`, `list-language-packs`, `install-language-pack`, `activate-language-pack` |
 | **WooCommerce** | Shop abilities (when WooCommerce is active) | `woo-list-products`, `woo-manage-order` |
 
 ### Block JSON (create-post / update-post)
@@ -85,6 +87,16 @@ You can set the post’s featured image in one call:
 - **`featured_image_alt`** — Alt text for the image (optional).
 
 On success the response may include `featured_image_id` and `featured_image_url` (attachment URL).
+
+### Operational tools (new)
+
+- **`find-replace-content`** — Bulk string replacement in post content with `dry_run` enabled by default. Requires `manage_options`. Use dry-run first, confirm `matched_count`, then run with `dry_run: false`.
+- **`flush-cache`** — Calls core `wp_cache_flush()` and reports whether the active object cache accepted the flush.
+- **`get-php-error-log`** — Returns a bounded tail of the debug log (line and character limits) for admin troubleshooting.
+- **`search-replace-db-scoped`** — Scoped DB replacements (`posts_content`, `postmeta_value`, `comments_content`) with dry-run default and explicit confirmation required for writes. For reliability, serialized `postmeta_value` rows are skipped.
+- **`manage-plugin-lifecycle` / `manage-theme-lifecycle`** — Install, update, and delete extensions with confirmation required for destructive actions and action-specific capability checks (`install_*`, `update_*`, `delete_*`).
+- **`set-maintenance-mode`** — Enabling maintenance mode requires `confirm: true`; disabling does not.
+- **`install-language-pack` / `activate-language-pack`** — Locale is validated (format + availability in core translations) before install/activation.
 
 ---
 

@@ -44,8 +44,9 @@ test.describe( 'Pinch Chat Block', () => {
 		await admin.createNewPost();
 		await editor.insertBlock( { name: 'wp-pinch/chat' } );
 
-		// Open sidebar settings.
+		// Open sidebar settings and switch to block settings.
 		await editor.openDocumentSettingsSidebar();
+		await page.getByRole( 'tab', { name: 'Block' } ).click();
 
 		// Check for Chat Settings panel.
 		await expect( page.locator( 'text=Chat Settings' ) ).toBeVisible();

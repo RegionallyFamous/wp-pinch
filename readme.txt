@@ -4,19 +4,19 @@ Tags: ai, agent, openclaw, mcp, automation
 Requires at least: 6.9
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 3.0.2
+Stable tag: 3.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-OpenClaw + WordPress. 48 core abilities (54 with WooCommerce + Ghost Writer + Molt), Pinch Chat block, webhooks, governance. Your AI runs your site from WhatsApp, Slack, or Telegram. Self-hosted.
+OpenClaw + WordPress. 88 core abilities (94 with WooCommerce + Ghost Writer + Molt), Pinch Chat block, webhooks, governance. Your AI runs your site from WhatsApp, Slack, or Telegram. Self-hosted.
 
 == Description ==
 
 **Your AI assistant already lives in WhatsApp, Slack, Telegram — give it WordPress.**
 
-One plugin. [OpenClaw](https://github.com/openclaw/openclaw) (or any MCP client) gets 48 core abilities (plus 2 WooCommerce, plus Ghost Writer and Molt when feature flags enabled = 54 total): publish, Molt (one post → 10 formats), PinchDrop, What do I know, daily Tide Report. Pinch Chat block, webhooks, 8 governance tasks. Self-hosted. Your data. No extra logins, no "I'll do it at my desk" — you talk; your assistant has the keys. [Install & connect →](https://github.com/RegionallyFamous/wp-pinch/wiki/Configuration)
+One plugin. [OpenClaw](https://github.com/openclaw/openclaw) (or any MCP client) gets 88 core abilities (plus 2 WooCommerce, plus Ghost Writer and Molt when feature flags enabled = 94 total): publish, Molt (one post → 10 formats), PinchDrop, What do I know, daily Tide Report. Pinch Chat block, webhooks, 9 governance tasks. Self-hosted. Your data. No extra logins, no "I'll do it at my desk" — you talk; your assistant has the keys. [Install & connect →](https://github.com/RegionallyFamous/wp-pinch/wiki/Configuration)
 
-= 48+ AI Abilities =
+= 88+ AI Abilities =
 
 Your assistant gets the keys to WordPress — posts, media, users, comments, settings, plugins, themes, WooCommerce — with capability checks, sanitization, and audit logging on every call. Plus PinchDrop, Ghost Writer, Molt, What do I know, site-digest, governance. 2 bonus WooCommerce abilities when your shop is active.
 
@@ -26,7 +26,7 @@ Drop an AI chat widget on any page with the Pinch Chat Gutenberg block. SSE stre
 
 = Autonomous Governance =
 
-Eight background tasks patrol your site on autopilot: content freshness, SEO health, comment cleanup, broken link detection, security scanning, draft necromancy, spaced resurfacing, and Tide Report (daily digest). Findings get delivered to OpenClaw automatically. Set it and forget it.
+Nine background tasks patrol your site on autopilot: content freshness, semantic content freshness, SEO health, comment cleanup, broken link detection, security scanning, draft necromancy, spaced resurfacing, and Tide Report (daily digest). Findings get delivered to OpenClaw automatically. Set it and forget it.
 
 = Real-Time Webhooks =
 
@@ -42,11 +42,11 @@ One post, 10 formats. Molt repackages a single post into social (Twitter, Linked
 
 = Built for Developers =
 
-12+ filters and 6+ actions. Full WP-CLI support. Customize abilities, webhook payloads, governance schedules, role allowlists, and more. If you can hook it, you can pinch it. (We like wordplay. It's in the name. So is the lobster.)
+12+ filters and 6+ actions. Full WP-CLI: `wp pinch status`, `wp pinch audit list`, `wp pinch governance run`, `wp pinch features`, `wp pinch config`, `wp pinch molt`, `wp pinch ghostwrite`, `wp pinch cache`, `wp pinch approvals`. Customize abilities, webhook payloads, governance schedules, role allowlists, and more. If you can hook it, you can pinch it. (We like wordplay. It's in the name. So is the lobster.)
 
 = Production-Ready Security =
 
-Capability checks on every operation. Input sanitization. Output escaping. Nonce verification. Prepared SQL. HMAC-SHA256 webhook signatures. Circuit breaker. Rate limiting. PHPStan Level 6. 160+ PHPUnit tests. See the [GitHub Wiki](https://github.com/RegionallyFamous/wp-pinch/wiki/Security) for the full security model.
+Capability checks on every operation. Input sanitization. Output escaping. Nonce verification. Prepared SQL. HMAC-SHA256 webhook signatures. Circuit breaker. Rate limiting. PHPStan Level 6. 327 PHPUnit tests. See the [GitHub Wiki](https://github.com/RegionallyFamous/wp-pinch/wiki/Security) for the full security model.
 
 == Installation ==
 
@@ -111,7 +111,7 @@ It's stored in the WordPress options table with `show_in_rest => false`. For pro
 
 = Is it production-ready? =
 
-WP Pinch passes PHPCS (WordPress-Extra + Security), PHPStan Level 6, and 160+ PHPUnit tests. Every ability has security guards, every input is sanitized, every output is escaped. Ship it with confidence.
+WP Pinch passes PHPCS (WordPress-Extra + Security), PHPStan Level 6, and 327 PHPUnit tests. Every ability has security guards, every input is sanitized, every output is escaped. Ship it with confidence.
 
 = Why lobster puns? =
 
@@ -126,6 +126,11 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 5. Audit log showing recent ability executions, webhooks, and chat messages.
 
 == Changelog ==
+
+= 3.0.3 =
+* New: Expanded system/admin toolset: transient CRUD, rewrite list/flush, maintenance mode status/toggle, scoped DB search/replace, language-pack management, extension lifecycle controls, expanded user/comment operations, media thumbnail regeneration.
+* Changed: Security hardening for destructive operations (explicit confirmations, dangerous capability blocking, safer maintenance marker deletion).
+* Fixed: E2E stability for settings/chat flows, local/CI test execution path consistency, and early translation timing notice.
 
 = 3.0.2 =
 * New: Molt output types — newsletter (blog-to-newsletter) and sections.

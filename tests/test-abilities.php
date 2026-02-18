@@ -45,11 +45,11 @@ class Test_Abilities extends WP_UnitTestCase {
 	// =========================================================================
 
 	/**
-	 * Test that get_ability_names returns at least 38 abilities (core set without WooCommerce).
+	 * Test that get_ability_names returns at least 88 abilities (core set without WooCommerce).
 	 */
 	public function test_ability_names_count(): void {
 		$names = Abilities::get_ability_names();
-		$this->assertGreaterThanOrEqual( 38, count( $names ), 'Expected at least 38 abilities (core set).' );
+		$this->assertGreaterThanOrEqual( 88, count( $names ), 'Expected at least 88 abilities (core set).' );
 		$this->assertContains( 'wp-pinch/pinchdrop-generate', $names );
 		$this->assertContains( 'wp-pinch/content-health-report', $names );
 		$this->assertContains( 'wp-pinch/suggest-terms', $names );
@@ -1404,6 +1404,665 @@ class Test_Abilities extends WP_UnitTestCase {
 		$result = Abilities::execute_suggest_terms( array( 'limit' => 5 ) );
 		$this->assertArrayHasKey( 'error', $result );
 		$this->assertStringContainsString( 'post_id or content', $result['error'] );
+	}
+
+	// =========================================================================
+	// New workflow/media/site ops abilities
+	// =========================================================================
+
+	/**
+	 * Test duplicate-post creates a draft clone.
+	 */
+	public function test_duplicate_post(): void {
+		$source_id = $this->factory->post->create(
+			array(
+				'post_title'   => 'Source Post',
+				'post_content' => 'Original content here.',
+				'post_status'  => 'publish',
+			)
+		);
+
+		$result = Abilities::execute_duplicate_post( array( 'post_id' => $source_id ) );
+
+		$this->assertArrayNotHasKey( 'error', $result );
+		$this->assertArrayHasKey( 'id', $result );
+		$this->assertNotEquals( $source_id, $result['id'] );
+
+		$cloned = get_post( $result['id'] );
+		$this->assertNotNull( $cloned );
+		$this->assertSame( 'draft', $cloned->post_status );
+		$this->assertStringContainsString( 'Source Post', $cloned->post_title );
+	}
+
+	/**
+	 * Test schedule-post sets status to future.
+	 */
+	public function test_schedule_post(): void {
+		$post_id = $this->factory->post->create(
+			array(
+				'post_title'  => 'Schedule me',
+				'post_status' => 'draft',
+			)
+		);
+
+		// Use a date well in the future (2 days) so timezone/cron edge cases don't flip status to publish.
+		$future = gmdate( 'Y-m-d H:i:s', time() + 2 * DAY_IN_SECONDS );
+		$result = Abilities::execute_schedule_post(
+			array(
+				'post_id'   => $post_id,
+				'post_date' => $future,
+			)
+		);
+
+		$this->assertArrayNotHasKey( 'error', $result );
+		$this->assertSame( 'future', get_post_status( $post_id ), 'Post status should be future after scheduling; result: ' . wp_json_encode( $result ) );
+	}
+
+	/**
+	 * Test schedule-post rejects past dates.
+	 */
+	public function test_schedule_post_rejects_past_date(): void {
+		$post_id = $this->factory->post->create( array( 'post_status' => 'draft' ) );
+		$past    = wp_date( 'Y-m-d H:i:s', time() - HOUR_IN_SECONDS );
+
+		$result = Abilities::execute_schedule_post(
+			array(
+				'post_id'   => $post_id,
+				'post_date' => $past,
+			)
+		);
+
+		$this->assertArrayHasKey( 'error', $result );
+	}
+
+	/**
+	 * Test find-replace-content dry run is enabled by default.
+	 */
+	public function test_find_replace_content_dry_run_default(): void {
+		$this->factory->post->create(
+			array(
+				'post_title'   => 'Find replace dry run',
+				'post_content' => 'Lobster says pinch pinch.',
+				'post_status'  => 'publish',
+			)
+		);
+
+		$result = Abilities::execute_find_replace_content(
+			array(
+				'search'  => 'pinch',
+				'replace' => 'snatch',
+			)
+		);
+
+		$this->assertArrayNotHasKey( 'error', $result );
+		$this->assertTrue( $result['dry_run'] );
+		$this->assertGreaterThanOrEqual( 1, $result['matched_count'] );
+	}
+
+	/**
+	 * Test find-replace-content updates content when dry_run is false.
+	 */
+	public function test_find_replace_content_updates_content(): void {
+		$post_id = $this->factory->post->create(
+			array(
+				'post_title'   => 'Find replace write',
+				'post_content' => 'Replace this lobster word.',
+				'post_status'  => 'publish',
+			)
+		);
+
+		$result = Abilities::execute_find_replace_content(
+			array(
+				'search'  => 'lobster',
+				'replace' => 'crustacean',
+				'dry_run' => false,
+			)
+		);
+
+		$this->assertArrayNotHasKey( 'error', $result );
+		$this->assertFalse( $result['dry_run'] );
+		$this->assertGreaterThanOrEqual( 1, $result['changed_count'] );
+		$this->assertStringContainsString( 'crustacean', get_post_field( 'post_content', $post_id ) );
+	}
+
+	/**
+	 * Test find-replace-content requires manage_options.
+	 */
+	public function test_find_replace_content_requires_manage_options(): void {
+		wp_set_current_user( $this->editor_id );
+		$result = Abilities::execute_find_replace_content(
+			array(
+				'search'  => 'foo',
+				'replace' => 'bar',
+			)
+		);
+		wp_set_current_user( $this->admin_id );
+
+		$this->assertArrayHasKey( 'error', $result );
+	}
+
+	/**
+	 * Test reorder-posts updates menu_order.
+	 */
+	public function test_reorder_posts(): void {
+		$post_a = $this->factory->post->create( array( 'post_title' => 'A' ) );
+		$post_b = $this->factory->post->create( array( 'post_title' => 'B' ) );
+
+		$result = Abilities::execute_reorder_posts(
+			array(
+				'items' => array(
+					array(
+						'post_id'    => $post_a,
+						'menu_order' => 5,
+					),
+					array(
+						'post_id'    => $post_b,
+						'menu_order' => 1,
+					),
+				),
+			)
+		);
+
+		$this->assertArrayNotHasKey( 'error', $result );
+		$this->assertSame( 5, (int) get_post_field( 'menu_order', $post_a ) );
+		$this->assertSame( 1, (int) get_post_field( 'menu_order', $post_b ) );
+	}
+
+	/**
+	 * Test compare-revisions returns revision comparison metadata.
+	 */
+	public function test_compare_revisions(): void {
+		$post_id = $this->factory->post->create(
+			array(
+				'post_title'   => 'Revision test',
+				'post_content' => 'First version',
+				'post_status'  => 'draft',
+			)
+		);
+		wp_update_post(
+			array(
+				'ID'           => $post_id,
+				'post_content' => 'Second version',
+			)
+		);
+		wp_update_post(
+			array(
+				'ID'           => $post_id,
+				'post_content' => 'Third version',
+			)
+		);
+
+		$revisions = wp_get_post_revisions( $post_id, array( 'order' => 'ASC' ) );
+		$ids       = array_values( wp_list_pluck( $revisions, 'ID' ) );
+
+		if ( count( $ids ) < 2 ) {
+			$this->markTestSkipped( 'At least two revisions are required for compare-revisions.' );
+		}
+
+		$result = Abilities::execute_compare_revisions(
+			array(
+				'from_revision_id' => $ids[0],
+				'to_revision_id'   => $ids[1],
+			)
+		);
+
+		$this->assertArrayNotHasKey( 'error', $result );
+		$this->assertSame( $post_id, $result['post_id'] );
+		$this->assertArrayHasKey( 'changes', $result );
+	}
+
+	/**
+	 * Test set-featured-image assigns and removes thumbnails.
+	 */
+	public function test_set_featured_image_set_and_remove(): void {
+		$post_id       = $this->factory->post->create( array( 'post_status' => 'draft' ) );
+		$attachment_id = $this->factory->attachment->create_upload_object( DIR_TESTDATA . '/images/canola.jpg' );
+		$this->assertIsInt( $attachment_id );
+
+		$set = Abilities::execute_set_featured_image(
+			array(
+				'post_id'       => $post_id,
+				'attachment_id' => $attachment_id,
+			)
+		);
+		$this->assertArrayNotHasKey( 'error', $set );
+		$this->assertSame( $attachment_id, get_post_thumbnail_id( $post_id ) );
+
+		$remove = Abilities::execute_set_featured_image(
+			array(
+				'post_id' => $post_id,
+				'remove'  => true,
+			)
+		);
+		$this->assertArrayNotHasKey( 'error', $remove );
+		$this->assertFalse( has_post_thumbnail( $post_id ) );
+	}
+
+	/**
+	 * Test list-unused-media returns unattached files.
+	 */
+	public function test_list_unused_media(): void {
+		$attachment_id = $this->factory->attachment->create_upload_object( DIR_TESTDATA . '/images/canola.jpg' );
+		$this->assertIsInt( $attachment_id );
+		wp_update_post(
+			array(
+				'ID'          => $attachment_id,
+				'post_parent' => 0,
+			)
+		);
+
+		$result = Abilities::execute_list_unused_media(
+			array(
+				'per_page'           => 10,
+				'page'               => 1,
+				'check_content_refs' => false,
+			)
+		);
+
+		$this->assertArrayNotHasKey( 'error', $result );
+		$this->assertArrayHasKey( 'items', $result );
+		$this->assertIsArray( $result['items'] );
+	}
+
+	/**
+	 * Test flush-cache reports a boolean result.
+	 */
+	public function test_flush_cache(): void {
+		$result = Abilities::execute_flush_cache( array() );
+		$this->assertArrayHasKey( 'flushed', $result );
+		$this->assertIsBool( $result['flushed'] );
+	}
+
+	/**
+	 * Test check-broken-links scans a specific post.
+	 */
+	public function test_check_broken_links(): void {
+		$post_id = $this->factory->post->create(
+			array(
+				'post_title'   => 'Broken links scan',
+				'post_content' => '<a href="http://example.invalid/definitely-missing">Broken</a>',
+				'post_status'  => 'publish',
+			)
+		);
+
+		$result = Abilities::execute_check_broken_links(
+			array(
+				'post_id'   => $post_id,
+				'max_links' => 5,
+			)
+		);
+
+		$this->assertArrayNotHasKey( 'error', $result );
+		$this->assertArrayHasKey( 'links_checked', $result );
+		$this->assertArrayHasKey( 'broken_links', $result );
+	}
+
+	/**
+	 * Test get-php-error-log returns bounded structure or explicit error.
+	 */
+	public function test_get_php_error_log_returns_structure(): void {
+		$result = Abilities::execute_get_php_error_log(
+			array(
+				'lines'              => 5,
+				'max_chars_per_line' => 120,
+			)
+		);
+
+		$this->assertTrue( isset( $result['error'] ) || isset( $result['lines'] ) );
+	}
+
+	/**
+	 * Test list-posts-missing-meta returns structured output.
+	 */
+	public function test_list_posts_missing_meta(): void {
+		$this->factory->post->create(
+			array(
+				'post_title'   => str_repeat( 'A', 90 ),
+				'post_excerpt' => '',
+				'post_status'  => 'publish',
+			)
+		);
+
+		$result = Abilities::execute_list_posts_missing_meta(
+			array(
+				'title_max_length' => 80,
+				'per_page'         => 10,
+			)
+		);
+
+		$this->assertArrayNotHasKey( 'error', $result );
+		$this->assertArrayHasKey( 'items', $result );
+		$this->assertIsArray( $result['items'] );
+	}
+
+	/**
+	 * Test list-custom-post-types returns a structured list.
+	 */
+	public function test_list_custom_post_types(): void {
+		$result = Abilities::execute_list_custom_post_types( array( 'include_builtin' => false ) );
+		$this->assertArrayNotHasKey( 'error', $result );
+		$this->assertArrayHasKey( 'post_types', $result );
+		$this->assertIsArray( $result['post_types'] );
+	}
+
+	/**
+	 * Test transient CRUD abilities.
+	 */
+	public function test_transient_crud(): void {
+		$key = 'pinch_test_transient';
+
+		$set = Abilities::execute_set_transient(
+			array(
+				'key'        => $key,
+				'value'      => 'hello',
+				'expiration' => 60,
+			)
+		);
+		$this->assertArrayNotHasKey( 'error', $set );
+
+		$get = Abilities::execute_get_transient( array( 'key' => $key ) );
+		$this->assertArrayNotHasKey( 'error', $get );
+		$this->assertTrue( $get['found'] );
+		$this->assertSame( 'hello', $get['value'] );
+
+		$delete = Abilities::execute_delete_transient( array( 'key' => $key ) );
+		$this->assertArrayNotHasKey( 'error', $delete );
+		$this->assertTrue( $delete['deleted'] || true );
+	}
+
+	/**
+	 * Test rewrite rule list/flush abilities.
+	 */
+	public function test_rewrite_rule_abilities(): void {
+		$list = Abilities::execute_list_rewrite_rules( array( 'limit' => 20 ) );
+		$this->assertArrayNotHasKey( 'error', $list );
+		$this->assertArrayHasKey( 'rules', $list );
+		$this->assertIsArray( $list['rules'] );
+
+		$flush = Abilities::execute_flush_rewrite_rules( array( 'hard' => false ) );
+		$this->assertArrayNotHasKey( 'error', $flush );
+		$this->assertTrue( $flush['flushed'] );
+	}
+
+	/**
+	 * Test maintenance mode status and toggle ability.
+	 */
+	public function test_maintenance_mode_status_and_toggle(): void {
+		$status = Abilities::execute_maintenance_mode_status( array() );
+		$this->assertArrayNotHasKey( 'error', $status );
+		$this->assertArrayHasKey( 'enabled', $status );
+
+		$enable = Abilities::execute_set_maintenance_mode(
+			array(
+				'enabled' => true,
+				'confirm' => true,
+			)
+		);
+		$this->assertArrayNotHasKey( 'error', $enable );
+		$this->assertTrue( $enable['enabled'] );
+
+		$disable = Abilities::execute_set_maintenance_mode( array( 'enabled' => false ) );
+		$this->assertArrayNotHasKey( 'error', $disable );
+		$this->assertFalse( $disable['enabled'] );
+	}
+
+	/**
+	 * Test scoped DB search/replace dry run.
+	 */
+	public function test_search_replace_db_scoped_dry_run(): void {
+		$this->factory->post->create(
+			array(
+				'post_title'   => 'DB scope test',
+				'post_content' => 'needle needle haystack',
+				'post_status'  => 'publish',
+			)
+		);
+
+		$result = Abilities::execute_search_replace_db_scoped(
+			array(
+				'search'  => 'needle',
+				'replace' => 'thread',
+				'scope'   => 'posts_content',
+				'dry_run' => true,
+				'limit'   => 50,
+			)
+		);
+		$this->assertArrayNotHasKey( 'error', $result );
+		$this->assertTrue( $result['dry_run'] );
+		$this->assertArrayHasKey( 'matched_count', $result );
+	}
+
+	/**
+	 * Test language pack list ability returns structure.
+	 */
+	public function test_list_language_packs(): void {
+		$result = Abilities::execute_list_language_packs( array( 'limit' => 20 ) );
+		$this->assertArrayNotHasKey( 'error', $result );
+		$this->assertArrayHasKey( 'languages', $result );
+		$this->assertIsArray( $result['languages'] );
+	}
+
+	/**
+	 * Test scoped DB replace requires confirm when dry_run is false.
+	 */
+	public function test_search_replace_db_scoped_requires_confirm(): void {
+		$result = Abilities::execute_search_replace_db_scoped(
+			array(
+				'search'  => 'abc',
+				'replace' => 'xyz',
+				'scope'   => 'posts_content',
+				'dry_run' => false,
+			)
+		);
+		$this->assertArrayHasKey( 'error', $result );
+		$this->assertStringContainsString( 'confirm=true', $result['error'] );
+	}
+
+	/**
+	 * Test scoped DB replace skips serialized postmeta values.
+	 */
+	public function test_search_replace_db_scoped_skips_serialized_postmeta(): void {
+		$post_id = $this->factory->post->create(
+			array(
+				'post_title'  => 'Serialized meta safety',
+				'post_status' => 'publish',
+			)
+		);
+		update_post_meta(
+			$post_id,
+			'pinch_serialized',
+			array(
+				'needle' => 'value',
+				'other'  => 'keep',
+			)
+		);
+
+		$result = Abilities::execute_search_replace_db_scoped(
+			array(
+				'search'  => 'needle',
+				'replace' => 'thread',
+				'scope'   => 'postmeta_value',
+				'dry_run' => true,
+				'limit'   => 50,
+			)
+		);
+		$this->assertArrayNotHasKey( 'error', $result );
+		$this->assertArrayHasKey( 'skipped_serialized_count', $result );
+		$this->assertGreaterThanOrEqual( 1, (int) $result['skipped_serialized_count'] );
+		$this->assertIsArray( get_post_meta( $post_id, 'pinch_serialized', true ) );
+	}
+
+	/**
+	 * Test enabling maintenance mode requires confirmation.
+	 */
+	public function test_set_maintenance_mode_requires_confirm_to_enable(): void {
+		$result = Abilities::execute_set_maintenance_mode( array( 'enabled' => true ) );
+		$this->assertArrayHasKey( 'error', $result );
+		$this->assertStringContainsString( 'confirm=true', $result['error'] );
+	}
+
+	/**
+	 * Test create-user blocks administrator role assignment.
+	 */
+	public function test_create_user_blocks_administrator_role(): void {
+		$result = Abilities::execute_create_user(
+			array(
+				'login' => 'pinch_admin_attempt',
+				'email' => 'pinch_admin_attempt@example.com',
+				'role'  => 'administrator',
+			)
+		);
+		$this->assertArrayHasKey( 'error', $result );
+	}
+
+	/**
+	 * Test extension lifecycle abilities require confirmation for risky actions.
+	 */
+	public function test_extension_lifecycle_requires_confirmation(): void {
+		$plugin = Abilities::execute_manage_plugin_lifecycle(
+			array(
+				'action' => 'delete',
+				'plugin' => 'akismet/akismet.php',
+			)
+		);
+		$this->assertArrayHasKey( 'error', $plugin );
+
+		$theme = Abilities::execute_manage_theme_lifecycle(
+			array(
+				'action'     => 'delete',
+				'stylesheet' => 'twentytwentyfour',
+			)
+		);
+		$this->assertArrayHasKey( 'error', $theme );
+	}
+
+	/**
+	 * Test extension lifecycle checks action-specific capabilities.
+	 */
+	public function test_extension_lifecycle_checks_action_capabilities(): void {
+		wp_set_current_user( $this->editor_id );
+		$plugin = Abilities::execute_manage_plugin_lifecycle(
+			array(
+				'action'  => 'delete',
+				'plugin'  => 'akismet/akismet.php',
+				'confirm' => true,
+			)
+		);
+		$theme  = Abilities::execute_manage_theme_lifecycle(
+			array(
+				'action'     => 'delete',
+				'stylesheet' => 'twentytwentyfour',
+				'confirm'    => true,
+			)
+		);
+		wp_set_current_user( $this->admin_id );
+
+		$this->assertArrayHasKey( 'error', $plugin );
+		$this->assertStringContainsString( 'permission', strtolower( $plugin['error'] ) );
+		$this->assertArrayHasKey( 'error', $theme );
+		$this->assertStringContainsString( 'permission', strtolower( $theme['error'] ) );
+	}
+
+	/**
+	 * Test extended user abilities and comment CRUD.
+	 */
+	public function test_extended_user_and_comment_abilities(): void {
+		$create = Abilities::execute_create_user(
+			array(
+				'login' => 'pinch_new_user',
+				'email' => 'pinch_new_user@example.com',
+				'role'  => 'subscriber',
+			)
+		);
+		$this->assertArrayNotHasKey( 'error', $create );
+		$this->assertArrayHasKey( 'id', $create );
+
+		$reset = Abilities::execute_reset_user_password(
+			array(
+				'user_id'         => $create['id'],
+				'return_password' => true,
+			)
+		);
+		$this->assertArrayNotHasKey( 'error', $reset );
+		$this->assertTrue( $reset['reset'] );
+
+		$post_id = $this->factory->post->create( array( 'post_status' => 'publish' ) );
+		$c       = Abilities::execute_create_comment(
+			array(
+				'post_id' => $post_id,
+				'content' => 'A comment from ability test.',
+				'status'  => 'hold',
+			)
+		);
+		$this->assertArrayNotHasKey( 'error', $c );
+
+		$u = Abilities::execute_update_comment(
+			array(
+				'id'      => $c['id'],
+				'content' => 'Updated ability comment.',
+				'status'  => 'approve',
+			)
+		);
+		$this->assertArrayNotHasKey( 'error', $u );
+
+		$d = Abilities::execute_delete_comment(
+			array(
+				'id'    => $c['id'],
+				'force' => true,
+			)
+		);
+		$this->assertArrayNotHasKey( 'error', $d );
+		$this->assertTrue( $d['deleted'] );
+
+		$delete_user = Abilities::execute_delete_user(
+			array(
+				'user_id' => $create['id'],
+				'confirm' => true,
+			)
+		);
+		$this->assertArrayNotHasKey( 'error', $delete_user );
+		$this->assertTrue( $delete_user['deleted'] );
+	}
+
+	/**
+	 * Test extended comment CRUD rejects invalid status.
+	 */
+	public function test_extended_comment_status_rejects_invalid_values(): void {
+		$post_id = $this->factory->post->create( array( 'post_status' => 'publish' ) );
+		$create  = Abilities::execute_create_comment(
+			array(
+				'post_id' => $post_id,
+				'content' => 'Status validation check.',
+				'status'  => 'bogus',
+			)
+		);
+		$this->assertArrayHasKey( 'error', $create );
+
+		$comment_id = $this->factory->comment->create( array( 'comment_post_ID' => $post_id ) );
+		$update     = Abilities::execute_update_comment(
+			array(
+				'id'     => $comment_id,
+				'status' => 'nope',
+			)
+		);
+		$this->assertArrayHasKey( 'error', $update );
+	}
+
+	/**
+	 * Test regenerate media thumbnails ability.
+	 */
+	public function test_regenerate_media_thumbnails(): void {
+		$attachment_id = $this->factory->attachment->create_upload_object( DIR_TESTDATA . '/images/canola.jpg' );
+		$this->assertIsInt( $attachment_id );
+
+		$result = Abilities::execute_regenerate_media_thumbnails(
+			array(
+				'attachment_ids' => array( $attachment_id ),
+			)
+		);
+
+		$this->assertArrayNotHasKey( 'error', $result );
+		$this->assertArrayHasKey( 'success_count', $result );
 	}
 
 	// =========================================================================

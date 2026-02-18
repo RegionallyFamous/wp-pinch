@@ -8,9 +8,26 @@
 
 const { test, expect } = require( '@wordpress/e2e-test-utils-playwright' );
 
+async function ensureConnectionTabReady( page, admin ) {
+	await admin.visitAdminPage( 'admin.php', 'page=wp-pinch' );
+
+	const wizard = page.locator( '#wp-pinch-wizard' );
+	if ( await wizard.isVisible() ) {
+		const skipLink = page.locator(
+			'a:has-text("I\'ll scuttle back later")'
+		);
+		const href = await skipLink.getAttribute( 'href' );
+		if ( href ) {
+			await page.goto( href );
+		}
+	}
+
+	await admin.visitAdminPage( 'admin.php', 'page=wp-pinch&tab=connection' );
+}
+
 test.describe( 'WP Pinch Settings Page', () => {
-	test.beforeEach( async ( { admin } ) => {
-		await admin.visitAdminPage( 'admin.php', 'page=wp-pinch' );
+	test.beforeEach( async ( { admin, page } ) => {
+		await ensureConnectionTabReady( page, admin );
 	} );
 
 	test( 'should display the settings page', async ( { page } ) => {

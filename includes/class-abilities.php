@@ -1,6 +1,6 @@
 <?php
 /**
- * WordPress Abilities registration — 12 categories, 38+ core abilities, 2 WooCommerce when active.
+ * WordPress Abilities registration — core + conditional abilities across content, media, admin, governance, and commerce.
  *
  * Every ability:
  * - Uses wp_register_ability() with typed JSON schema input/output.
@@ -223,20 +223,34 @@ class Abilities {
 			'wp-pinch/delete-post',
 			'wp-pinch/list-taxonomies',
 			'wp-pinch/manage-terms',
+			'wp-pinch/duplicate-post',
+			'wp-pinch/schedule-post',
+			'wp-pinch/find-replace-content',
+			'wp-pinch/reorder-posts',
+			'wp-pinch/compare-revisions',
 
 			// Media.
 			'wp-pinch/list-media',
 			'wp-pinch/upload-media',
 			'wp-pinch/delete-media',
+			'wp-pinch/set-featured-image',
+			'wp-pinch/list-unused-media',
+			'wp-pinch/regenerate-media-thumbnails',
 
 			// Users.
 			'wp-pinch/list-users',
 			'wp-pinch/get-user',
 			'wp-pinch/update-user-role',
+			'wp-pinch/create-user',
+			'wp-pinch/delete-user',
+			'wp-pinch/reset-user-password',
 
 			// Comments.
 			'wp-pinch/list-comments',
 			'wp-pinch/moderate-comment',
+			'wp-pinch/create-comment',
+			'wp-pinch/update-comment',
+			'wp-pinch/delete-comment',
 
 			// Settings.
 			'wp-pinch/get-option',
@@ -247,6 +261,8 @@ class Abilities {
 			'wp-pinch/toggle-plugin',
 			'wp-pinch/list-themes',
 			'wp-pinch/switch-theme',
+			'wp-pinch/manage-plugin-lifecycle',
+			'wp-pinch/manage-theme-lifecycle',
 
 			// Analytics & Maintenance.
 			'wp-pinch/site-health',
@@ -288,6 +304,22 @@ class Abilities {
 			// Cron Management.
 			'wp-pinch/list-cron-events',
 			'wp-pinch/manage-cron',
+			'wp-pinch/get-transient',
+			'wp-pinch/set-transient',
+			'wp-pinch/delete-transient',
+			'wp-pinch/list-rewrite-rules',
+			'wp-pinch/flush-rewrite-rules',
+			'wp-pinch/maintenance-mode-status',
+			'wp-pinch/set-maintenance-mode',
+			'wp-pinch/search-replace-db-scoped',
+			'wp-pinch/list-language-packs',
+			'wp-pinch/install-language-pack',
+			'wp-pinch/activate-language-pack',
+			'wp-pinch/flush-cache',
+			'wp-pinch/check-broken-links',
+			'wp-pinch/get-php-error-log',
+			'wp-pinch/list-posts-missing-meta',
+			'wp-pinch/list-custom-post-types',
 
 			// GEO & SEO.
 			'wp-pinch/generate-llms-txt',
@@ -308,7 +340,7 @@ class Abilities {
 	}
 
 	/**
-	 * Register all abilities (36 with WooCommerce, 34 without).
+	 * Register all ability modules.
 	 */
 	public static function register_abilities(): void {
 		if ( ! function_exists( 'wp_register_ability' ) ) {
@@ -316,10 +348,16 @@ class Abilities {
 		}
 
 		Ability\Content_Abilities::register();
+		Ability\Content_Workflow_Abilities::register();
 		Ability\Media_Abilities::register();
+		Ability\Media_Extended_Abilities::register();
 		Ability\User_Comment_Abilities::register();
+		Ability\User_Comment_Extended_Abilities::register();
 		Ability\Settings_Abilities::register();
+		Ability\Extension_Lifecycle_Abilities::register();
 		Ability\Analytics_Abilities::register();
+		Ability\Site_Ops_Abilities::register();
+		Ability\System_Admin_Abilities::register();
 		Ability\QuickWin_Abilities::register();
 		Ability\PinchDrop_Abilities::register();
 		Ability\Menu_Meta_Revisions_Abilities::register();
@@ -495,6 +533,31 @@ class Abilities {
 	}
 
 	/** @param array<string, mixed> $input */
+	public static function execute_duplicate_post( array $input ): array {
+		return Ability\Content_Workflow_Abilities::execute_duplicate_post( $input );
+	}
+
+	/** @param array<string, mixed> $input */
+	public static function execute_schedule_post( array $input ): array {
+		return Ability\Content_Workflow_Abilities::execute_schedule_post( $input );
+	}
+
+	/** @param array<string, mixed> $input */
+	public static function execute_find_replace_content( array $input ): array {
+		return Ability\Content_Workflow_Abilities::execute_find_replace_content( $input );
+	}
+
+	/** @param array<string, mixed> $input */
+	public static function execute_reorder_posts( array $input ): array {
+		return Ability\Content_Workflow_Abilities::execute_reorder_posts( $input );
+	}
+
+	/** @param array<string, mixed> $input */
+	public static function execute_compare_revisions( array $input ): array {
+		return Ability\Content_Workflow_Abilities::execute_compare_revisions( $input );
+	}
+
+	/** @param array<string, mixed> $input */
 	public static function execute_list_media( array $input ): array {
 		return Ability\Media_Abilities::execute_list_media( $input );
 	}
@@ -505,6 +568,21 @@ class Abilities {
 	/** @param array<string, mixed> $input */
 	public static function execute_delete_media( array $input ): array {
 		return Ability\Media_Abilities::execute_delete_media( $input );
+	}
+
+	/** @param array<string, mixed> $input */
+	public static function execute_set_featured_image( array $input ): array {
+		return Ability\Media_Extended_Abilities::execute_set_featured_image( $input );
+	}
+
+	/** @param array<string, mixed> $input */
+	public static function execute_list_unused_media( array $input ): array {
+		return Ability\Media_Extended_Abilities::execute_list_unused_media( $input );
+	}
+
+	/** @param array<string, mixed> $input */
+	public static function execute_regenerate_media_thumbnails( array $input ): array {
+		return Ability\Media_Extended_Abilities::execute_regenerate_media_thumbnails( $input );
 	}
 
 	// =========================================================================
@@ -559,6 +637,36 @@ class Abilities {
 	 */
 	public static function execute_moderate_comment( array $input ): array {
 		return Ability\User_Comment_Abilities::execute_moderate_comment( $input );
+	}
+
+	/** @param array<string, mixed> $input */
+	public static function execute_create_user( array $input ): array {
+		return Ability\User_Comment_Extended_Abilities::execute_create_user( $input );
+	}
+
+	/** @param array<string, mixed> $input */
+	public static function execute_delete_user( array $input ): array {
+		return Ability\User_Comment_Extended_Abilities::execute_delete_user( $input );
+	}
+
+	/** @param array<string, mixed> $input */
+	public static function execute_reset_user_password( array $input ): array {
+		return Ability\User_Comment_Extended_Abilities::execute_reset_user_password( $input );
+	}
+
+	/** @param array<string, mixed> $input */
+	public static function execute_create_comment( array $input ): array {
+		return Ability\User_Comment_Extended_Abilities::execute_create_comment( $input );
+	}
+
+	/** @param array<string, mixed> $input */
+	public static function execute_update_comment( array $input ): array {
+		return Ability\User_Comment_Extended_Abilities::execute_update_comment( $input );
+	}
+
+	/** @param array<string, mixed> $input */
+	public static function execute_delete_comment( array $input ): array {
+		return Ability\User_Comment_Extended_Abilities::execute_delete_comment( $input );
 	}
 
 	/**
@@ -619,6 +727,16 @@ class Abilities {
 	 */
 	public static function execute_switch_theme( array $input ): array {
 		return Ability\Settings_Abilities::execute_switch_theme( $input );
+	}
+
+	/** @param array<string, mixed> $input */
+	public static function execute_manage_plugin_lifecycle( array $input ): array {
+		return Ability\Extension_Lifecycle_Abilities::execute_manage_plugin_lifecycle( $input );
+	}
+
+	/** @param array<string, mixed> $input */
+	public static function execute_manage_theme_lifecycle( array $input ): array {
+		return Ability\Extension_Lifecycle_Abilities::execute_manage_theme_lifecycle( $input );
 	}
 
 	// =========================================================================
@@ -776,6 +894,86 @@ class Abilities {
 	/** @see \WP_Pinch\Ability\Menu_Meta_Revisions_Abilities::execute_manage_cron */
 	public static function execute_manage_cron( array $input ): array {
 		return Ability\Menu_Meta_Revisions_Abilities::execute_manage_cron( $input );
+	}
+
+	/** @see \WP_Pinch\Ability\System_Admin_Abilities::execute_get_transient */
+	public static function execute_get_transient( array $input ): array {
+		return Ability\System_Admin_Abilities::execute_get_transient( $input );
+	}
+
+	/** @see \WP_Pinch\Ability\System_Admin_Abilities::execute_set_transient */
+	public static function execute_set_transient( array $input ): array {
+		return Ability\System_Admin_Abilities::execute_set_transient( $input );
+	}
+
+	/** @see \WP_Pinch\Ability\System_Admin_Abilities::execute_delete_transient */
+	public static function execute_delete_transient( array $input ): array {
+		return Ability\System_Admin_Abilities::execute_delete_transient( $input );
+	}
+
+	/** @see \WP_Pinch\Ability\System_Admin_Abilities::execute_list_rewrite_rules */
+	public static function execute_list_rewrite_rules( array $input ): array {
+		return Ability\System_Admin_Abilities::execute_list_rewrite_rules( $input );
+	}
+
+	/** @see \WP_Pinch\Ability\System_Admin_Abilities::execute_flush_rewrite_rules */
+	public static function execute_flush_rewrite_rules( array $input ): array {
+		return Ability\System_Admin_Abilities::execute_flush_rewrite_rules( $input );
+	}
+
+	/** @see \WP_Pinch\Ability\System_Admin_Abilities::execute_maintenance_mode_status */
+	public static function execute_maintenance_mode_status( array $input ): array {
+		return Ability\System_Admin_Abilities::execute_maintenance_mode_status( $input );
+	}
+
+	/** @see \WP_Pinch\Ability\System_Admin_Abilities::execute_set_maintenance_mode */
+	public static function execute_set_maintenance_mode( array $input ): array {
+		return Ability\System_Admin_Abilities::execute_set_maintenance_mode( $input );
+	}
+
+	/** @see \WP_Pinch\Ability\System_Admin_Abilities::execute_search_replace_db_scoped */
+	public static function execute_search_replace_db_scoped( array $input ): array {
+		return Ability\System_Admin_Abilities::execute_search_replace_db_scoped( $input );
+	}
+
+	/** @see \WP_Pinch\Ability\System_Admin_Abilities::execute_list_language_packs */
+	public static function execute_list_language_packs( array $input ): array {
+		return Ability\System_Admin_Abilities::execute_list_language_packs( $input );
+	}
+
+	/** @see \WP_Pinch\Ability\System_Admin_Abilities::execute_install_language_pack */
+	public static function execute_install_language_pack( array $input ): array {
+		return Ability\System_Admin_Abilities::execute_install_language_pack( $input );
+	}
+
+	/** @see \WP_Pinch\Ability\System_Admin_Abilities::execute_activate_language_pack */
+	public static function execute_activate_language_pack( array $input ): array {
+		return Ability\System_Admin_Abilities::execute_activate_language_pack( $input );
+	}
+
+	/** @see \WP_Pinch\Ability\Site_Ops_Abilities::execute_flush_cache */
+	public static function execute_flush_cache( array $input ): array {
+		return Ability\Site_Ops_Abilities::execute_flush_cache( $input );
+	}
+
+	/** @see \WP_Pinch\Ability\Site_Ops_Abilities::execute_check_broken_links */
+	public static function execute_check_broken_links( array $input ): array {
+		return Ability\Site_Ops_Abilities::execute_check_broken_links( $input );
+	}
+
+	/** @see \WP_Pinch\Ability\Site_Ops_Abilities::execute_get_php_error_log */
+	public static function execute_get_php_error_log( array $input ): array {
+		return Ability\Site_Ops_Abilities::execute_get_php_error_log( $input );
+	}
+
+	/** @see \WP_Pinch\Ability\Site_Ops_Abilities::execute_list_posts_missing_meta */
+	public static function execute_list_posts_missing_meta( array $input ): array {
+		return Ability\Site_Ops_Abilities::execute_list_posts_missing_meta( $input );
+	}
+
+	/** @see \WP_Pinch\Ability\Site_Ops_Abilities::execute_list_custom_post_types */
+	public static function execute_list_custom_post_types( array $input ): array {
+		return Ability\Site_Ops_Abilities::execute_list_custom_post_types( $input );
 	}
 
 	/** @see \WP_Pinch\Ability\Woo_Abilities::execute_woo_list_products */

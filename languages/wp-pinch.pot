@@ -2,14 +2,14 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: WP Pinch 3.0.2\n"
+"Project-Id-Version: WP Pinch 3.0.3\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wp-pinch\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-02-17T15:16:08+00:00\n"
+"POT-Creation-Date: 2026-02-18T16:16:30+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: wp-pinch\n"
@@ -58,7 +58,7 @@ msgstr ""
 #: build/blocks/pinch-chat/render.php:100
 #: src/blocks/pinch-chat/render.php:100
 #: build/blocks/pinch-chat/index.js:1
-#: src/blocks/pinch-chat/edit.js:99
+#: src/blocks/pinch-chat/edit.js:98
 msgid "Pinch Chat"
 msgstr ""
 
@@ -252,7 +252,7 @@ msgid "Invalid export type."
 msgstr ""
 
 #: includes/Ability/Analytics_Abilities.php:551
-#: includes/Ability/Analytics_Abilities.php:731
+#: includes/Ability/Analytics_Abilities.php:733
 #: includes/Ability/QuickWin_Abilities.php:764
 msgid "Invalid post type or insufficient permissions."
 msgstr ""
@@ -266,11 +266,11 @@ msgstr ""
 msgid "Post not found or insufficient permissions."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:727
+#: includes/Ability/Analytics_Abilities.php:729
 msgid "Query is required."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:785
+#: includes/Ability/Analytics_Abilities.php:787
 #: includes/Ability/GEO_SEO_Abilities.php:183
 #: includes/Ability/GEO_SEO_Abilities.php:358
 #: includes/Ability/GEO_SEO_Abilities.php:638
@@ -281,11 +281,11 @@ msgstr ""
 msgid "WP Pinch gateway is not configured."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:788
+#: includes/Ability/Analytics_Abilities.php:790
 msgid "API is in read-only mode."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:791
+#: includes/Ability/Analytics_Abilities.php:793
 #: includes/Ability/GEO_SEO_Abilities.php:191
 #: includes/Ability/GEO_SEO_Abilities.php:469
 #: includes/Ability/GEO_SEO_Abilities.php:641
@@ -297,7 +297,7 @@ msgstr ""
 msgid "The AI gateway is temporarily unavailable."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:825
+#: includes/Ability/Analytics_Abilities.php:827
 #: includes/Ability/GEO_SEO_Abilities.php:225
 #: includes/Ability/GEO_SEO_Abilities.php:501
 #: includes/Ability/GEO_SEO_Abilities.php:672
@@ -313,7 +313,7 @@ msgid "Gateway URL failed security validation."
 msgstr ""
 
 #. translators: %d: HTTP status code
-#: includes/Ability/Analytics_Abilities.php:851
+#: includes/Ability/Analytics_Abilities.php:853
 #: includes/Ability/GEO_SEO_Abilities.php:254
 #: includes/Ability/GEO_SEO_Abilities.php:531
 #: includes/Ability/GEO_SEO_Abilities.php:698
@@ -323,15 +323,15 @@ msgstr ""
 msgid "Gateway returned HTTP %d."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:878
+#: includes/Ability/Analytics_Abilities.php:880
 msgid "fields must be an array of { name, value } objects."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:891
+#: includes/Ability/Analytics_Abilities.php:893
 msgid "(empty)"
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:897
+#: includes/Ability/Analytics_Abilities.php:899
 msgid "No valid fields provided."
 msgstr ""
 
@@ -392,15 +392,22 @@ msgid "Create, update, or delete taxonomy terms."
 msgstr ""
 
 #: includes/Ability/Content_Abilities.php:249
+#: includes/Ability/Content_Workflow_Abilities.php:355
+#: includes/Ability/Site_Ops_Abilities.php:330
 msgid "Invalid post type."
 msgstr ""
 
 #: includes/Ability/Content_Abilities.php:295
 #: includes/Ability/Content_Abilities.php:392
 #: includes/Ability/Content_Abilities.php:478
+#: includes/Ability/Content_Workflow_Abilities.php:190
+#: includes/Ability/Content_Workflow_Abilities.php:280
+#: includes/Ability/Content_Workflow_Abilities.php:497
+#: includes/Ability/Media_Extended_Abilities.php:129
 #: includes/Ability/Menu_Meta_Revisions_Abilities.php:475
 #: includes/Ability/Menu_Meta_Revisions_Abilities.php:526
 #: includes/Ability/Menu_Meta_Revisions_Abilities.php:596
+#: includes/Ability/Site_Ops_Abilities.php:204
 #: includes/class-ghost-writer.php:501
 #: includes/class-molt.php:75
 #: includes/Rest/Preview_Approve.php:43
@@ -414,7 +421,9 @@ msgid "Post type \"%s\" does not exist."
 msgstr ""
 
 #: includes/Ability/Content_Abilities.php:396
+#: includes/Ability/Content_Workflow_Abilities.php:506
 #: includes/Ability/GhostWriter_Molt_Abilities.php:188
+#: includes/Ability/Media_Extended_Abilities.php:132
 #: includes/class-ghost-writer.php:518
 msgid "You do not have permission to edit this post."
 msgstr ""
@@ -446,6 +455,8 @@ msgid "Term not found."
 msgstr ""
 
 #: includes/Ability/Content_Abilities.php:610
+#: includes/Ability/Extension_Lifecycle_Abilities.php:106
+#: includes/Ability/Extension_Lifecycle_Abilities.php:223
 #: includes/Ability/Menu_Meta_Revisions_Abilities.php:462
 #: includes/Ability/Menu_Meta_Revisions_Abilities.php:798
 #: includes/Ability/Menu_Meta_Revisions_Abilities.php:972
@@ -458,6 +469,196 @@ msgstr ""
 
 #: includes/Ability/Content_Abilities.php:626
 msgid "No valid blocks provided. Each block needs blockName (e.g. core/paragraph) and optionally attrs, innerContent, innerBlocks."
+msgstr ""
+
+#: includes/Ability/Content_Workflow_Abilities.php:39
+msgid "Duplicate Post"
+msgstr ""
+
+#: includes/Ability/Content_Workflow_Abilities.php:40
+msgid "Clone an existing post into a new draft."
+msgstr ""
+
+#: includes/Ability/Content_Workflow_Abilities.php:77
+msgid "Schedule Post"
+msgstr ""
+
+#: includes/Ability/Content_Workflow_Abilities.php:78
+msgid "Schedule a post by setting status to future and assigning a publish date."
+msgstr ""
+
+#: includes/Ability/Content_Workflow_Abilities.php:97
+msgid "Find and Replace Content"
+msgstr ""
+
+#: includes/Ability/Content_Workflow_Abilities.php:98
+msgid "Bulk replace a string in post content with dry-run support."
+msgstr ""
+
+#: includes/Ability/Content_Workflow_Abilities.php:136
+msgid "Reorder Posts"
+msgstr ""
+
+#: includes/Ability/Content_Workflow_Abilities.php:137
+msgid "Set menu_order for multiple posts in one call."
+msgstr ""
+
+#: includes/Ability/Content_Workflow_Abilities.php:163
+msgid "Compare Revisions"
+msgstr ""
+
+#: includes/Ability/Content_Workflow_Abilities.php:164
+msgid "Diff two revision IDs for the same post."
+msgstr ""
+
+#: includes/Ability/Content_Workflow_Abilities.php:194
+msgid "You do not have permission to duplicate this post."
+msgstr ""
+
+#: includes/Ability/Content_Workflow_Abilities.php:200
+msgid "You do not have permission to create this post type."
+msgstr ""
+
+#: includes/Ability/Content_Workflow_Abilities.php:283
+msgid "You do not have permission to schedule this post."
+msgstr ""
+
+#: includes/Ability/Content_Workflow_Abilities.php:286
+msgid "post_date is required."
+msgstr ""
+
+#: includes/Ability/Content_Workflow_Abilities.php:291
+msgid "Invalid post_date format."
+msgstr ""
+
+#: includes/Ability/Content_Workflow_Abilities.php:294
+msgid "post_date must be in the future."
+msgstr ""
+
+#: includes/Ability/Content_Workflow_Abilities.php:345
+msgid "You do not have permission to run find-replace."
+msgstr ""
+
+#: includes/Ability/Content_Workflow_Abilities.php:350
+#: includes/Ability/System_Admin_Abilities.php:457
+msgid "Search string cannot be empty."
+msgstr ""
+
+#: includes/Ability/Content_Workflow_Abilities.php:361
+msgid "You do not have permission for this post type."
+msgstr ""
+
+#: includes/Ability/Content_Workflow_Abilities.php:421
+msgid "Database update failed."
+msgstr ""
+
+#: includes/Ability/Content_Workflow_Abilities.php:471
+msgid "items must be a non-empty array."
+msgstr ""
+
+#: includes/Ability/Content_Workflow_Abilities.php:474
+msgid "Maximum 100 items per request."
+msgstr ""
+
+#: includes/Ability/Content_Workflow_Abilities.php:488
+msgid "Invalid post_id."
+msgstr ""
+
+#: includes/Ability/Content_Workflow_Abilities.php:565
+msgid "One or both revisions were not found."
+msgstr ""
+
+#: includes/Ability/Content_Workflow_Abilities.php:570
+msgid "Revisions must belong to the same post."
+msgstr ""
+
+#: includes/Ability/Content_Workflow_Abilities.php:574
+msgid "You do not have permission to compare revisions for this post."
+msgstr ""
+
+#: includes/Ability/Extension_Lifecycle_Abilities.php:26
+msgid "Manage Plugin Lifecycle"
+msgstr ""
+
+#: includes/Ability/Extension_Lifecycle_Abilities.php:27
+msgid "Install, update, or delete a plugin with explicit confirmation for risky operations."
+msgstr ""
+
+#: includes/Ability/Extension_Lifecycle_Abilities.php:58
+msgid "Manage Theme Lifecycle"
+msgstr ""
+
+#: includes/Ability/Extension_Lifecycle_Abilities.php:59
+msgid "Install, update, or delete a theme with explicit confirmation for risky operations."
+msgstr ""
+
+#: includes/Ability/Extension_Lifecycle_Abilities.php:109
+#: includes/Ability/Extension_Lifecycle_Abilities.php:226
+msgid "confirm=true is required for update/delete."
+msgstr ""
+
+#: includes/Ability/Extension_Lifecycle_Abilities.php:113
+msgid "You do not have permission for this plugin action."
+msgstr ""
+
+#: includes/Ability/Extension_Lifecycle_Abilities.php:119
+msgid "slug is required for plugin install."
+msgstr ""
+
+#: includes/Ability/Extension_Lifecycle_Abilities.php:130
+msgid "Could not fetch plugin package details."
+msgstr ""
+
+#: includes/Ability/Extension_Lifecycle_Abilities.php:140
+msgid "Plugin install failed."
+msgstr ""
+
+#: includes/Ability/Extension_Lifecycle_Abilities.php:162
+msgid "Valid plugin file is required for update/delete."
+msgstr ""
+
+#: includes/Ability/Extension_Lifecycle_Abilities.php:166
+msgid "WP Pinch cannot delete itself via an ability."
+msgstr ""
+
+#: includes/Ability/Extension_Lifecycle_Abilities.php:177
+msgid "Plugin update failed."
+msgstr ""
+
+#: includes/Ability/Extension_Lifecycle_Abilities.php:188
+msgid "Plugin delete failed."
+msgstr ""
+
+#: includes/Ability/Extension_Lifecycle_Abilities.php:230
+msgid "You do not have permission for this theme action."
+msgstr ""
+
+#: includes/Ability/Extension_Lifecycle_Abilities.php:236
+msgid "slug is required for theme install."
+msgstr ""
+
+#: includes/Ability/Extension_Lifecycle_Abilities.php:246
+msgid "Could not fetch theme package details."
+msgstr ""
+
+#: includes/Ability/Extension_Lifecycle_Abilities.php:256
+msgid "Theme install failed."
+msgstr ""
+
+#: includes/Ability/Extension_Lifecycle_Abilities.php:278
+msgid "Valid stylesheet is required for update/delete."
+msgstr ""
+
+#: includes/Ability/Extension_Lifecycle_Abilities.php:282
+msgid "Cannot delete the active theme."
+msgstr ""
+
+#: includes/Ability/Extension_Lifecycle_Abilities.php:293
+msgid "Theme update failed."
+msgstr ""
+
+#: includes/Ability/Extension_Lifecycle_Abilities.php:301
+msgid "Theme delete failed."
 msgstr ""
 
 #: includes/Ability/GEO_SEO_Abilities.php:46
@@ -537,7 +738,7 @@ msgid "Post ID to analyze."
 msgstr ""
 
 #: includes/Ability/GEO_SEO_Abilities.php:187
-#: includes/class-abilities.php:408
+#: includes/class-abilities.php:446
 msgid "API is in read-only mode. Write operations are disabled."
 msgstr ""
 
@@ -711,6 +912,71 @@ msgstr ""
 
 #: includes/Ability/Media_Abilities.php:312
 msgid "Invalid base64 image data."
+msgstr ""
+
+#: includes/Ability/Media_Extended_Abilities.php:26
+msgid "Set Featured Image"
+msgstr ""
+
+#: includes/Ability/Media_Extended_Abilities.php:27
+msgid "Set or remove a post featured image."
+msgstr ""
+
+#: includes/Ability/Media_Extended_Abilities.php:63
+msgid "List Unused Media"
+msgstr ""
+
+#: includes/Ability/Media_Extended_Abilities.php:64
+msgid "List attachment items with no parent and no obvious references in post content."
+msgstr ""
+
+#: includes/Ability/Media_Extended_Abilities.php:100
+msgid "Regenerate Media Thumbnails"
+msgstr ""
+
+#: includes/Ability/Media_Extended_Abilities.php:101
+msgid "Regenerate image metadata and thumbnails for specific attachments."
+msgstr ""
+
+#: includes/Ability/Media_Extended_Abilities.php:153
+msgid "You do not have permission to upload files."
+msgstr ""
+
+#: includes/Ability/Media_Extended_Abilities.php:160
+msgid "Provide attachment_id, image_url, image_base64, or set remove=true."
+msgstr ""
+
+#: includes/Ability/Media_Extended_Abilities.php:171
+#: includes/Ability/Media_Extended_Abilities.php:289
+msgid "Attachment not found."
+msgstr ""
+
+#: includes/Ability/Media_Extended_Abilities.php:176
+msgid "Failed to set featured image."
+msgstr ""
+
+#: includes/Ability/Media_Extended_Abilities.php:275
+msgid "attachment_ids is required."
+msgstr ""
+
+#: includes/Ability/Media_Extended_Abilities.php:278
+msgid "Maximum 50 attachments per request."
+msgstr ""
+
+#: includes/Ability/Media_Extended_Abilities.php:297
+msgid "You do not have permission to edit this attachment."
+msgstr ""
+
+#: includes/Ability/Media_Extended_Abilities.php:307
+msgid "Attachment file path not found."
+msgstr ""
+
+#: includes/Ability/Media_Extended_Abilities.php:315
+msgid "Attachment file does not exist on disk."
+msgstr ""
+
+#: includes/Ability/Media_Extended_Abilities.php:333
+msgid "Failed to generate metadata."
 msgstr ""
 
 #: includes/Ability/Menu_Meta_Revisions_Abilities.php:42
@@ -1167,6 +1433,191 @@ msgstr ""
 msgid "Theme not found."
 msgstr ""
 
+#: includes/Ability/Site_Ops_Abilities.php:26
+msgid "Flush Cache"
+msgstr ""
+
+#: includes/Ability/Site_Ops_Abilities.php:27
+msgid "Flush the active WordPress object cache."
+msgstr ""
+
+#: includes/Ability/Site_Ops_Abilities.php:38
+msgid "Check Broken Links"
+msgstr ""
+
+#: includes/Ability/Site_Ops_Abilities.php:39
+msgid "Scan URLs in post content and report links with HTTP errors."
+msgstr ""
+
+#: includes/Ability/Site_Ops_Abilities.php:72
+msgid "Get PHP Error Log"
+msgstr ""
+
+#: includes/Ability/Site_Ops_Abilities.php:73
+msgid "Return a bounded tail of the PHP debug log."
+msgstr ""
+
+#: includes/Ability/Site_Ops_Abilities.php:95
+msgid "List Posts Missing Meta"
+msgstr ""
+
+#: includes/Ability/Site_Ops_Abilities.php:96
+msgid "Find posts missing excerpts, featured images, or with long titles."
+msgstr ""
+
+#: includes/Ability/Site_Ops_Abilities.php:143
+msgid "List Custom Post Types"
+msgstr ""
+
+#: includes/Ability/Site_Ops_Abilities.php:144
+msgid "List available post types and capabilities for content discovery."
+msgstr ""
+
+#: includes/Ability/Site_Ops_Abilities.php:207
+msgid "You do not have permission to scan this post."
+msgstr ""
+
+#: includes/Ability/Site_Ops_Abilities.php:288
+msgid "WP_DEBUG_LOG is not enabled."
+msgstr ""
+
+#: includes/Ability/Site_Ops_Abilities.php:291
+msgid "Debug log is not readable."
+msgstr ""
+
+#: includes/Ability/System_Admin_Abilities.php:26
+msgid "Get Transient"
+msgstr ""
+
+#: includes/Ability/System_Admin_Abilities.php:27
+msgid "Read a transient value by key."
+msgstr ""
+
+#: includes/Ability/System_Admin_Abilities.php:43
+msgid "Set Transient"
+msgstr ""
+
+#: includes/Ability/System_Admin_Abilities.php:44
+msgid "Set a transient value with optional expiration."
+msgstr ""
+
+#: includes/Ability/System_Admin_Abilities.php:65
+msgid "Delete Transient"
+msgstr ""
+
+#: includes/Ability/System_Admin_Abilities.php:66
+msgid "Delete a transient by key."
+msgstr ""
+
+#: includes/Ability/System_Admin_Abilities.php:81
+msgid "List Rewrite Rules"
+msgstr ""
+
+#: includes/Ability/System_Admin_Abilities.php:82
+msgid "List currently registered rewrite rules."
+msgstr ""
+
+#: includes/Ability/System_Admin_Abilities.php:100
+msgid "Flush Rewrite Rules"
+msgstr ""
+
+#: includes/Ability/System_Admin_Abilities.php:101
+msgid "Flush permalink rewrite rules."
+msgstr ""
+
+#: includes/Ability/System_Admin_Abilities.php:119
+msgid "Maintenance Mode Status"
+msgstr ""
+
+#: includes/Ability/System_Admin_Abilities.php:120
+msgid "Check whether WordPress maintenance mode is active."
+msgstr ""
+
+#: includes/Ability/System_Admin_Abilities.php:130
+msgid "Set Maintenance Mode"
+msgstr ""
+
+#: includes/Ability/System_Admin_Abilities.php:131
+msgid "Enable or disable maintenance mode by writing the core maintenance marker file."
+msgstr ""
+
+#: includes/Ability/System_Admin_Abilities.php:151
+msgid "Search Replace DB Scoped"
+msgstr ""
+
+#: includes/Ability/System_Admin_Abilities.php:152
+msgid "Run a guarded search/replace over allowed database scopes with dry-run enabled by default."
+msgstr ""
+
+#: includes/Ability/System_Admin_Abilities.php:185
+msgid "List Language Packs"
+msgstr ""
+
+#: includes/Ability/System_Admin_Abilities.php:186
+msgid "List installed language packs and core translation metadata."
+msgstr ""
+
+#: includes/Ability/System_Admin_Abilities.php:204
+msgid "Install Language Pack"
+msgstr ""
+
+#: includes/Ability/System_Admin_Abilities.php:205
+msgid "Install a core language pack by locale."
+msgstr ""
+
+#: includes/Ability/System_Admin_Abilities.php:220
+msgid "Activate Language Pack"
+msgstr ""
+
+#: includes/Ability/System_Admin_Abilities.php:221
+msgid "Activate a locale as the site language."
+msgstr ""
+
+#: includes/Ability/System_Admin_Abilities.php:244
+#: includes/Ability/System_Admin_Abilities.php:274
+#: includes/Ability/System_Admin_Abilities.php:305
+msgid "Invalid transient key."
+msgstr ""
+
+#: includes/Ability/System_Admin_Abilities.php:411
+msgid "confirm=true is required to enable maintenance mode."
+msgstr ""
+
+#: includes/Ability/System_Admin_Abilities.php:419
+msgid "Failed to enable maintenance mode."
+msgstr ""
+
+#: includes/Ability/System_Admin_Abilities.php:424
+msgid "Failed to disable maintenance mode."
+msgstr ""
+
+#: includes/Ability/System_Admin_Abilities.php:460
+msgid "Search string must be at least 2 characters."
+msgstr ""
+
+#: includes/Ability/System_Admin_Abilities.php:463
+msgid "confirm=true is required when dry_run is false."
+msgstr ""
+
+#: includes/Ability/System_Admin_Abilities.php:468
+msgid "Invalid scope."
+msgstr ""
+
+#: includes/Ability/System_Admin_Abilities.php:588
+#: includes/Ability/System_Admin_Abilities.php:629
+msgid "Locale is required."
+msgstr ""
+
+#: includes/Ability/System_Admin_Abilities.php:592
+#: includes/Ability/System_Admin_Abilities.php:633
+msgid "Locale format is invalid."
+msgstr ""
+
+#: includes/Ability/System_Admin_Abilities.php:597
+#: includes/Ability/System_Admin_Abilities.php:637
+msgid "Locale is not available in core language packs."
+msgstr ""
+
 #: includes/Ability/User_Comment_Abilities.php:30
 msgid "List Users"
 msgstr ""
@@ -1209,11 +1660,14 @@ msgstr ""
 
 #: includes/Ability/User_Comment_Abilities.php:187
 #: includes/Ability/User_Comment_Abilities.php:209
+#: includes/Ability/User_Comment_Extended_Abilities.php:256
+#: includes/Ability/User_Comment_Extended_Abilities.php:305
 #: includes/class-ghost-writer.php:80
 msgid "User not found."
 msgstr ""
 
 #: includes/Ability/User_Comment_Abilities.php:214
+#: includes/Ability/User_Comment_Extended_Abilities.php:181
 msgid "Invalid role."
 msgstr ""
 
@@ -1242,6 +1696,8 @@ msgid "Cannot modify an administrator's role via abilities."
 msgstr ""
 
 #: includes/Ability/User_Comment_Abilities.php:332
+#: includes/Ability/User_Comment_Extended_Abilities.php:397
+#: includes/Ability/User_Comment_Extended_Abilities.php:449
 msgid "Comment not found."
 msgstr ""
 
@@ -1251,6 +1707,107 @@ msgstr ""
 
 #: includes/Ability/User_Comment_Abilities.php:349
 msgid "Failed to moderate comment."
+msgstr ""
+
+#: includes/Ability/User_Comment_Extended_Abilities.php:26
+msgid "Create User"
+msgstr ""
+
+#: includes/Ability/User_Comment_Extended_Abilities.php:27
+msgid "Create a new user with a safe role."
+msgstr ""
+
+#: includes/Ability/User_Comment_Extended_Abilities.php:49
+msgid "Delete User"
+msgstr ""
+
+#: includes/Ability/User_Comment_Extended_Abilities.php:50
+msgid "Delete a user account with explicit confirmation."
+msgstr ""
+
+#: includes/Ability/User_Comment_Extended_Abilities.php:73
+msgid "Reset User Password"
+msgstr ""
+
+#: includes/Ability/User_Comment_Extended_Abilities.php:74
+msgid "Reset a user password, optionally returning the generated value."
+msgstr ""
+
+#: includes/Ability/User_Comment_Extended_Abilities.php:94
+msgid "Create Comment"
+msgstr ""
+
+#: includes/Ability/User_Comment_Extended_Abilities.php:95
+msgid "Create a comment on a post."
+msgstr ""
+
+#: includes/Ability/User_Comment_Extended_Abilities.php:120
+msgid "Update Comment"
+msgstr ""
+
+#: includes/Ability/User_Comment_Extended_Abilities.php:121
+msgid "Update comment content, author fields, or moderation status."
+msgstr ""
+
+#: includes/Ability/User_Comment_Extended_Abilities.php:144
+msgid "Delete Comment"
+msgstr ""
+
+#: includes/Ability/User_Comment_Extended_Abilities.php:145
+msgid "Delete or trash a comment."
+msgstr ""
+
+#: includes/Ability/User_Comment_Extended_Abilities.php:175
+msgid "Valid login and email are required."
+msgstr ""
+
+#: includes/Ability/User_Comment_Extended_Abilities.php:178
+msgid "User login or email already exists."
+msgstr ""
+
+#: includes/Ability/User_Comment_Extended_Abilities.php:184
+msgid "Administrator role cannot be assigned via this ability."
+msgstr ""
+
+#: includes/Ability/User_Comment_Extended_Abilities.php:191
+msgid "Role has administrative capabilities and cannot be assigned via this ability."
+msgstr ""
+
+#: includes/Ability/User_Comment_Extended_Abilities.php:248
+msgid "confirm=true is required."
+msgstr ""
+
+#: includes/Ability/User_Comment_Extended_Abilities.php:251
+msgid "Cannot delete your own account via ability."
+msgstr ""
+
+#: includes/Ability/User_Comment_Extended_Abilities.php:259
+msgid "Cannot delete an administrator via ability."
+msgstr ""
+
+#: includes/Ability/User_Comment_Extended_Abilities.php:263
+msgid "Cannot delete a user with administrative capabilities via this ability."
+msgstr ""
+
+#: includes/Ability/User_Comment_Extended_Abilities.php:268
+msgid "reassign user not found."
+msgstr ""
+
+#: includes/Ability/User_Comment_Extended_Abilities.php:273
+msgid "Failed to delete user."
+msgstr ""
+
+#: includes/Ability/User_Comment_Extended_Abilities.php:347
+msgid "Valid post_id and content are required."
+msgstr ""
+
+#: includes/Ability/User_Comment_Extended_Abilities.php:368
+#: includes/Ability/User_Comment_Extended_Abilities.php:421
+msgid "Invalid comment status."
+msgstr ""
+
+#: includes/Ability/User_Comment_Extended_Abilities.php:454
+msgid "Failed to delete comment."
 msgstr ""
 
 #: includes/Ability/Woo_Abilities.php:30
@@ -1342,13 +1899,21 @@ msgstr ""
 msgid "Reject"
 msgstr ""
 
-#: includes/class-approval-queue.php:218
-#: includes/class-approval-queue.php:271
+#: includes/class-approval-queue.php:221
+msgid "Approval item not found or already processed."
+msgstr ""
+
+#: includes/class-approval-queue.php:230
+msgid "Abilities API is not available."
+msgstr ""
+
+#: includes/class-approval-queue.php:288
+#: includes/class-approval-queue.php:313
 msgid "Invalid request."
 msgstr ""
 
-#: includes/class-approval-queue.php:223
-#: includes/class-approval-queue.php:276
+#: includes/class-approval-queue.php:293
+#: includes/class-approval-queue.php:318
 #: includes/class-settings.php:657
 #: includes/class-settings.php:717
 msgid "Permission denied."
@@ -1632,10 +2197,6 @@ msgstr ""
 msgid "Cron (advanced)"
 msgstr ""
 
-#: includes/class-openclaw-role.php:188
-msgid "OpenClaw Agent"
-msgstr ""
-
 #: includes/class-openclaw-role.php:223
 msgid "User \"openclaw-agent\" already exists. Assign the OpenClaw Agent role to that user in Users → All Users."
 msgstr ""
@@ -1644,56 +2205,60 @@ msgstr ""
 msgid "Failed to create user."
 msgstr ""
 
-#: includes/class-plugin.php:241
-msgid "WordPress Abilities API (requires WordPress 6.9+)"
+#: includes/class-openclaw-role.php:279
+msgid "OpenClaw Agent"
 msgstr ""
 
-#: includes/class-plugin.php:253
-#: includes/class-plugin.php:469
-#: includes/class-plugin.php:516
-#: includes/class-plugin.php:556
+#: includes/class-plugin.php:254
+#: includes/class-plugin.php:477
+#: includes/class-plugin.php:524
+#: includes/class-plugin.php:564
 #: includes/class-rest-availability.php:115
 msgid "WP Pinch:"
 msgstr ""
 
-#: includes/class-plugin.php:254
+#: includes/class-plugin.php:255
 msgid "The following dependencies are missing:"
 msgstr ""
 
-#: includes/class-plugin.php:470
+#: includes/class-plugin.php:260
+msgid "WordPress Abilities API (requires WordPress 6.9+)"
+msgstr ""
+
+#: includes/class-plugin.php:478
 msgid "The gateway URL and API token aren't configured yet. No claws, no pinch — chat, webhooks, and governance won't work until you connect."
 msgstr ""
 
-#: includes/class-plugin.php:472
+#: includes/class-plugin.php:480
 msgid "Let's get pinching &rarr;"
 msgstr ""
 
-#: includes/class-plugin.php:517
+#: includes/class-plugin.php:525
 msgid "Governance schedules, webhook retries, and audit log cleanup require the Action Scheduler plugin. Install it from WooCommerce or"
 msgstr ""
 
-#: includes/class-plugin.php:519
+#: includes/class-plugin.php:527
 msgid "standalone"
 msgstr ""
 
-#: includes/class-plugin.php:524
+#: includes/class-plugin.php:532
 #: includes/class-rest-availability.php:124
 msgid "Dismiss"
 msgstr ""
 
 #. translators: 1: seconds until retry, 2: URL to features tab
-#: includes/class-plugin.php:562
+#: includes/class-plugin.php:570
 #, php-format
 msgid "Claws are up — the AI gateway is unreachable. Chat requests are failing fast to protect your site. We'll probe again in %1$d seconds. %2$s"
 msgstr ""
 
-#: includes/class-plugin.php:567
-#: includes/class-plugin.php:577
+#: includes/class-plugin.php:575
+#: includes/class-plugin.php:585
 msgid "View status &rarr;"
 msgstr ""
 
 #. translators: %s: URL to features tab
-#: includes/class-plugin.php:573
+#: includes/class-plugin.php:581
 #, php-format
 msgid "We're poking a claw out to test the waters. The next request will tell us if the gateway has recovered. %s"
 msgstr ""
@@ -2738,7 +3303,7 @@ msgstr ""
 
 #: includes/Settings/Tabs/Connection_Tab.php:121
 #: build/blocks/pinch-chat/index.js:1
-#: src/blocks/pinch-chat/edit.js:81
+#: src/blocks/pinch-chat/edit.js:80
 msgid "Agent ID"
 msgstr ""
 
@@ -2889,7 +3454,7 @@ msgstr ""
 
 #: includes/Settings/Tabs/Connection_Tab.php:298
 #: build/blocks/pinch-chat/index.js:1
-#: src/blocks/pinch-chat/edit.js:47
+#: src/blocks/pinch-chat/edit.js:42
 msgid "Chat Settings"
 msgstr ""
 
@@ -3490,53 +4055,58 @@ msgstr ""
 msgid "Enter the warren"
 msgstr ""
 
-#: wp-pinch.php:165
+#: wp-pinch.php:171
 msgid "Important:"
 msgstr ""
 
 #. translators: %s: new version number
-#: wp-pinch.php:169
+#: wp-pinch.php:175
 #, php-format
 msgid "WP Pinch %s is a major release with breaking changes. Please review the changelog and back up your site before updating."
 msgstr ""
 
 #: build/blocks/pinch-chat/index.js:1
-#: src/blocks/pinch-chat/edit.js:49
+#: src/blocks/pinch-chat/edit.js:44
 msgid "Placeholder text"
 msgstr ""
 
 #: build/blocks/pinch-chat/index.js:1
-#: src/blocks/pinch-chat/edit.js:56
+#: src/blocks/pinch-chat/edit.js:51
 msgid "Show header"
 msgstr ""
 
 #: build/blocks/pinch-chat/index.js:1
-#: src/blocks/pinch-chat/edit.js:63
+#: src/blocks/pinch-chat/edit.js:58
 msgid "Max height"
 msgstr ""
 
 #: build/blocks/pinch-chat/index.js:1
-#: src/blocks/pinch-chat/edit.js:70
+#: src/blocks/pinch-chat/edit.js:60
+msgid "Any valid CSS size, e.g. 400px, 50vh, or 30rem."
+msgstr ""
+
+#: build/blocks/pinch-chat/index.js:1
+#: src/blocks/pinch-chat/edit.js:69
 msgid "Public mode"
 msgstr ""
 
 #: build/blocks/pinch-chat/index.js:1
-#: src/blocks/pinch-chat/edit.js:71
+#: src/blocks/pinch-chat/edit.js:70
 msgid "Allow visitors who are not logged in to use the chat."
 msgstr ""
 
 #: build/blocks/pinch-chat/index.js:1
-#: src/blocks/pinch-chat/edit.js:82
+#: src/blocks/pinch-chat/edit.js:81
 msgid "Override the global agent for this block. Leave empty to use the default."
 msgstr ""
 
 #: build/blocks/pinch-chat/index.js:1
-#: src/blocks/pinch-chat/edit.js:109
+#: src/blocks/pinch-chat/edit.js:108
 msgid "Chat preview — pinch in a message and it will appear here on the frontend."
 msgstr ""
 
 #: build/blocks/pinch-chat/index.js:1
-#: src/blocks/pinch-chat/edit.js:126
+#: src/blocks/pinch-chat/edit.js:125
 msgid "Send"
 msgstr ""
 

@@ -4,12 +4,7 @@
 
 import { __ } from '@wordpress/i18n';
 import { useBlockProps, InspectorControls } from '@wordpress/block-editor';
-import {
-	PanelBody,
-	TextControl,
-	ToggleControl,
-	UnitControl,
-} from '@wordpress/components';
+import { PanelBody, TextControl, ToggleControl } from '@wordpress/components';
 import { useEffect } from '@wordpress/element';
 
 import './editor.css';
@@ -59,9 +54,13 @@ export default function Edit( { attributes, setAttributes } ) {
 							setAttributes( { showHeader: val } )
 						}
 					/>
-					<UnitControl
+					<TextControl
 						label={ __( 'Max height', 'wp-pinch' ) }
 						value={ maxHeight }
+						help={ __(
+							'Any valid CSS size, e.g. 400px, 50vh, or 30rem.',
+							'wp-pinch'
+						) }
 						onChange={ ( val ) =>
 							setAttributes( { maxHeight: val } )
 						}

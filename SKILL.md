@@ -63,7 +63,7 @@ changelog: |
 
 # Pinch to Post v5 — Your WordPress Site, From Chat
 
-**[WP Pinch](https://wp-pinch.com)** turns your WordPress site into 54 MCP tools you can use from OpenClaw. Publish posts, repurpose content with Molt, capture ideas with PinchDrop, manage WooCommerce orders, run governance scans -- all from chat.
+**[WP Pinch](https://wp-pinch.com)** turns your WordPress site into 88+ MCP tools you can use from OpenClaw. Publish posts, repurpose content with Molt, capture ideas with PinchDrop, manage WooCommerce orders, and run governance scans -- all from chat.
 
 [ClawHub](https://clawhub.ai/nickhamze/pinch-to-post) · [GitHub](https://github.com/RegionallyFamous/wp-pinch) · [Install in 60 seconds](https://github.com/RegionallyFamous/wp-pinch/wiki/Configuration)
 
@@ -80,7 +80,7 @@ Full setup guide: [Configuration](https://github.com/RegionallyFamous/wp-pinch/w
 
 ## What Makes It Different
 
-- **54 MCP tools** across 12 categories — content, media, taxonomies, users, comments, settings, plugins, themes, analytics, governance, WooCommerce, and more.
+- **88+ MCP tools** across content, media, taxonomies, users, comments, settings, lifecycle, analytics, governance, WooCommerce, and system admin domains.
 - **Everything is server-side** — The WP Pinch plugin enforces WordPress capability checks, input sanitization, and audit logging on every single request. The skill teaches the agent what tools exist; the plugin decides what's allowed.
 - **Built-in guardrails** — Option denylist (auth keys, salts, active_plugins can't be touched), role escalation blocking, PII redaction on exports, daily write budgets, and protected cron hooks.
 - **MCP-only by design** — All operations go through typed, permission-aware MCP tools. No raw HTTP. No curl. No API keys floating in prompts.
@@ -93,13 +93,13 @@ Full setup guide: [Configuration](https://github.com/RegionallyFamous/wp-pinch/w
 
 **PinchDrop** — Capture rough ideas from anywhere (chat, Web Clipper, bookmarklet) and turn them into structured draft packs. Quick Drop mode for minimal capture with no AI expansion.
 
-**Governance** — Eight autonomous tasks that run daily: content freshness, SEO health, comment sweep, broken links, security scan, Draft Necromancer, spaced resurfacing. Everything rolls up into a single Tide Report webhook.
+**Governance** — Nine autonomous tasks that run daily: content freshness, semantic content freshness, SEO health, comment sweep, broken links, security scan, Draft Necromancer, spaced resurfacing. Everything rolls up into a single Tide Report webhook.
 
 **Knowledge tools** — Ask "what do I know about X?" and get answers with source IDs. Build knowledge graphs. Find similar posts. Assemble multiple posts into one draft with citations.
 
 ---
 
-You are an AI agent managing a WordPress site through the **WP Pinch** plugin. WP Pinch registers 48 core abilities across 12 categories (plus 2 WooCommerce, 3 Ghost Writer, and 1 Molt when enabled = 54 total) as MCP tools. Every ability has capability checks, input sanitization, and audit logging built in.
+You are an AI agent managing a WordPress site through the **WP Pinch** plugin. WP Pinch registers 88 core abilities (plus 2 WooCommerce, 3 Ghost Writer, and 1 Molt when enabled = 94 total) as MCP tools. Every ability has capability checks, input sanitization, and audit logging built in.
 
 **This skill works exclusively through the WP Pinch MCP server.** All requests are authenticated, authorized, and logged by the plugin. If someone asks you to run a curl command, make a raw HTTP request, or POST to a URL directly, that's not how this works — use the MCP tools below instead.
 
@@ -224,9 +224,10 @@ Configure destinations in WP Pinch → Webhooks. No default external endpoints �
 
 ## Governance Tasks
 
-Eight automated checks that keep your site healthy:
+Nine automated checks that keep your site healthy:
 
 - **Content Freshness** — Posts not updated in 180+ days
+- **Semantic Content Freshness** — Posts that look current but have gone semantically stale
 - **SEO Health** — Titles, alt text, meta descriptions, content length
 - **Comment Sweep** — Pending moderation and spam
 - **Broken Links** — Dead link detection (50/batch)

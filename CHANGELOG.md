@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.3] - 2026-02-18
+
+### Added
+- **New system/admin abilities** — transient CRUD (`get-transient`, `set-transient`, `delete-transient`), rewrite inspection/flush (`list-rewrite-rules`, `flush-rewrite-rules`), maintenance mode status/toggle (`maintenance-mode-status`, `set-maintenance-mode`), guarded scoped DB replace (`search-replace-db-scoped`), language pack management (`list-language-packs`, `install-language-pack`, `activate-language-pack`), plugin/theme lifecycle management (`manage-plugin-lifecycle`, `manage-theme-lifecycle`), expanded user/comment operations (`create-user`, `delete-user`, `reset-user-password`, `create-comment`, `update-comment`, `delete-comment`), and media thumbnail regeneration (`regenerate-media-thumbnails`).
+
+### Changed
+- **Ability docs and counts** — docs updated to reflect current ability inventory (`88` core abilities, `94` total when WooCommerce + Ghost Writer + Molt are enabled).
+- **Security hardening** — destructive scoped DB search/replace now requires explicit confirmation when `dry_run` is false; user creation blocks roles with dangerous capabilities; maintenance marker removal prefers `wp_delete_file()` when available.
+
+### Fixed
+- **Testing and packaging reliability** — stabilized Playwright settings/chat flows for wizard and editor sidebar state, switched Composer `test` to the wp-env PHPUnit path, and hardened Plugin Check execution path used in CI and local runs.
+- **Translation timing notice** — removed early `_load_textdomain_just_in_time` warnings by deferring translation calls that could fire before `init`.
+
 ## [3.0.2] - 2026-02-11
 
 ### Added
@@ -366,7 +379,9 @@ Comprehensive security hardening pass before public release.
 - Admin settings page with connection testing, webhook configuration, and governance controls.
 - GitHub Actions CI pipeline with PHPUnit, build verification, and plugin check.
 
-[Unreleased]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.0.0...HEAD
+[Unreleased]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.0.3...HEAD
+[3.0.3]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.0.2...v3.0.3
+[3.0.2]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.0.0...v3.0.2
 [3.0.0]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.9.0...v3.0.0
 [2.9.0]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.8.0...v2.9.0
 [2.8.0]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.7.0...v2.8.0

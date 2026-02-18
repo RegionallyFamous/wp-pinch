@@ -54,6 +54,12 @@ Tear down now cleans `wp_pinch_api_disabled` and `wp_pinch_read_only_mode`.
 - `test_get_option_denylist_home` — `home` is blocked
 - `test_update_option_denylist_siteurl` — `siteurl` cannot be updated via ability
 
+### `tests/test-cli.php`
+
+**WP-CLI command structure:**
+
+- CLI bootstrap class exists and has `register`; all 11 command classes in `includes/CLI/` exist and have static `register()` and `run( $args, $assoc_args )` with correct signatures. Uses a WP-CLI stub (`tests/includes/wp-cli-stub.php`) when not running inside WP-CLI so the bootstrap can load.
+
 ### `tests/test-utils.php`
 
 **Token masking edge cases:**
@@ -96,7 +102,7 @@ bin/install-wp-tests.sh wordpress_test root '' localhost latest
 
 ## Recommendations
 
-1. **E2E tests** — Consider Playwright tests for critical flows (wizard, chat block, settings save).
-2. **Integration tests** — Test full MCP tool invocation with read-only/kill switch if the Abilities API is available.
-3. **PHPStan** — Keep running `composer phpstan` to catch type and logic issues.
-4. **CI** — Run PHPUnit in CI with a MySQL service; ensure `WP_TESTS_DIR` is set.
+1. **E2E coverage depth** — Keep expanding Playwright scenarios beyond happy paths (timeouts, denied permissions, and recovery UX).
+2. **Integration tests** — Add more full-path MCP invocation tests (especially read-only/kill-switch/circuit-breaker combinations).
+3. **PHPStan and PHPCS discipline** — Keep running `composer phpstan`, `composer lint`, and `composer lint:tests` on every PR.
+4. **CI parity locally** — Use the same commands as CI: `composer test` (wp-env), `npm run test:e2e`, and `npm run test:plugin-check`.

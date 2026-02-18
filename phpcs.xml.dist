@@ -171,6 +171,8 @@
 	<exclude-pattern>/dist/*</exclude-pattern>
 	<!-- WordPress test bootstrap uses unprefixed globals by convention -->
 	<exclude-pattern>*/tests/bootstrap.php</exclude-pattern>
+	<!-- WP-CLI stub for tests (non-prefixed class/constant intentional) -->
+	<exclude-pattern>*/tests/includes/*</exclude-pattern>
 
 	<!-- Tests assert API keys (e.g. lowercase "wordpress") and response structure -->
 	<rule ref="WordPress.WP.CapitalPDangit.MisspelledInText">

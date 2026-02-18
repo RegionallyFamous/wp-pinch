@@ -10,7 +10,7 @@ This doc frames what you already have, what "value" means here, and what to do n
 
 | Layer | What it is | Examples |
 |-------|------------|----------|
-| **Integration** | Plumbing so an assistant can talk to WordPress | MCP server, 38+ abilities, webhooks, Pinch Chat block, REST capture endpoint |
+| **Integration** | Plumbing so an assistant can talk to WordPress | MCP server, 88+ abilities, webhooks, Pinch Chat block, REST capture endpoint |
 | **Value tools** | Features that do a specific job using that plumbing | PinchDrop (idea → draft pack), Molt (post → nine formats), Ghost Writer (voice + abandoned drafts), What do I know (query content), governance + Tide Report, Web Clipper |
 
 The value tools are why someone chooses WP Pinch instead of "any MCP server." They're the answer to "what can I do with it?"

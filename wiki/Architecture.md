@@ -10,7 +10,7 @@ How the lobster trap is wired. WP Pinch sits inside WordPress and talks to OpenC
 │                                                           │
 │  ┌─────────────┐  ┌──────────────┐  ┌────────────────┐  │
 │  │  Abilities   │  │  MCP Server  │  │   Governance   │  │
-│  │  (38+ tools)  │──│  (endpoint)  │  │   (8 tasks)    │  │
+│  │  (88+ tools) │──│  (endpoint)  │  │   (9 tasks)    │  │
 │  └──────┬───────┘  └──────┬───────┘  └───────┬────────┘  │
 │         │                 │                   │           │
 │  ┌──────┴─────────────────┴───────────────────┴────────┐ │
@@ -45,7 +45,7 @@ How the lobster trap is wired. WP Pinch sits inside WordPress and talks to OpenC
 
 ### Abilities Engine (`class-abilities.php`)
 
-The core of WP Pinch. Registers 38 WordPress abilities (plus WooCommerce abilities when available) and exposes them through both the MCP server and the incoming webhook receiver. Each ability is a self-contained function with:
+The core of WP Pinch. Registers 88 core WordPress abilities (plus WooCommerce/feature-flagged abilities when available) and exposes them through both the MCP server and the incoming webhook receiver. Each ability is a self-contained function with:
 
 - A capability requirement (e.g., `edit_posts`)
 - Input parameter definitions with sanitization rules
@@ -78,11 +78,12 @@ The `/hooks/receive` endpoint lets OpenClaw push ability execution requests back
 
 ### Governance Engine
 
-Eight recurring background tasks run via Action Scheduler (even lobsters pace themselves):
+Nine recurring background tasks run via Action Scheduler (even lobsters pace themselves):
 
 | Task | What It Catches |
 |---|---|
 | **Content Freshness** | Posts that haven't been updated in ages |
+| **Semantic Content Freshness** | Older posts that may look "fresh enough" but read stale semantically |
 | **SEO Health** | Missing meta descriptions, short titles, images without alt text |
 | **Comment Sweep** | Spam, orphaned comments, and other bottom-feeders |
 | **Broken Link Detection** | Dead links lurking in your content |

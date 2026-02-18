@@ -210,33 +210,24 @@ class Approval_Queue {
 	}
 
 	/**
-	 * AJAX: approve and execute a queued ability.
+	 * Approve and execute a queued ability (used by AJAX and WP-CLI).
+	 *
+	 * @param string $item_id Queue item ID.
+	 * @return true|\WP_Error True on success, WP_Error on failure.
 	 */
-	public static function ajax_approve(): void {
-		$id = isset( $_GET['id'] ) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : '';
-		if ( '' === $id ) {
-			wp_die( esc_html__( 'Invalid request.', 'wp-pinch' ), 400 );
-		}
-		check_ajax_referer( 'wp_pinch_approve_' . $id, '_wpnonce' );
-
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'Permission denied.', 'wp-pinch' ), 403 );
-		}
-
-		$item = self::get_item( $id );
+	public static function approve_item( string $item_id ): \WP_Error|true {
+		$item = self::get_item( $item_id );
 		if ( ! $item ) {
-			wp_safe_redirect( admin_url( 'admin.php?page=wp-pinch-approvals&approved=expired' ) );
-			exit;
+			return new \WP_Error( 'not_found', __( 'Approval item not found or already processed.', 'wp-pinch' ) );
 		}
 
 		$ability = $item['ability'] ?? '';
 		$params  = $item['params'] ?? array();
 
-		self::remove( $id );
+		self::remove( $item_id );
 
 		if ( ! function_exists( 'wp_execute_ability' ) ) {
-			wp_safe_redirect( admin_url( 'admin.php?page=wp-pinch-approvals&approved=error' ) );
-			exit;
+			return new \WP_Error( 'no_ability_api', __( 'Abilities API is not available.', 'wp-pinch' ) );
 		}
 
 		$previous_user  = get_current_user_id();
@@ -250,15 +241,66 @@ class Approval_Queue {
 		Audit_Table::insert(
 			'ability_approved',
 			'approval_queue',
-			sprintf( 'Approved and executed ability "%s" (queue id: %s).', $ability, $id ),
+			sprintf( 'Approved and executed ability "%s" (queue id: %s).', $ability, $item_id ),
 			array(
 				'ability'  => $ability,
-				'queue_id' => $id,
+				'queue_id' => $item_id,
 			)
 		);
 
-		$status = is_wp_error( $result ) ? 'error' : 'ok';
-		wp_safe_redirect( admin_url( 'admin.php?page=wp-pinch-approvals&approved=' . $status ) );
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+		return true;
+	}
+
+	/**
+	 * Reject a queued ability (used by AJAX and WP-CLI).
+	 *
+	 * @param string $item_id Queue item ID.
+	 * @return bool True if item was found and rejected.
+	 */
+	public static function reject_item( string $item_id ): bool {
+		$item = self::get_item( $item_id );
+		if ( ! $item ) {
+			return false;
+		}
+
+		self::remove( $item_id );
+		Audit_Table::insert(
+			'ability_rejected',
+			'approval_queue',
+			sprintf( 'Rejected ability "%s" (queue id: %s).', $item['ability'] ?? '', $item_id ),
+			array(
+				'ability'  => $item['ability'] ?? '',
+				'queue_id' => $item_id,
+			)
+		);
+		return true;
+	}
+
+	/**
+	 * AJAX: approve and execute a queued ability.
+	 */
+	public static function ajax_approve(): void {
+		$id = isset( $_GET['id'] ) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : '';
+		if ( '' === $id ) {
+			wp_die( esc_html__( 'Invalid request.', 'wp-pinch' ), 400 );
+		}
+		check_ajax_referer( 'wp_pinch_approve_' . $id, '_wpnonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Permission denied.', 'wp-pinch' ), 403 );
+		}
+
+		$result = self::approve_item( $id );
+		if ( true === $result ) {
+			wp_safe_redirect( admin_url( 'admin.php?page=wp-pinch-approvals&approved=ok' ) );
+			exit;
+		}
+		// $result is WP_Error when not true.
+		$code = $result->get_error_code();
+		wp_safe_redirect( admin_url( 'admin.php?page=wp-pinch-approvals&approved=' . ( 'not_found' === $code ? 'expired' : 'error' ) ) );
 		exit;
 	}
 
@@ -276,20 +318,7 @@ class Approval_Queue {
 			wp_die( esc_html__( 'Permission denied.', 'wp-pinch' ), 403 );
 		}
 
-		$item = self::get_item( $id );
-		if ( $item ) {
-			self::remove( $id );
-			Audit_Table::insert(
-				'ability_rejected',
-				'approval_queue',
-				sprintf( 'Rejected ability "%s" (queue id: %s).', $item['ability'] ?? '', $id ),
-				array(
-					'ability'  => $item['ability'] ?? '',
-					'queue_id' => $id,
-				)
-			);
-		}
-
+		self::reject_item( $id );
 		wp_safe_redirect( admin_url( 'admin.php?page=wp-pinch-approvals&rejected=1' ) );
 		exit;
 	}

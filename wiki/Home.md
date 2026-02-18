@@ -2,7 +2,7 @@
 
 **WordPress in your pocket. Your AI assistant runs it from the chat you never leave.**
 
-One plugin. Connect [OpenClaw](https://github.com/openclaw/openclaw) (or any MCP client); your site is in the same chat — 48 core abilities (plus 2 WooCommerce, plus Ghost Writer and Molt when feature flags enabled = 54 total), Molt, PinchDrop, What do I know, daily Tide Report (8 governance tasks), Pinch Chat block, webhooks. Self-hosted. Your data.
+One plugin. Connect [OpenClaw](https://github.com/openclaw/openclaw) (or any MCP client); your site is in the same chat — 88 core abilities (plus 2 WooCommerce, plus Ghost Writer and Molt when feature flags enabled = 94 total), Molt, PinchDrop, What do I know, daily Tide Report (9 governance tasks), Pinch Chat block, webhooks. Self-hosted. Your data.
 
 **One line:** Your site isn't another tab — it's in the same chat. You talk; your assistant has the keys. [Install & connect →](Configuration)
 
@@ -16,7 +16,7 @@ This wiki goes deeper than the README—start with [Configuration](Configuration
 - **Real actions, not just "access."** Publish, Molt (one post → nine formats), PinchDrop (idea → draft pack), Ghost Writer (finish drafts in your voice), What do I know (query your content), governance (stale, SEO, comments, Tide Report). [Abilities Reference](Abilities-Reference)
 - **Capture anywhere.** PinchDrop from any channel; Web Clipper from the browser (token-protected). Ideas land in WordPress without opening the admin.
 - **Your site can chat.** Pinch Chat block: visitors talk to an AI that knows your content. Streaming, slash commands, optional public mode.
-- **Governance on autopilot.** Stale posts, SEO gaps, comments, broken links, abandoned drafts — Tide Report bundles one daily summary to your channel.
+- **Governance on autopilot.** Stale posts, semantic freshness, SEO gaps, comments, broken links, abandoned drafts — Tide Report bundles one daily summary to your channel.
 
 **Who it's for:** Solo creators, small teams, anyone who talks to an AI in chat and wants their WordPress site *there* — not in another app.
 

@@ -238,7 +238,8 @@ final class Plugin {
 	private function check_dependencies(): void {
 		if ( ! function_exists( 'wp_register_ability' ) ) {
 			$this->dependencies_met = false;
-			$this->missing[]        = __( 'WordPress Abilities API (requires WordPress 6.9+)', 'wp-pinch' );
+			// Store a stable dependency key here; translate later in admin_notices.
+			$this->missing[] = 'abilities_api';
 		}
 
 		// MCP Adapter is recommended but not hard-required — abilities still work without it.
@@ -253,8 +254,15 @@ final class Plugin {
 		echo '<strong>' . esc_html__( 'WP Pinch:', 'wp-pinch' ) . '</strong> ';
 		echo esc_html__( 'The following dependencies are missing:', 'wp-pinch' );
 		echo '<ul style="list-style:disc;margin-left:1.5em;">';
-		foreach ( $this->missing as $msg ) {
-			echo '<li>' . esc_html( $msg ) . '</li>';
+		foreach ( $this->missing as $missing_key ) {
+			$message = '';
+			if ( 'abilities_api' === $missing_key ) {
+				$message = __( 'WordPress Abilities API (requires WordPress 6.9+)', 'wp-pinch' );
+			}
+			if ( '' === $message ) {
+				$message = (string) $missing_key;
+			}
+			echo '<li>' . esc_html( $message ) . '</li>';
 		}
 		echo '</ul></p></div>';
 	}
