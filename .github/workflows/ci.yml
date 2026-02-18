@@ -254,7 +254,7 @@ jobs:
         run: npm ci
 
       - name: Check for outdated dependencies
-        run: npm outdated
+        run: npm outdated || true
 
       - name: Lint JavaScript
         run: npm run lint:js

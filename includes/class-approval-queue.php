@@ -213,9 +213,9 @@ class Approval_Queue {
 	 * Approve and execute a queued ability (used by AJAX and WP-CLI).
 	 *
 	 * @param string $item_id Queue item ID.
-	 * @return true|\WP_Error True on success, WP_Error on failure.
+	 * @return bool|\WP_Error True on success, WP_Error on failure.
 	 */
-	public static function approve_item( string $item_id ): \WP_Error|true {
+	public static function approve_item( string $item_id ): \WP_Error|bool {
 		$item = self::get_item( $item_id );
 		if ( ! $item ) {
 			return new \WP_Error( 'not_found', __( 'Approval item not found or already processed.', 'wp-pinch' ) );
