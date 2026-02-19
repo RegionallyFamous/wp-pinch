@@ -55,7 +55,7 @@ The core of WP Pinch. Registers 88 core WordPress abilities (plus WooCommerce/fe
 
 ### MCP Server
 
-Registers a `wp-pinch` MCP endpoint at `/wp-json/wp-pinch/v1/mcp`. This is the primary interface for MCP-compatible AI clients (including OpenClaw). Only abilities that are enabled via the admin UI and pass through the `wp_pinch_abilities` filter are discoverable.
+Registers a `wp-pinch` MCP endpoint at `/wp-json/wp-pinch/mcp`. This is the primary interface for MCP-compatible AI clients (including OpenClaw). Only abilities that are enabled via the admin UI and pass through the `wp_pinch_abilities` filter are discoverable.
 
 ### Webhook Dispatcher (`class-webhook-dispatcher.php`)
 
@@ -157,4 +157,4 @@ Endpoints:
 | `/wp-pinch/v1/health` | GET | None | Public health check |
 | `/wp-pinch/v1/abilities` | GET | `edit_posts` | List abilities (name, title, description, input_schema) for discovery |
 | `/wp-pinch/v1/hooks/receive` | POST | HMAC | Incoming webhook receiver (execute_ability, execute_batch, run_governance, ping) |
-| `/wp-pinch/v1/mcp` | Varies | MCP | MCP server endpoint |
+| `/wp-pinch/mcp` | Varies | MCP | MCP server endpoint |

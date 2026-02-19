@@ -71,7 +71,7 @@ changelog: |
 
 1. **Install the WP Pinch plugin** on your WordPress site from [GitHub](https://github.com/RegionallyFamous/wp-pinch) or [wp-pinch.com](https://wp-pinch.com).
 2. **Set `WP_SITE_URL`** in your OpenClaw environment (e.g. `https://mysite.com`). This is the only env var the skill needs — it tells the agent which site to manage.
-3. **Configure your MCP server** with the endpoint `{WP_SITE_URL}/wp-json/wp-pinch/v1/mcp` and a WordPress Application Password. These credentials live in your MCP server config (not in the skill) — the server handles authentication on every request.
+3. **Configure your MCP server** with the endpoint `{WP_SITE_URL}/wp-json/wp-pinch/mcp` and a WordPress Application Password. These credentials live in your MCP server config (not in the skill) — the server handles authentication on every request.
 4. **Start chatting** — say "list my recent posts" or "create a draft about..."
 
 The plugin handles permissions and audit logging on every request.
@@ -289,7 +289,7 @@ For the full security model: [Security wiki](https://github.com/RegionallyFamous
 
 **MCP server config** (separate from skill env vars):
 
-Configure your MCP server with the endpoint `{WP_SITE_URL}/wp-json/wp-pinch/v1/mcp` and a WordPress Application Password. The Application Password is stored in the MCP server config (e.g. `openclaw.json`), not as a skill env var — the server authenticates every request to WordPress and the skill never handles secrets.
+Configure your MCP server with the endpoint `{WP_SITE_URL}/wp-json/wp-pinch/mcp` and a WordPress Application Password. The Application Password is stored in the MCP server config (e.g. `openclaw.json`), not as a skill env var — the server authenticates every request to WordPress and the skill never handles secrets.
 
 For multiple sites, use different OpenClaw workspaces or env configs.
 

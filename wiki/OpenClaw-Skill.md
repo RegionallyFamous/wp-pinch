@@ -18,7 +18,7 @@ Or copy the SKILL.md into your OpenClaw workspace skills (e.g. `~/.openclaw/work
 
 1. **Install the WP Pinch plugin** from [GitHub](https://github.com/RegionallyFamous/wp-pinch) or [wp-pinch.com](https://wp-pinch.com).
 2. **Set `WP_SITE_URL`** in your OpenClaw environment (e.g. `https://mysite.com`).
-3. **Point your MCP server** at `{WP_SITE_URL}/wp-json/wp-pinch/v1/mcp` with an Application Password.
+3. **Point your MCP server** at `{WP_SITE_URL}/wp-json/wp-pinch/mcp` with an Application Password.
 4. **Start chatting** — say "list my recent posts" or "create a draft about..."
 
 For multiple sites, use different workspaces or env configs. See [Configuration](https://github.com/RegionallyFamous/wp-pinch/wiki/Configuration) for the full setup.

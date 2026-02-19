@@ -61,7 +61,7 @@ Without OpenClaw, the MCP server and abilities still work with any MCP-compatibl
 Point OpenClaw at your site's MCP endpoint:
 
 ```bash
-npx openclaw connect --mcp-url https://your-site.com/wp-json/wp-pinch/v1/mcp
+npx openclaw connect --mcp-url https://your-site.com/wp-json/wp-pinch/mcp
 ```
 
 OpenClaw will discover available abilities and begin routing messages from your configured channels (WhatsApp, Telegram, Slack, Discord, etc.) to your WordPress site. Two commands and you're pinching. For a ready-made skill (when to use which ability, example prompts), install from ClawHub: `clawhub install nickhamze/pinch-to-post` — or see [OpenClaw Skill](OpenClaw-Skill) to copy manually.

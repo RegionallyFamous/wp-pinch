@@ -1,6 +1,6 @@
 # Abilities Reference
 
-WP Pinch provides **core abilities** (standard WordPress operations the AI can perform) and **tools** (PinchDrop, Ghost Writer, Molt, and quick-win/high-leverage abilities). You get **88 core abilities** across content, media, taxonomies, users, comments, settings, lifecycle, analytics, advanced operations, and system admin domains, plus **2 WooCommerce** when WooCommerce is active, plus **Ghost Writer** (3) and **Molt** (1) when feature flags enabled — **94 total** when all enabled. Every ability has built-in security guards: capability checks, input sanitization, existence validation, and audit logging. We don't let AI agents run around your site like unsupervised lobsters in a kitchen. *Someone* has to be the bouncer.
+WP Pinch provides **core abilities** (standard WordPress operations the AI can perform) and **tools** (PinchDrop, Ghost Writer, Molt, and quick-win/high-leverage abilities). You get **88 core abilities** across content, media, taxonomies, users, comments, settings, lifecycle, analytics, advanced operations, and system admin domains, plus **24 WooCommerce** when WooCommerce is active, plus **Ghost Writer** (3) and **Molt** (1) when feature flags enabled — **116 total** when all enabled. Every ability has built-in security guards: capability checks, input sanitization, existence validation, and audit logging. We don't let AI agents run around your site like unsupervised lobsters in a kitchen. *Someone* has to be the bouncer.
 
 ---
 
@@ -21,7 +21,7 @@ Core abilities cover content, media, users, comments, settings, plugins/themes, 
 | **Advanced** | Menus, meta, revisions, bulk ops, cron | `list-menus`, `manage-menu-item`, `get-post-meta`, `update-post-meta`, `list-revisions`, `restore-revision`, `compare-revisions`, `bulk-edit-posts`, `list-cron-events`, `manage-cron` |
 | **Site Ops** | Health, cache, diagnostics, and governance audits | `flush-cache`, `check-broken-links`, `get-php-error-log`, `list-posts-missing-meta`, `list-custom-post-types` |
 | **System Admin** | Platform operations with hard guards | `get-transient`, `set-transient`, `delete-transient`, `list-rewrite-rules`, `flush-rewrite-rules`, `maintenance-mode-status`, `set-maintenance-mode`, `search-replace-db-scoped`, `list-language-packs`, `install-language-pack`, `activate-language-pack` |
-| **WooCommerce** | Shop abilities (when WooCommerce is active) | `woo-list-products`, `woo-manage-order` |
+| **WooCommerce** | Shop abilities (when WooCommerce is active) | Products: `woo-list-products`, `woo-get-product`, `woo-create-product`, `woo-update-product`, `woo-delete-product`; Orders: `woo-list-orders`, `woo-get-order`, `woo-create-order`, `woo-update-order`, `woo-manage-order` (compat); Inventory: `woo-adjust-stock`, `woo-bulk-adjust-stock`, `woo-list-low-stock`, `woo-list-out-of-stock`, `woo-list-variations`, `woo-update-variation`, `woo-list-product-taxonomies`; Fulfillment/Refunds: `woo-add-order-note`, `woo-mark-fulfilled`, `woo-cancel-order-safe`, `woo-create-refund`, `woo-list-refund-eligible-orders`; Promotions/Customers/Analytics: `woo-create-coupon`, `woo-update-coupon`, `woo-expire-coupon`, `woo-list-customers`, `woo-get-customer`, `woo-sales-summary`, `woo-top-products`, `woo-orders-needing-attention` |
 
 ### Block JSON (create-post / update-post)
 
@@ -204,13 +204,13 @@ WP Pinch registers a dedicated `wp-pinch` MCP endpoint that curates which abilit
 The MCP endpoint is available at:
 
 ```
-https://your-site.com/wp-json/wp-pinch/v1/mcp
+https://your-site.com/wp-json/wp-pinch/mcp
 ```
 
 Connect OpenClaw:
 
 ```bash
-npx openclaw connect --mcp-url https://your-site.com/wp-json/wp-pinch/v1/mcp
+npx openclaw connect --mcp-url https://your-site.com/wp-json/wp-pinch/mcp
 ```
 
 ### List abilities and site manifest (GET /abilities)

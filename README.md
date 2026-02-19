@@ -4,7 +4,7 @@
 
 One plugin. Connect OpenClaw (or any MCP client), and your site is in the same chat: publish, repurpose, moderate, audit, and maintain from WhatsApp, Slack, Telegram, or Discord.
 
-[OpenClaw](https://github.com/openclaw/openclaw) is the personal AI on those channels; it *does* things. **WP Pinch is the WordPress tool:** 88 core abilities (plus 2 WooCommerce when active; plus Ghost Writer and Molt when feature flags enabled = 94 total).
+[OpenClaw](https://github.com/openclaw/openclaw) is the personal AI on those channels; it *does* things. **WP Pinch is the WordPress tool:** 88 core abilities (plus 24 WooCommerce when active; plus Ghost Writer and Molt when feature flags enabled = 116 total).
 
 **[wp-pinch.com](https://wp-pinch.com)** · [Wiki](https://github.com/RegionallyFamous/wp-pinch/wiki) · [Releases](https://github.com/RegionallyFamous/wp-pinch/releases) · [ClawHub](https://clawhub.ai/nickhamze/pinch-to-post) · **[Install in 60 seconds →](https://github.com/RegionallyFamous/wp-pinch/wiki/Configuration)**
 
@@ -24,7 +24,7 @@ One plugin. Connect OpenClaw (or any MCP client), and your site is in the same c
 - **Automation stack**: webhook dispatcher with retries + HMAC, governance scheduler + Tide Report, audit log, and circuit breaker.
 - **Distribution channels**: OpenClaw (WhatsApp/Telegram/Slack/Discord), any MCP client, and on-site Pinch Chat block.
 
-If you enable every optional module (WooCommerce + feature-flagged tools), you land at **94 total abilities/tools**. That is one extremely well-trained crustacean.
+If you enable every optional module (WooCommerce + feature-flagged tools), you land at **116 total abilities/tools**. That is one extremely well-trained crustacean.
 
 ---
 
@@ -68,7 +68,7 @@ No extra logins. No "I'll do it at my desk." You talk; your assistant has the ke
 
 **OpenClaw** ([openclaw.ai](https://openclaw.ai), [GitHub](https://github.com/openclaw/openclaw)): open-source personal AI. You run it. It connects to WhatsApp, Telegram, Slack, Discord, and more — and *does* things via MCP tools, skills, and code.
 
-**WP Pinch** plugs WordPress in. Your site becomes an MCP server: 88 core abilities across content, media, users, comments, settings, lifecycle, menus/meta/revisions/cron, and system admin operations, plus 2 WooCommerce when active, plus PinchDrop, Molt, Ghost Writer when feature flags enabled. Bonus: **Pinch Chat** block and **webhooks** (publish/comment → OpenClaw). One plugin.
+**WP Pinch** plugs WordPress in. Your site becomes an MCP server: 88 core abilities across content, media, users, comments, settings, lifecycle, menus/meta/revisions/cron, and system admin operations, plus 24 WooCommerce when active, plus PinchDrop, Molt, Ghost Writer when feature flags enabled. Bonus: **Pinch Chat** block and **webhooks** (publish/comment → OpenClaw). One plugin.
 
 ---
 
@@ -85,7 +85,7 @@ No extra logins. No "I'll do it at my desk." You talk; your assistant has the ke
 | Have your site report what needs attention (stale posts, SEO, comments) | Governance tasks run on a schedule; Tide Report bundles findings into one daily webhook to OpenClaw. You see it in your channel. |
 | Let visitors chat with an AI that knows your content | Pinch Chat block on any page. Streaming, slash commands, optional public mode. |
 
-Plus: 88 core abilities (content, media, users, comments, settings, plugins/themes lifecycle, menus/meta/revisions/cron, and system admin), 2 WooCommerce when active, and Ghost Writer (3) + Molt (1) when feature flags enabled — 94 total. [Full abilities reference →](https://github.com/RegionallyFamous/wp-pinch/wiki/Abilities-Reference)
+Plus: 88 core abilities (content, media, users, comments, settings, plugins/themes lifecycle, menus/meta/revisions/cron, and system admin), 24 WooCommerce when active, and Ghost Writer (3) + Molt (1) when feature flags enabled — 116 total. [Full abilities reference →](https://github.com/RegionallyFamous/wp-pinch/wiki/Abilities-Reference)
 
 ---
 
@@ -96,6 +96,7 @@ Plus: 88 core abilities (content, media, users, comments, settings, plugins/them
 | Content workflow | `duplicate-post`, `schedule-post`, guarded `find-replace-content`, `reorder-posts`, `compare-revisions` |
 | Media ops | `set-featured-image`, `list-unused-media`, `regenerate-media-thumbnails` |
 | Governance and health | `flush-cache`, `check-broken-links`, `get-php-error-log`, `list-posts-missing-meta`, `list-custom-post-types` |
+| WooCommerce operations | product/order CRUD, stock adjustment (single/bulk), fulfillment notes/cancel/refunds, coupon lifecycle, customer list/get with redaction defaults, sales summary/top products/attention queue |
 | System admin | transient CRUD, rewrite list/flush, maintenance mode, scoped DB search/replace, language pack install/activate |
 | Extension lifecycle | plugin/theme install-update-delete with hard confirmations and action-specific capability checks |
 | User and comment control | guarded user create/delete/reset password and full comment CRUD |
@@ -117,7 +118,7 @@ wp plugin install https://github.com/RegionallyFamous/wp-pinch/releases/latest/d
 1. Open **WP Pinch** in your admin sidebar.
 2. Enter your **OpenClaw Gateway URL** and **API Token**.
 3. Click **Test Connection**.
-4. In OpenClaw: connect to the MCP endpoint. Command syntax may vary by version — see [OpenClaw CLI docs](https://docs.openclaw.ai/cli). Example: `npx openclaw connect --mcp-url https://your-site.com/wp-json/wp-pinch/v1/mcp`
+4. In OpenClaw: connect to the MCP endpoint. Command syntax may vary by version — see [OpenClaw CLI docs](https://docs.openclaw.ai/cli). Example: `npx openclaw connect --mcp-url https://your-site.com/wp-json/wp-pinch/mcp`
 
 **Done.** Manage your site from WhatsApp, Slack, or Telegram — or add the **Pinch Chat** block so visitors can chat with an AI that knows your content. To give your agent WordPress-specific behavior, install the skill from ClawHub: `clawhub install nickhamze/pinch-to-post` — or see the [OpenClaw Skill](https://github.com/RegionallyFamous/wp-pinch/wiki/OpenClaw-Skill) guide.
 

@@ -6,7 +6,7 @@ This page explains how OpenClaw’s gateway, tokens, and sessions map to WordPre
 
 ## MCP and REST: who runs abilities?
 
-- **MCP:** When OpenClaw (or any MCP client) connects to `GET /wp-json/wp-pinch/v1/mcp`, the request is authenticated by WordPress (cookie/session or application password). The **current WordPress user** for that request is the identity under which abilities run. That user must have at least `edit_posts` for most WP Pinch endpoints and abilities.
+- **MCP:** When OpenClaw (or any MCP client) connects to `GET /wp-json/wp-pinch/mcp`, the request is authenticated by WordPress (cookie/session or application password). The **current WordPress user** for that request is the identity under which abilities run. That user must have at least `edit_posts` for most WP Pinch endpoints and abilities.
 - **REST (e.g. Pinch Chat block):** Same as MCP — the logged-in WordPress user’s capabilities apply. Rate limiting is per user (and for public chat, per IP when `public_chat` is on).
 - **Incoming webhook:** OpenClaw calls `POST /wp-json/wp-pinch/v1/hooks/receive` with a **Bearer token** (or HMAC signature). That token is the **API token** configured in WP Pinch (one per site). Abilities executed via the hook run as a **WordPress user chosen by the plugin** (typically an administrator), not “the OpenClaw user” — because the webhook request has no WordPress session. So: **one token ⇒ one site; abilities run as a single WP identity (e.g. first admin)**.
 

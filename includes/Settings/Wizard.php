@@ -58,7 +58,7 @@ class Wizard {
 	 * @param int $initial_step Which step to show initially (1, 2, or 3). Step 3 when gateway + token already saved.
 	 */
 	public static function render( int $initial_step = 1 ): void {
-		$mcp_url    = rest_url( 'wp-pinch/v1/mcp' );
+		$mcp_url    = rest_url( 'wp-pinch/mcp' );
 		$gateway    = get_option( 'wp_pinch_gateway_url', '' );
 		$token      = Settings::get_api_token();
 		$show_s1    = ( 1 === $initial_step ) ? 'block' : 'none';

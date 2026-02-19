@@ -8,17 +8,17 @@ Stable tag: 3.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-OpenClaw + WordPress. 88 core abilities (94 with WooCommerce + Ghost Writer + Molt), Pinch Chat block, webhooks, governance. Your AI runs your site from WhatsApp, Slack, or Telegram. Self-hosted.
+OpenClaw + WordPress. 88 core abilities (116 with WooCommerce + Ghost Writer + Molt), Pinch Chat block, webhooks, governance. Your AI runs your site from WhatsApp, Slack, or Telegram. Self-hosted.
 
 == Description ==
 
 **Your AI assistant already lives in WhatsApp, Slack, Telegram — give it WordPress.**
 
-One plugin. [OpenClaw](https://github.com/openclaw/openclaw) (or any MCP client) gets 88 core abilities (plus 2 WooCommerce, plus Ghost Writer and Molt when feature flags enabled = 94 total): publish, Molt (one post → 10 formats), PinchDrop, What do I know, daily Tide Report. Pinch Chat block, webhooks, 9 governance tasks. Self-hosted. Your data. No extra logins, no "I'll do it at my desk" — you talk; your assistant has the keys. [Install & connect →](https://github.com/RegionallyFamous/wp-pinch/wiki/Configuration)
+One plugin. [OpenClaw](https://github.com/openclaw/openclaw) (or any MCP client) gets 88 core abilities (plus 24 WooCommerce, plus Ghost Writer and Molt when feature flags enabled = 116 total): publish, Molt (one post → 10 formats), PinchDrop, What do I know, daily Tide Report. Pinch Chat block, webhooks, 9 governance tasks. Self-hosted. Your data. No extra logins, no "I'll do it at my desk" — you talk; your assistant has the keys. [Install & connect →](https://github.com/RegionallyFamous/wp-pinch/wiki/Configuration)
 
 = 88+ AI Abilities =
 
-Your assistant gets the keys to WordPress — posts, media, users, comments, settings, plugins, themes, WooCommerce — with capability checks, sanitization, and audit logging on every call. Plus PinchDrop, Ghost Writer, Molt, What do I know, site-digest, governance. 2 bonus WooCommerce abilities when your shop is active.
+Your assistant gets the keys to WordPress — posts, media, users, comments, settings, plugins, themes, WooCommerce — with capability checks, sanitization, and audit logging on every call. Plus PinchDrop, Ghost Writer, Molt, What do I know, site-digest, governance. 24 WooCommerce abilities when your shop is active (products/orders/inventory/fulfillment/refunds/coupons/customers/analytics).
 
 = Live Chat Block =
 
@@ -70,7 +70,7 @@ WP Pinch works with any MCP-compatible client. Connect OpenClaw (or similar) via
 
 Point OpenClaw at your site's MCP endpoint:
 
-`npx openclaw connect --mcp-url https://your-site.com/wp-json/wp-pinch/v1/mcp`
+`npx openclaw connect --mcp-url https://your-site.com/wp-json/wp-pinch/mcp`
 
 OpenClaw will discover the available abilities and begin routing messages from your configured channels to your WordPress site.
 
@@ -92,7 +92,7 @@ OpenClaw is recommended for the full experience (webhooks, chat, governance deli
 
 = Does this work with WooCommerce? =
 
-Yes! WooCommerce order status changes trigger webhooks, and WP Pinch adds two bonus abilities for listing products and managing orders. Your AI agent can check inventory faster than a lobster can snap a rubber band.
+Yes! WooCommerce order status changes trigger webhooks, and WP Pinch adds 24 WooCommerce abilities: product and order CRUD, stock controls, fulfillment/refunds, coupons, customer lookups with redaction defaults, and sales/attention analytics. Your AI agent can check inventory faster than a lobster can snap a rubber band.
 
 = Can I add custom abilities? =
 

@@ -34,7 +34,7 @@ For **MCP-only** (OpenClaw calls your site’s abilities over MCP), you can skip
 Point OpenClaw at your site’s MCP endpoint:
 
 ```bash
-npx openclaw connect --mcp-url https://your-site.com/wp-json/wp-pinch/v1/mcp
+npx openclaw connect --mcp-url https://your-site.com/wp-json/wp-pinch/mcp
 ```
 
 Replace `https://your-site.com` with your WordPress site URL. OpenClaw will discover WP Pinch’s abilities and you can start using them from your channels.
