@@ -45,7 +45,7 @@ WP Pinch uses a multi-layered quality system. Think of it as a lobster cage with
 | **CI Pipeline** | GitHub Actions | PHPCS, PHPStan, PHPUnit, ESLint, Stylelint, Build |
 | **Static Analysis** | PHPStan Level 6 | Type mismatches, null access, undefined properties |
 | **Coding Standards** | PHPCS (WordPress-Extra + Security) | Security, escaping, sanitization, naming |
-| **Unit Tests** | PHPUnit (327 tests) | Functional correctness, security guards, edge cases |
+| **Unit Tests** | PHPUnit (372 tests) | Functional correctness, security guards, edge cases |
 | **JS Lint** | ESLint (wp-scripts) | JavaScript errors, Prettier formatting |
 | **CSS Lint** | Stylelint (wp-scripts) | CSS errors, specificity issues |
 | **Branch Protection** | GitHub | All checks must pass before merging to main |
@@ -66,7 +66,7 @@ npm run lint:js    # ESLint
 npm run lint:css   # Stylelint
 
 # Tests (requires WordPress test env: run `npx wp-env start` first)
-make test-wp-env   # PHPUnit inside wp-env (327 tests)
+make test-wp-env   # PHPUnit inside wp-env (372 tests)
 make test          # Alias to composer test (wp-env PHPUnit)
 npm test           # Jest (frontend tests)
 npm run test:e2e   # Playwright end-to-end tests
@@ -93,16 +93,26 @@ We follow a test-first approach for bug fixes — because lobsters learn from th
 ```
 wp-pinch/
 ├── includes/                    # PHP classes
-│   ├── class-abilities.php      # 88 core WordPress abilities
+│   ├── class-abilities.php      # Abilities facade (uses Ability_Names_Trait + Woo_Passthrough_Trait)
+│   ├── Ability_Names_Trait.php  # Core + Woo ability name catalog
 │   ├── class-audit-table.php    # Audit log database table
 │   ├── class-circuit-breaker.php
 │   ├── class-cli.php            # WP-CLI bootstrap (registers includes/CLI/*)
-│   ├── CLI/                      # WP-CLI command classes (one file per command)
-│   ├── class-feature-flags.php  # Feature toggle system
+│   ├── CLI/                     # WP-CLI command classes (one file per command)
+│   ├── class-feature-flags.php  # Feature toggle system (17 flags)
 │   ├── class-plugin.php         # Core plugin singleton
 │   ├── class-rest-controller.php # REST route registration, security/rate-limit headers
 │   ├── class-settings.php       # Admin settings pages
 │   ├── class-webhook-dispatcher.php
+│   ├── Ability/                 # Per-domain ability classes
+│   │   ├── Analytics/           # Analytics_Execute_Trait (split from Analytics_Abilities)
+│   │   ├── GEO/                 # GEO_SEO_Execute_Trait (split from GEO_SEO_Abilities)
+│   │   ├── MenuMeta/            # Menu_Meta_Revisions_Execute_Trait (split from Menu_Meta_Revisions_Abilities)
+│   │   ├── QuickWin/            # QuickWin_Execute_Trait (split from QuickWin_Abilities)
+│   │   ├── Woo/                 # WooCommerce execution + register traits
+│   │   ├── Core_Passthrough_Trait.php   # Core execute passthroughs for Abilities facade
+│   │   └── Woo_Passthrough_Trait.php    # Woo execute passthroughs for Abilities facade
+│   ├── Settings/                # Settings_Admin_Pages_Trait + Token_Storage + Wizard + Tabs
 │   └── Rest/                    # REST request handlers (Auth, Chat, Status, Incoming_Hook, Capture, etc.)
 ├── src/
 │   ├── admin/                   # Admin JS/CSS source

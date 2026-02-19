@@ -43,9 +43,9 @@ How the lobster trap is wired. WP Pinch sits inside WordPress and talks to OpenC
 
 ## Subsystems
 
-### Abilities Engine (`class-abilities.php`)
+### Abilities Engine (`class-abilities.php` + `Ability/` traits)
 
-The core of WP Pinch. Registers 88 core WordPress abilities (plus 30 WooCommerce when active, plus Ghost Writer/Molt when feature-flagged — 122 total) and exposes them through both the MCP server and the incoming webhook receiver. Each ability is a self-contained function with:
+The core of WP Pinch. Registers 88 core WordPress abilities (plus 30 WooCommerce when active, plus Ghost Writer/Molt when feature-flagged — 122 total) and exposes them through both the MCP server and the incoming webhook receiver. `class-abilities.php` is a thin facade that composes three traits: `Ability_Names_Trait` (slug catalog), `Core_Passthrough_Trait` (execute delegation), and `Woo_Passthrough_Trait` (Woo execute delegation). Domain execution logic is split into sub-traits under `Ability/Analytics/`, `Ability/QuickWin/`, `Ability/MenuMeta/`, `Ability/GEO/`, and `Ability/Woo/`. Each ability is a self-contained function with:
 
 - A capability requirement (e.g., `edit_posts`)
 - Input parameter definitions with sanitization rules
@@ -55,7 +55,7 @@ The core of WP Pinch. Registers 88 core WordPress abilities (plus 30 WooCommerce
 
 ### MCP Server
 
-Registers a `wp-pinch` MCP endpoint at `/wp-json/wp-pinch/mcp`. This is the primary interface for MCP-compatible AI clients (including OpenClaw). Only abilities that are enabled via the admin UI and pass through the `wp_pinch_abilities` filter are discoverable.
+Registers a `wp-pinch` MCP endpoint at `/wp-json/wp-pinch/mcp`. This is the primary interface for MCP-compatible AI clients (including OpenClaw). Only abilities that are enabled via the admin UI and pass through the `wp_pinch_mcp_server_abilities` filter are discoverable.
 
 ### Webhook Dispatcher (`class-webhook-dispatcher.php`)
 
@@ -151,11 +151,16 @@ Endpoints:
 | Endpoint | Method | Auth | Purpose |
 |---|---|---|---|
 | `/wp-pinch/v1/chat` | POST | `edit_posts` | Send a chat message |
-| `/wp-pinch/v1/chat/stream` | POST | `edit_posts` | SSE streaming chat |
+| `/wp-pinch/v1/chat/stream` | POST | `edit_posts` | SSE streaming (feature flag) |
 | `/wp-pinch/v1/chat/public` | POST | Feature flag | Public (anonymous) chat |
 | `/wp-pinch/v1/session/reset` | POST | `edit_posts` or flag | Mint a new session key |
 | `/wp-pinch/v1/status` | GET | `manage_options` | Plugin status and health |
 | `/wp-pinch/v1/health` | GET | None | Public health check |
 | `/wp-pinch/v1/abilities` | GET | `edit_posts` | List abilities (name, title, description, input_schema) for discovery |
 | `/wp-pinch/v1/hooks/receive` | POST | HMAC | Incoming webhook receiver (execute_ability, execute_batch, run_governance, ping) |
+| `/wp-pinch/v1/ghostwrite` | POST | `edit_posts` | Ghost Writer draft completion (feature flag) |
+| `/wp-pinch/v1/molt` | POST | `edit_posts` | Molt content repackager (feature flag) |
+| `/wp-pinch/v1/capture` | POST | Capture token | Web Clipper one-shot capture |
+| `/wp-pinch/v1/pinchdrop/capture` | POST | HMAC | PinchDrop channel-agnostic capture |
+| `/wp-pinch/v1/preview-approve` | POST | `manage_options` | Publish a draft that is awaiting approval |
 | `/wp-pinch/mcp` | Varies | MCP | MCP server endpoint |

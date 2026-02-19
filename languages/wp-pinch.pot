@@ -2,14 +2,14 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: WP Pinch 3.0.3\n"
+"Project-Id-Version: WP Pinch 3.0.4\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wp-pinch\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-02-18T16:44:49+00:00\n"
+"POT-Creation-Date: 2026-02-19T13:22:49+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: wp-pinch\n"
@@ -738,7 +738,7 @@ msgid "Post ID to analyze."
 msgstr ""
 
 #: includes/Ability/GEO_SEO_Abilities.php:187
-#: includes/class-abilities.php:446
+#: includes/class-abilities.php:474
 msgid "API is in read-only mode. Write operations are disabled."
 msgstr ""
 
@@ -1810,33 +1810,383 @@ msgstr ""
 msgid "Failed to delete comment."
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:30
+#: includes/Ability/Woo_Abilities.php:71
 msgid "List WooCommerce Products"
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:31
-msgid "List WooCommerce products with optional filters."
+#: includes/Ability/Woo_Abilities.php:72
+msgid "List WooCommerce products with filters and pagination."
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:67
+#: includes/Ability/Woo_Abilities.php:107
+msgid "Get WooCommerce Product"
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:108
+msgid "Get a WooCommerce product by ID."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:122
+msgid "Create WooCommerce Product"
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:123
+msgid "Create a WooCommerce product with safe defaults."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:176
+msgid "Update WooCommerce Product"
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:177
+msgid "Update mutable WooCommerce product fields."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:204
+msgid "Delete WooCommerce Product"
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:205
+msgid "Delete or trash a WooCommerce product."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:229
+msgid "List WooCommerce Orders"
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:230
+msgid "List WooCommerce orders with filters and pagination."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:276
+msgid "Get WooCommerce Order"
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:277
+msgid "Get a WooCommerce order by ID."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:297
+msgid "Create WooCommerce Order"
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:298
+msgid "Create a WooCommerce order from product line items."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:328
+msgid "Update WooCommerce Order"
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:329
+msgid "Update mutable WooCommerce order fields safely."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:355
 msgid "Manage WooCommerce Order"
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:68
-msgid "Get details or update the status of a WooCommerce order."
+#: includes/Ability/Woo_Abilities.php:356
+msgid "Compatibility alias for order get/update status workflows."
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:105
-#: includes/Ability/Woo_Abilities.php:207
-msgid "WooCommerce is not active."
+#: includes/Ability/Woo_Abilities.php:389
+msgid "Adjust WooCommerce Stock"
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:214
+#: includes/Ability/Woo_Abilities.php:390
+msgid "Adjust stock quantity for a single product by a delta."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:414
+msgid "Bulk Adjust WooCommerce Stock"
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:415
+msgid "Adjust stock quantity for multiple products."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:428
+msgid "List WooCommerce Low Stock Products"
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:429
+msgid "List products below a given stock threshold."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:455
+msgid "List WooCommerce Out of Stock Products"
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:456
+msgid "List out-of-stock products."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:478
+msgid "List WooCommerce Variations"
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:479
+msgid "List variations for a variable product."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:503
+msgid "Update WooCommerce Variation"
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:504
+msgid "Update mutable fields for a product variation."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:531
+msgid "List WooCommerce Product Taxonomies"
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:532
+msgid "List product categories, tags, and global attributes."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:547
+msgid "Add WooCommerce Order Note"
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:548
+msgid "Add an internal or customer-visible note to an order."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:568
+msgid "Mark WooCommerce Order Fulfilled"
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:569
+msgid "Safely mark an order as completed with optional fulfillment note."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:596
+msgid "Cancel WooCommerce Order Safely"
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:597
+msgid "Cancel an order only from supported pre-fulfillment statuses."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:620
+msgid "Create WooCommerce Refund"
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:621
+msgid "Create a full or partial refund with safety guards."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:649
+msgid "List Refund Eligible WooCommerce Orders"
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:650
+msgid "List orders with refundable remaining amount."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:677
+msgid "Create WooCommerce Coupon"
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:678
+msgid "Create a WooCommerce coupon with validation."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:715
+msgid "Update WooCommerce Coupon"
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:716
+msgid "Update mutable fields of a WooCommerce coupon."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:740
+msgid "Expire WooCommerce Coupon"
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:741
+msgid "Force a coupon to expire immediately."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:759
+msgid "List WooCommerce Customers"
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:760
+msgid "List WooCommerce customers with balanced redaction defaults."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:790
+msgid "Get WooCommerce Customer"
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:791
+msgid "Get a WooCommerce customer by user ID with safe redaction defaults."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:816
+msgid "WooCommerce Sales Summary"
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:817
+msgid "Summarize WooCommerce sales for day/week/month/custom range."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:848
+msgid "WooCommerce Top Products"
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:849
+msgid "Return top-selling products for a date window."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:875
+msgid "WooCommerce Orders Needing Attention"
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:876
+msgid "Find aged or potentially stuck orders that require manual review."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:967
+#: includes/Ability/Woo_Abilities.php:1036
+#: includes/Ability/Woo_Abilities.php:1114
+#: includes/Ability/Woo_Abilities.php:1412
+msgid "Product not found."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:986
+msgid "Product name is required."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:992
+#: includes/Ability/Woo_Abilities.php:1047
+msgid "Invalid product status."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:1119
+msgid "Failed to delete product."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:1196
+msgid "Could not load orders."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:1229
+#: includes/Ability/Woo_Abilities.php:1322
+#: includes/Ability/Woo_Abilities.php:1724
+#: includes/Ability/Woo_Abilities.php:1756
+#: includes/Ability/Woo_Abilities.php:1808
+#: includes/Ability/Woo_Abilities.php:1840
 msgid "Order not found."
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:226
-msgid "Status is required for update_status action."
+#: includes/Ability/Woo_Abilities.php:1250
+msgid "line_items is required."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:1259
+msgid "Could not create order."
+msgstr ""
+
+#. translators: %d: WooCommerce product ID.
+#: includes/Ability/Woo_Abilities.php:1271
+#, php-format
+msgid "Product %d not found."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:1288
+#: includes/Ability/Woo_Abilities.php:1330
+msgid "Invalid order status."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:1407
+msgid "quantity_delta cannot be 0."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:1423
+msgid "Could not adjust stock."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:1454
+msgid "adjustments must be a non-empty array."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:1588
+msgid "Variable product not found."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:1635
+msgid "Variation not found."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:1656
+msgid "Invalid variation status."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:1729
+msgid "Note is required."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:1761
+msgid "Order cannot be marked fulfilled from its current status."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:1803
+msgid "confirm=true is required to cancel an order."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:1813
+msgid "Order status is not cancellable by this ability."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:1847
+msgid "Duplicate refund request blocked by idempotency key."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:1855
+msgid "Refund amount must be greater than 0."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:1858
+msgid "Refund amount exceeds refundable total."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:1873
+msgid "Could not create refund."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:1953
+msgid "Coupon code and amount are required."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:1956
+msgid "Coupon code already exists."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:1961
+#: includes/Ability/Woo_Abilities.php:2012
+msgid "Invalid coupon discount type."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:1977
+#: includes/Ability/Woo_Abilities.php:2033
+msgid "Invalid expires_at datetime."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:2003
+#: includes/Ability/Woo_Abilities.php:2060
+msgid "Coupon not found."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:2132
+msgid "Customer not found."
+msgstr ""
+
+#: includes/Ability/Woo_Abilities.php:2316
+msgid "WooCommerce is not active."
 msgstr ""
 
 #: includes/class-abilities.php:206

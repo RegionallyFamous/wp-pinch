@@ -4,7 +4,7 @@ Tags: ai, agent, openclaw, mcp, automation
 Requires at least: 6.9
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 3.0.3
+Stable tag: 3.0.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -51,7 +51,7 @@ One post, 10 formats. Molt repackages a single post into social (Twitter, Linked
 
 = Production-Ready Security =
 
-Capability checks on every operation. Input sanitization. Output escaping. Nonce verification. Prepared SQL. HMAC-SHA256 webhook signatures. Circuit breaker. Rate limiting. PHPStan Level 6. 327 PHPUnit tests. See the [GitHub Wiki](https://github.com/RegionallyFamous/wp-pinch/wiki/Security) for the full security model.
+Capability checks on every operation. Input sanitization. Output escaping. Nonce verification. Prepared SQL. HMAC-SHA256 webhook signatures. Circuit breaker. Rate limiting. PHPStan Level 6. 372 PHPUnit tests. See the [GitHub Wiki](https://github.com/RegionallyFamous/wp-pinch/wiki/Security) for the full security model.
 
 == Installation ==
 
@@ -113,7 +113,7 @@ It's stored in the WordPress options table with `show_in_rest => false`. For pro
 
 = Is it production-ready? =
 
-WP Pinch passes PHPCS (WordPress-Extra + Security), PHPStan Level 6, and 327 PHPUnit tests. Every ability has security guards, every input is sanitized, every output is escaped. Ship it with confidence.
+WP Pinch passes PHPCS (WordPress-Extra + Security), PHPStan Level 6, and 372 PHPUnit tests. Every ability has security guards, every input is sanitized, every output is escaped. Ship it with confidence.
 
 = Why lobster puns? =
 
@@ -128,6 +128,12 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 5. Audit log showing recent ability executions, webhooks, and chat messages.
 
 == Changelog ==
+
+= 3.0.4 =
+* Why it matters: WooCommerce automation now covers the full store operations loop, and release docs/tests now stay in lockstep so teams can ship with confidence.
+* Added: Expanded WooCommerce ability coverage for products, orders, stock, fulfillment, refunds, coupons, customers, and analytics workflows.
+* Changed: Documentation and ability-count messaging now consistently reflect the expanded WooCommerce surface (30 Woo abilities, 122 total tools with optional modules).
+* Fixed: Deterministic Woo inactive guardrails and regression tests to prevent wrapper/schema drift and "works locally only" release surprises.
 
 = 3.0.3 =
 * Why it matters: teams can automate high-impact maintenance with more confidence and fewer release-check surprises.

@@ -54,11 +54,40 @@ Tear down now cleans `wp_pinch_api_disabled` and `wp_pinch_read_only_mode`.
 - `test_get_option_denylist_home` — `home` is blocked
 - `test_update_option_denylist_siteurl` — `siteurl` cannot be updated via ability
 
+**Woo refactoring / trait composition:**
+
+- `test_woo_ability_names_expand_when_woocommerce_active` — `get_ability_names()` includes all Woo slugs when WooCommerce is active, excludes them when it is not
+- `test_woo_wrapper_methods_and_ability_slugs_stay_in_sync` — all slugs in the contract map have a matching `Abilities` wrapper method; when Woo is active, the slug list exactly matches `get_ability_names()` output
+- `test_woo_abilities_return_deterministic_error_without_woocommerce` (data provider) — every Woo execute method returns a structured `error` (or `errors` for bulk) referencing WooCommerce when the class is absent
+- `test_woo_cancel_order_safe_requires_confirmation_or_woocommerce` — `confirm=false` always returns an error; error message changes depending on Woo presence
+- `test_woo_refund_structured_error_without_woocommerce` — `execute_woo_create_refund` always returns an `error` key
+- `test_woo_risky_ability_schema_contracts_are_present` — `bulk-adjust-stock`, `cancel-order-safe`, `create-refund` schemas declare required guard fields
+- `test_abilities_class_uses_expected_traits` — `class_uses(Abilities)` confirms `Ability_Names_Trait`, `Core_Passthrough_Trait`, and `Woo_Passthrough_Trait` are applied
+- `test_woo_abilities_class_uses_expected_traits` — `Woo_Abilities` uses all 5 execution traits
+- `test_analytics_abilities_class_uses_execute_trait` — `Analytics_Abilities` uses `Analytics_Execute_Trait`
+- `test_ability_names_trait_provides_get_ability_names` — method is public + static (via reflection)
+- `test_refactored_trait_files_exist` — all 17 refactored trait source files are present on disk (Analytics, QuickWin, MenuMeta, GEO, Woo execute/register traits, Settings split, and Abilities facade traits)
+
 ### `tests/test-cli.php`
 
 **WP-CLI command structure:**
 
 - CLI bootstrap class exists and has `register`; all 11 command classes in `includes/CLI/` exist and have static `register()` and `run( $args, $assoc_args )` with correct signatures. Uses a WP-CLI stub (`tests/includes/wp-cli-stub.php`) when not running inside WP-CLI so the bootstrap can load.
+
+### `tests/test-docs.php`
+
+**Documentation consistency:**
+
+- `test_docs_count_messaging_is_consistent` — asserts `README.md`, `readme.txt`, and `wiki/Abilities-Reference.md` all agree on "88 core abilities", "30 WooCommerce", and "122 total"
+- `test_readme_includes_woo_why_section` — verifies the "Why the WooCommerce expansion matters" section exists with Fewer handoffs / Safer store ops bullets
+- `test_readme_txt_includes_woo_why_messaging` — checks `readme.txt` carries matching why-focused messaging
+- `test_changelog_unreleased_mentions_woo_expansion` — ensures the `[Unreleased]` CHANGELOG block documents the Woo expansion rationale
+
+### `tests/test-maintainability.php`
+
+**File size guardrails:**
+
+- `test_includes_php_files_stay_within_line_budgets` — every PHP file under `includes/` must stay within its declared line budget (200 for the thin `Woo_Abilities` facade, 750 for `Analytics_Execute_Trait`, 900 for `Woo_Register_Trait`, 950 for `class-abilities.php`, 1000 for large multi-ability files). Prevents accidental hotspot growth without a conscious decision to raise the budget.
 
 ### `tests/test-utils.php`
 
@@ -93,6 +122,9 @@ bin/install-wp-tests.sh wordpress_test root '' localhost latest
 | Plugin is_api_disabled / is_read_only_mode | 0% | Option-based behavior |
 | Option denylist (home, siteurl) | siteurl get only | home get, siteurl update |
 | Utils::mask_token | Basic | + 3-char, 4-char edge cases |
+| Woo trait composition + 30-ability parity | 0% | Full matrix + reflection guards |
+| Docs count consistency | 0% | Automated via test-docs.php |
+| File size budgets | 0% | Automated via test-maintainability.php |
 
 ## Quality tools (CI and local)
 

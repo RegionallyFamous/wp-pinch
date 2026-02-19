@@ -1,6 +1,6 @@
 {
   "name": "wp-pinch",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "OpenClaw + WordPress integration plugin",
   "private": true,
   "scripts": {
@@ -10,7 +10,7 @@
     "lint:css": "wp-scripts lint-style",
     "test": "wp-scripts test-unit-js",
     "test:e2e": "wp-scripts test-playwright",
-    "test:plugin-check": "wp-env start --update && wp-env run cli wp plugin install plugin-check --activate && wp-env run cli wp plugin activate wp-pinch && wp-env run cli wp plugin check wp-pinch --format=json --ignore-warnings --ignore-codes=PluginCheck.Info.trademarked_term --exclude-directories=tests,bin,.github,.cursor,plans,releases,dist,node_modules,src --exclude-files=.wp-env.json,.editorconfig,.gitignore,.eslintignore,.phpunit.result.cache,.DS_Store,languages/.gitkeep,phpstan.neon.dist,phpcs.xml.dist,phpcs-tests.xml.dist,phpunit.xml.dist,infection.json.dist,CODE_OF_CONDUCT.md,RELEASE.md,SKILL.md,AGENTS.md,.cursorrules,wp-pinch-2.5.0.zip,wp-pinch-2.7.0.zip --require=./wp-content/plugins/plugin-check/cli.php",
+    "test:plugin-check": "wp-env start --update && wp-env run cli wp plugin install plugin-check --activate && wp-env run cli wp plugin activate wp-pinch && wp-env run cli wp plugin check wp-pinch --format=json --ignore-warnings --ignore-codes=PluginCheck.Info.trademarked_term --exclude-directories=tests,bin,.github,.cursor,plans,releases,dist,node_modules,src --exclude-files=.wp-env.json,.editorconfig,.gitignore,.eslintignore,.phpunit.result.cache,.DS_Store,languages/.gitkeep,phpstan.neon.dist,phpcs.xml.dist,phpcs-tests.xml.dist,phpunit.xml.dist,infection.json.dist,CODE_OF_CONDUCT.md,RELEASE.md,SKILL.md,AGENTS.md,.cursorrules,wp-pinch-2.5.0.zip,wp-pinch-2.7.0.zip,wp-pinch-3.0.4.zip --require=./wp-content/plugins/plugin-check/cli.php",
     "wp-env": "wp-env",
     "test:php": "wp-env run cli --env-cwd=wp-content/plugins/wp-pinch vendor/bin/phpunit --testdox"
   },

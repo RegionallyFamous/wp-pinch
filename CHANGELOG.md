@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.4] - 2026-02-19
+
+Why this matters: WooCommerce automation now covers the full day-to-day operator loop (catalog, orders, fulfillment, refunds, promotions, customer lookup, and reporting) instead of just basic product/order calls. The ability engine was also refactored into a trait-based architecture so the codebase stays maintainable as the ability surface continues to grow.
+
+Key outcomes:
+- Stronger commerce parity for agent-driven store operations — 30 WooCommerce abilities, 122 total.
+- Better safety defaults (redaction, transition guards, idempotency) on high-impact flows.
+- Codebase maintainability guardrails: automatic file-size budgets, trait composition tests, and docs consistency tests prevent the "it compiled but docs lied" failure mode.
+
+### Added
+- **WooCommerce ability expansion** — 30 WooCommerce abilities covering product/order CRUD, stock operations, variation/catalog taxonomy workflows, fulfillment notes/status actions, refunds, coupon lifecycle, customer lookup, and commerce summaries/attention queues.
+- **Trait-based architecture refactoring** — `class-abilities.php` is now a thin facade using `Ability_Names_Trait`, `Core_Passthrough_Trait`, and `Woo_Passthrough_Trait`. Execution logic for Analytics, QuickWin, MenuMeta, GEO/SEO, and all WooCommerce domains lives in focused sub-traits under `Ability/`, keeping each file well within maintainability budgets.
+- **Docs and test consistency guardrails** — new `test-docs.php` asserts ability counts and messaging stay aligned across README/readme.txt/wiki; new `test-maintainability.php` enforces per-file line budgets so hotspots can't silently grow.
+- **Expanded test suite** — 372 PHPUnit tests (up from 327), including full Woo ability matrix, trait-composition reflection tests, schema contract guards, and documentation consistency assertions.
+
+### Changed
+- **Safer Woo defaults** — balanced PII redaction is now explicit in customer/order response paths, with controlled opt-in for sensitive fields.
+- **Compatibility continuity** — preserved `woo-manage-order` as a compatibility alias while introducing dedicated order CRUD paths.
+- **Documentation accuracy pass** — corrected hook/filter names and signatures in `Hooks-and-Filters.md`, completed the REST endpoint table in `Architecture.md` (14 routes documented), and updated all stale ability/test counts across the wiki.
+- **Cursor rules** — added `.cursor/rules/repo-standards.mdc` so the AI agent enforces code quality, security, and documentation accuracy standards on every future change.
+
+### Fixed
+- **Woo inactive guardrails** — deterministic error handling for Woo ability execution when WooCommerce is unavailable, preventing undefined-function fatals in test environments.
+- **Woo schema/wrapper regression coverage** — matrix and parity tests so risky Woo actions and wrappers do not silently drift.
+- **Plugin-check parity** — updated local plugin-check excludes to ignore release zip artifacts so local/CI checks stay noise-free.
+
 ## [3.0.3] - 2026-02-18
 
 Why this matters: high-risk maintenance tasks are safer to run from chat, with clearer auditability and fewer release-pipeline surprises.
@@ -329,7 +355,8 @@ Key outcomes:
 ### Added
 - **Initial launch** — shipped MCP-connected WordPress abilities, governance automation, chat block, CLI/admin controls, audit logging, and CI foundations to make AI-assisted site management practical from day one.
 
-[Unreleased]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.0.3...HEAD
+[Unreleased]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.0.4...HEAD
+[3.0.4]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.0.3...v3.0.4
 [3.0.3]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.0.2...v3.0.3
 [3.0.2]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.0.0...v3.0.2
 [3.0.0]: https://github.com/RegionallyFamous/wp-pinch/compare/v2.9.0...v3.0.0

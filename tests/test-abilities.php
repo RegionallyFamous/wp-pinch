@@ -2065,6 +2065,430 @@ class Test_Abilities extends WP_UnitTestCase {
 		$this->assertArrayHasKey( 'success_count', $result );
 	}
 
+	/**
+	 * Test Woo ability list contains expanded abilities when WooCommerce is active.
+	 */
+	public function test_woo_ability_names_expand_when_woocommerce_active(): void {
+		$names = Abilities::get_ability_names();
+		if ( class_exists( 'WooCommerce' ) ) {
+			$this->assertContains( 'wp-pinch/woo-create-product', $names );
+			$this->assertContains( 'wp-pinch/woo-list-orders', $names );
+			$this->assertContains( 'wp-pinch/woo-create-refund', $names );
+			$this->assertContains( 'wp-pinch/woo-sales-summary', $names );
+			return;
+		}
+
+		$this->assertNotContains( 'wp-pinch/woo-create-product', $names );
+	}
+
+	/**
+	 * Test Woo method and slug parity so wrappers do not drift.
+	 */
+	public function test_woo_wrapper_methods_and_ability_slugs_stay_in_sync(): void {
+		$woo_map = $this->get_woo_ability_contract_map();
+
+		foreach ( $woo_map as $slug => $contract ) {
+			$this->assertArrayHasKey( 'method', $contract );
+			$method = (string) $contract['method'];
+			$this->assertTrue(
+				method_exists( Abilities::class, $method ),
+				"Missing Abilities wrapper method: {$method}."
+			);
+			$this->assertStringStartsWith( 'wp-pinch/woo-', $slug );
+		}
+
+		$slugs = array_keys( $woo_map );
+		sort( $slugs );
+		$slugs_from_names = array_values(
+			array_filter(
+				Abilities::get_ability_names(),
+				static function ( string $name ): bool {
+					return str_starts_with( $name, 'wp-pinch/woo-' );
+				}
+			)
+		);
+		sort( $slugs_from_names );
+
+		if ( class_exists( 'WooCommerce' ) ) {
+			$this->assertSame( $slugs, $slugs_from_names );
+			return;
+		}
+
+		$this->assertSame( array(), $slugs_from_names );
+	}
+
+	/**
+	 * Test Woo abilities fail with deterministic error shape when WooCommerce is inactive.
+	 *
+	 * @dataProvider woo_execute_method_matrix
+	 */
+	public function test_woo_abilities_return_deterministic_error_without_woocommerce(
+		string $method,
+		array $payload,
+		bool $expects_bulk_error_shape
+	): void {
+		if ( class_exists( 'WooCommerce' ) ) {
+			$this->assertTrue( true );
+			return;
+		}
+
+		$result = Abilities::$method( $payload );
+		if ( $expects_bulk_error_shape ) {
+			$this->assertArrayHasKey( 'errors', $result );
+			$this->assertIsArray( $result['errors'] );
+			$this->assertNotEmpty( $result['errors'] );
+			$this->assertIsString( $result['errors'][0]['error'] ?? '' );
+			return;
+		}
+
+		$this->assertArrayHasKey( 'error', $result );
+		$this->assertIsString( $result['error'] );
+		$this->assertStringContainsString(
+			'woocommerce',
+			strtolower( $result['error'] )
+		);
+	}
+
+	/**
+	 * Test Woo order cancel guardrails for confirm and status paths.
+	 */
+	public function test_woo_cancel_order_safe_requires_confirmation_or_woocommerce(): void {
+		$result = Abilities::execute_woo_cancel_order_safe(
+			array(
+				'order_id' => 1,
+				'confirm'  => false,
+			)
+		);
+
+		$this->assertArrayHasKey( 'error', $result );
+		$this->assertIsString( $result['error'] );
+		if ( ! class_exists( 'WooCommerce' ) ) {
+			$this->assertStringContainsString( 'woocommerce', strtolower( $result['error'] ) );
+			return;
+		}
+
+		$this->assertStringContainsString( 'confirm=true', strtolower( $result['error'] ) );
+	}
+
+	/**
+	 * Test Woo refund idempotency/guard path returns structured errors when unavailable.
+	 */
+	public function test_woo_refund_structured_error_without_woocommerce(): void {
+		$result = Abilities::execute_woo_create_refund(
+			array(
+				'order_id'        => 1,
+				'amount'          => 10,
+				'idempotency_key' => 'abc123',
+			)
+		);
+		$this->assertArrayHasKey( 'error', $result );
+	}
+
+	/**
+	 * Test risky Woo ability schemas keep required guard fields.
+	 */
+	public function test_woo_risky_ability_schema_contracts_are_present(): void {
+		$woo_dir = dirname( __DIR__ ) . '/includes/Ability/Woo';
+		$this->assertDirectoryExists( $woo_dir );
+		$source    = '';
+		$woo_files = glob( $woo_dir . '/*.php' );
+		foreach ( $woo_files ? $woo_files : array() as $source_path ) {
+			$contents = file_get_contents( $source_path );
+			$this->assertNotFalse( $contents );
+			$source .= (string) $contents;
+		}
+
+		$required_contract_snippets = array(
+			"'wp-pinch/woo-bulk-adjust-stock'",
+			"'required'   => array( 'adjustments' )",
+			"'wp-pinch/woo-cancel-order-safe'",
+			"'required'   => array( 'order_id', 'confirm' )",
+			"'wp-pinch/woo-create-refund'",
+			"'required'   => array( 'order_id' )",
+		);
+
+		foreach ( $required_contract_snippets as $snippet ) {
+			$this->assertStringContainsString( $snippet, (string) $source );
+		}
+	}
+
+	/**
+	 * Data provider for Woo execution matrix.
+	 *
+	 * @return array<string, array{0:string,1:array<string,mixed>,2:bool}>
+	 */
+	public function woo_execute_method_matrix(): array {
+		$cases = array();
+		foreach ( $this->get_woo_ability_contract_map() as $slug => $contract ) {
+			$cases[ $slug ] = array(
+				(string) $contract['method'],
+				(array) $contract['payload'],
+				! empty( $contract['expects_bulk_error_shape'] ),
+			);
+		}
+		return $cases;
+	}
+
+	/**
+	 * Shared Woo ability contract map used by parity + matrix tests.
+	 *
+	 * @return array<string, array<string, mixed>>
+	 */
+	private function get_woo_ability_contract_map(): array {
+		return array(
+			'wp-pinch/woo-list-products'               => array(
+				'method'  => 'execute_woo_list_products',
+				'payload' => array(),
+			),
+			'wp-pinch/woo-get-product'                 => array(
+				'method'  => 'execute_woo_get_product',
+				'payload' => array( 'product_id' => 1 ),
+			),
+			'wp-pinch/woo-create-product'              => array(
+				'method'  => 'execute_woo_create_product',
+				'payload' => array( 'name' => 'X' ),
+			),
+			'wp-pinch/woo-update-product'              => array(
+				'method'  => 'execute_woo_update_product',
+				'payload' => array( 'product_id' => 1 ),
+			),
+			'wp-pinch/woo-delete-product'              => array(
+				'method'  => 'execute_woo_delete_product',
+				'payload' => array( 'product_id' => 1 ),
+			),
+			'wp-pinch/woo-list-orders'                 => array(
+				'method'  => 'execute_woo_list_orders',
+				'payload' => array(),
+			),
+			'wp-pinch/woo-get-order'                   => array(
+				'method'  => 'execute_woo_get_order',
+				'payload' => array( 'order_id' => 1 ),
+			),
+			'wp-pinch/woo-create-order'                => array(
+				'method'  => 'execute_woo_create_order',
+				'payload' => array(
+					'line_items' => array(
+						array(
+							'product_id' => 1,
+							'quantity'   => 1,
+						),
+					),
+				),
+			),
+			'wp-pinch/woo-update-order'                => array(
+				'method'  => 'execute_woo_update_order',
+				'payload' => array( 'order_id' => 1 ),
+			),
+			'wp-pinch/woo-manage-order'                => array(
+				'method'  => 'execute_woo_manage_order',
+				'payload' => array( 'order_id' => 1 ),
+			),
+			'wp-pinch/woo-adjust-stock'                => array(
+				'method'  => 'execute_woo_adjust_stock',
+				'payload' => array(
+					'product_id'     => 1,
+					'quantity_delta' => -1,
+				),
+			),
+			'wp-pinch/woo-bulk-adjust-stock'           => array(
+				'method'                   => 'execute_woo_bulk_adjust_stock',
+				'payload'                  => array(
+					'adjustments' => array(
+						array(
+							'product_id'     => 1,
+							'quantity_delta' => 1,
+						),
+					),
+				),
+				'expects_bulk_error_shape' => true,
+			),
+			'wp-pinch/woo-list-low-stock'              => array(
+				'method'  => 'execute_woo_list_low_stock',
+				'payload' => array(),
+			),
+			'wp-pinch/woo-list-out-of-stock'           => array(
+				'method'  => 'execute_woo_list_out_of_stock',
+				'payload' => array(),
+			),
+			'wp-pinch/woo-list-variations'             => array(
+				'method'  => 'execute_woo_list_variations',
+				'payload' => array( 'product_id' => 1 ),
+			),
+			'wp-pinch/woo-update-variation'            => array(
+				'method'  => 'execute_woo_update_variation',
+				'payload' => array( 'variation_id' => 1 ),
+			),
+			'wp-pinch/woo-list-product-taxonomies'     => array(
+				'method'  => 'execute_woo_list_product_taxonomies',
+				'payload' => array(),
+			),
+			'wp-pinch/woo-add-order-note'              => array(
+				'method'  => 'execute_woo_add_order_note',
+				'payload' => array(
+					'order_id' => 1,
+					'note'     => 'hello',
+				),
+			),
+			'wp-pinch/woo-mark-fulfilled'              => array(
+				'method'  => 'execute_woo_mark_fulfilled',
+				'payload' => array( 'order_id' => 1 ),
+			),
+			'wp-pinch/woo-cancel-order-safe'           => array(
+				'method'  => 'execute_woo_cancel_order_safe',
+				'payload' => array(
+					'order_id' => 1,
+					'confirm'  => true,
+				),
+			),
+			'wp-pinch/woo-create-refund'               => array(
+				'method'  => 'execute_woo_create_refund',
+				'payload' => array(
+					'order_id'        => 1,
+					'amount'          => 10,
+					'idempotency_key' => 'abc123',
+				),
+			),
+			'wp-pinch/woo-list-refund-eligible-orders' => array(
+				'method'  => 'execute_woo_list_refund_eligible_orders',
+				'payload' => array(),
+			),
+			'wp-pinch/woo-create-coupon'               => array(
+				'method'  => 'execute_woo_create_coupon',
+				'payload' => array(
+					'code'   => 'X',
+					'amount' => '5',
+				),
+			),
+			'wp-pinch/woo-update-coupon'               => array(
+				'method'  => 'execute_woo_update_coupon',
+				'payload' => array( 'coupon_id' => 1 ),
+			),
+			'wp-pinch/woo-expire-coupon'               => array(
+				'method'  => 'execute_woo_expire_coupon',
+				'payload' => array( 'coupon_id' => 1 ),
+			),
+			'wp-pinch/woo-list-customers'              => array(
+				'method'  => 'execute_woo_list_customers',
+				'payload' => array(),
+			),
+			'wp-pinch/woo-get-customer'                => array(
+				'method'  => 'execute_woo_get_customer',
+				'payload' => array( 'customer_id' => 1 ),
+			),
+			'wp-pinch/woo-sales-summary'               => array(
+				'method'  => 'execute_woo_sales_summary',
+				'payload' => array(),
+			),
+			'wp-pinch/woo-top-products'                => array(
+				'method'  => 'execute_woo_top_products',
+				'payload' => array(),
+			),
+			'wp-pinch/woo-orders-needing-attention'    => array(
+				'method'  => 'execute_woo_orders_needing_attention',
+				'payload' => array(),
+			),
+		);
+	}
+
+	// =========================================================================
+	// Trait composition guardrails
+	// =========================================================================
+
+	/**
+	 * Abilities class uses all three composition traits.
+	 */
+	public function test_abilities_class_uses_expected_traits(): void {
+		$traits = class_uses( Abilities::class );
+		$this->assertIsArray( $traits );
+		$this->assertArrayHasKey( 'WP_Pinch\\Ability_Names_Trait', $traits, 'Abilities must use Ability_Names_Trait.' );
+		$this->assertArrayHasKey( 'WP_Pinch\\Core_Passthrough_Trait', $traits, 'Abilities must use Core_Passthrough_Trait.' );
+		$this->assertArrayHasKey( 'WP_Pinch\\Woo_Passthrough_Trait', $traits, 'Abilities must use Woo_Passthrough_Trait.' );
+	}
+
+	/**
+	 * Woo_Abilities class uses all expected execution traits.
+	 */
+	public function test_woo_abilities_class_uses_expected_traits(): void {
+		$traits = class_uses( \WP_Pinch\Ability\Woo_Abilities::class );
+		$this->assertIsArray( $traits );
+
+		$expected = array(
+			'WP_Pinch\\Ability\\Woo_Helpers_Trait',
+			'WP_Pinch\\Ability\\Woo_Inventory_Execute_Trait',
+			'WP_Pinch\\Ability\\Woo_Operations_Insights_Execute_Trait',
+			'WP_Pinch\\Ability\\Woo_Products_Orders_Execute_Trait',
+			'WP_Pinch\\Ability\\Woo_Register_Trait',
+		);
+
+		foreach ( $expected as $trait ) {
+			$this->assertArrayHasKey( $trait, $traits, "Woo_Abilities must use {$trait}." );
+		}
+	}
+
+	/**
+	 * Analytics_Abilities class uses Analytics_Execute_Trait.
+	 */
+	public function test_analytics_abilities_class_uses_execute_trait(): void {
+		$traits = class_uses( \WP_Pinch\Ability\Analytics_Abilities::class );
+		$this->assertIsArray( $traits );
+		$this->assertArrayHasKey(
+			'WP_Pinch\\Ability\\Analytics_Execute_Trait',
+			$traits,
+			'Analytics_Abilities must use Analytics_Execute_Trait.'
+		);
+	}
+
+	/**
+	 * Ability_Names_Trait exposes get_ability_names as a public static method.
+	 */
+	public function test_ability_names_trait_provides_get_ability_names(): void {
+		$this->assertTrue(
+			method_exists( Abilities::class, 'get_ability_names' ),
+			'Abilities::get_ability_names() must exist (via Ability_Names_Trait).'
+		);
+
+		$ref = new \ReflectionMethod( Abilities::class, 'get_ability_names' );
+		$this->assertTrue( $ref->isStatic(), 'get_ability_names must be static.' );
+		$this->assertTrue( $ref->isPublic(), 'get_ability_names must be public.' );
+	}
+
+	/**
+	 * All refactored trait source files exist on disk so require_once chains stay consistent.
+	 */
+	public function test_refactored_trait_files_exist(): void {
+		$root  = dirname( __DIR__ );
+		$files = array(
+			// Abilities facade traits.
+			'includes/Ability_Names_Trait.php',
+			'includes/Ability/Core_Passthrough_Trait.php',
+			'includes/Ability/Woo_Passthrough_Trait.php',
+			// Analytics split.
+			'includes/Ability/Analytics/Analytics_Execute_Trait.php',
+			// QuickWin split.
+			'includes/Ability/QuickWin/QuickWin_Execute_Trait.php',
+			// MenuMeta split.
+			'includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php',
+			// GEO/SEO split.
+			'includes/Ability/GEO/GEO_SEO_Execute_Trait.php',
+			// Woo execution traits.
+			'includes/Ability/Woo/Woo_Helpers_Trait.php',
+			'includes/Ability/Woo/Woo_Inventory_Execute_Trait.php',
+			'includes/Ability/Woo/Woo_Operations_Insights_Execute_Trait.php',
+			'includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php',
+			// Woo register traits.
+			'includes/Ability/Woo/Woo_Register_Trait.php',
+			'includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php',
+			'includes/Ability/Woo/Woo_Register_Inventory_Operations_Trait.php',
+			'includes/Ability/Woo/Woo_Register_Commercial_Intelligence_Trait.php',
+			// Settings split.
+			'includes/Settings/Settings_Admin_Pages_Trait.php',
+		);
+
+		foreach ( $files as $relative ) {
+			$this->assertFileExists( "{$root}/{$relative}", "Expected refactored trait file to exist: {$relative}" );
+		}
+	}
+
 	// =========================================================================
 	// Constants
 	// =========================================================================

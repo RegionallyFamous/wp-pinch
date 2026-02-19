@@ -46,6 +46,15 @@ parameters:
         - '#Function wc_get_product not found#'
         - '#Function wc_get_order not found#'
         - '#Function wc_get_order_notes not found#'
+        -
+            message: '#Function wc_[a-zA-Z0-9_]+ not found#'
+            path: includes/Ability/Woo_Abilities.php
+        -
+            message: '#Class WC_[A-Za-z0-9_]+ not found#'
+            path: includes/Ability/Woo_Abilities.php
+        -
+            identifier: class.notFound
+            path: includes/Ability/Woo_Abilities.php
 
         # WP-CLI (only loaded in CLI context).
         -
