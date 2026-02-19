@@ -1,12 +1,12 @@
 # Abilities Reference
 
-WP Pinch provides **core abilities** (standard WordPress operations the AI can perform) and **tools** (PinchDrop, Ghost Writer, Molt, and quick-win/high-leverage abilities). You get **88 core abilities** across content, media, taxonomies, users, comments, settings, lifecycle, analytics, advanced operations, and system admin domains, plus **24 WooCommerce** when WooCommerce is active, plus **Ghost Writer** (3) and **Molt** (1) when feature flags enabled — **116 total** when all enabled. Every ability has built-in security guards: capability checks, input sanitization, existence validation, and audit logging. We don't let AI agents run around your site like unsupervised lobsters in a kitchen. *Someone* has to be the bouncer.
+WP Pinch provides **core abilities** (standard WordPress operations the AI can perform) and **tools** (PinchDrop, Ghost Writer, Molt, and quick-win/high-leverage abilities). You get **88 core abilities** across content, media, taxonomies, users, comments, settings, lifecycle, analytics, GEO/SEO, advanced operations, and system admin domains, plus **30 WooCommerce** when WooCommerce is active, plus **Ghost Writer** (3) and **Molt** (1) when feature flags enabled — **122 total** when all enabled. Every ability has built-in security guards: capability checks, input sanitization, existence validation, and audit logging. We don't let AI agents run around your site like unsupervised lobsters in a kitchen. *Someone* has to be the bouncer.
 
 ---
 
 ## Core Abilities
 
-Core abilities cover content, media, users, comments, settings, plugins/themes, analytics, menus, meta, revisions, bulk operations, cron, site ops, and system admin.
+Core abilities cover content, media, users, comments, settings, plugins/themes, analytics, GEO/SEO, menus, meta, revisions, bulk operations, cron, site ops, and system admin.
 
 | Category | What It Does | Abilities |
 |---|---|---|
@@ -17,11 +17,12 @@ Core abilities cover content, media, users, comments, settings, plugins/themes, 
 | **Comments** | Moderation and full CRUD | `list-comments`, `moderate-comment`, `create-comment`, `update-comment`, `delete-comment` |
 | **Settings** | Read and update options (allowlisted) | `get-option`, `update-option` |
 | **Plugins & Themes** | Extension management | `list-plugins`, `toggle-plugin`, `list-themes`, `switch-theme`, `manage-plugin-lifecycle`, `manage-theme-lifecycle` |
-| **Analytics** | Site health, data export, context & discovery | `site-health`, `recent-activity`, `search-content`, `export-data`, `site-digest`, `related-posts`, `synthesize`, `content-health-report`, `suggest-terms` |
+| **Analytics** | Site health, data export, context, discovery, and narratives | `site-health`, `recent-activity`, `search-content`, `export-data`, `site-digest`, `related-posts`, `synthesize`, `content-health-report`, `suggest-terms`, `analytics-narratives`, `submit-conversational-form` |
+| **GEO / SEO** | Generative Engine Optimization and on-page SEO | `generate-llms-txt`, `get-llms-txt`, `bulk-seo-meta`, `suggest-internal-links`, `generate-schema-markup`, `suggest-seo-improvements` |
 | **Advanced** | Menus, meta, revisions, bulk ops, cron | `list-menus`, `manage-menu-item`, `get-post-meta`, `update-post-meta`, `list-revisions`, `restore-revision`, `compare-revisions`, `bulk-edit-posts`, `list-cron-events`, `manage-cron` |
 | **Site Ops** | Health, cache, diagnostics, and governance audits | `flush-cache`, `check-broken-links`, `get-php-error-log`, `list-posts-missing-meta`, `list-custom-post-types` |
 | **System Admin** | Platform operations with hard guards | `get-transient`, `set-transient`, `delete-transient`, `list-rewrite-rules`, `flush-rewrite-rules`, `maintenance-mode-status`, `set-maintenance-mode`, `search-replace-db-scoped`, `list-language-packs`, `install-language-pack`, `activate-language-pack` |
-| **WooCommerce** | Shop abilities (when WooCommerce is active) | Products: `woo-list-products`, `woo-get-product`, `woo-create-product`, `woo-update-product`, `woo-delete-product`; Orders: `woo-list-orders`, `woo-get-order`, `woo-create-order`, `woo-update-order`, `woo-manage-order` (compat); Inventory: `woo-adjust-stock`, `woo-bulk-adjust-stock`, `woo-list-low-stock`, `woo-list-out-of-stock`, `woo-list-variations`, `woo-update-variation`, `woo-list-product-taxonomies`; Fulfillment/Refunds: `woo-add-order-note`, `woo-mark-fulfilled`, `woo-cancel-order-safe`, `woo-create-refund`, `woo-list-refund-eligible-orders`; Promotions/Customers/Analytics: `woo-create-coupon`, `woo-update-coupon`, `woo-expire-coupon`, `woo-list-customers`, `woo-get-customer`, `woo-sales-summary`, `woo-top-products`, `woo-orders-needing-attention` |
+| **WooCommerce** | Shop abilities (when WooCommerce is active) | Products: `woo-list-products`, `woo-get-product`, `woo-create-product`, `woo-update-product`, `woo-delete-product`; Orders: `woo-list-orders`, `woo-get-order`, `woo-create-order`, `woo-update-order`, `woo-manage-order`; Inventory: `woo-adjust-stock`, `woo-bulk-adjust-stock`, `woo-list-low-stock`, `woo-list-out-of-stock`, `woo-list-variations`, `woo-update-variation`, `woo-list-product-taxonomies`; Fulfillment/Refunds: `woo-add-order-note`, `woo-mark-fulfilled`, `woo-cancel-order-safe`, `woo-create-refund`, `woo-list-refund-eligible-orders`; Promotions/Customers/Analytics: `woo-create-coupon`, `woo-update-coupon`, `woo-expire-coupon`, `woo-list-customers`, `woo-get-customer`, `woo-sales-summary`, `woo-top-products`, `woo-orders-needing-attention` |
 
 ### Block JSON (create-post / update-post)
 
@@ -88,7 +89,7 @@ You can set the post’s featured image in one call:
 
 On success the response may include `featured_image_id` and `featured_image_url` (attachment URL).
 
-### Operational tools (new)
+### Operational tools
 
 - **`find-replace-content`** — Bulk string replacement in post content with `dry_run` enabled by default. Requires `manage_options`. Use dry-run first, confirm `matched_count`, then run with `dry_run: false`.
 - **`flush-cache`** — Calls core `wp_cache_flush()` and reports whether the active object cache accepted the flush.
@@ -97,6 +98,20 @@ On success the response may include `featured_image_id` and `featured_image_url`
 - **`manage-plugin-lifecycle` / `manage-theme-lifecycle`** — Install, update, and delete extensions with confirmation required for destructive actions and action-specific capability checks (`install_*`, `update_*`, `delete_*`).
 - **`set-maintenance-mode`** — Enabling maintenance mode requires `confirm: true`; disabling does not.
 - **`install-language-pack` / `activate-language-pack`** — Locale is validated (format + availability in core translations) before install/activation.
+
+### Analytics and engagement
+
+- **`analytics-narratives`** — Turns site digest or recent activity data into a brief narrative ("what happened this week, what is new"). Sends a payload to the configured gateway and streams a prose summary back. Capability: `edit_posts`.
+- **`submit-conversational-form`** — Submits collected field data (name/value pairs) from a conversation. Optionally POSTs the payload to a `webhook_url`. Useful for agent-driven form collection flows. Capability: `edit_posts`.
+
+### GEO / SEO (Generative Engine Optimization)
+
+- **`generate-llms-txt`** — Generates a `llms.txt` file for AI crawlers (GEO). Uses site name, description, and structure. Optionally writes to the site root. Capability: `manage_options`.
+- **`get-llms-txt`** — Reads the current `llms.txt` file from the site root. Capability: `manage_options`.
+- **`bulk-seo-meta`** — Generates SEO titles and meta descriptions for multiple posts. Accepts `post_ids` or a query (`post_type`, `limit`). Optionally applies updates (dry-run by default). Capability: `edit_posts`.
+- **`suggest-internal-links`** — Given a post ID or search query, returns topically related posts to link to (uses RAG index when enabled). Capability: `edit_posts`.
+- **`generate-schema-markup`** — Analyzes post content and returns JSON-LD schema (Article, Product, FAQ, HowTo, Recipe, etc.). Capability: `edit_posts`.
+- **`suggest-seo-improvements`** — Analyzes a post for inline SEO: keyword density, heading structure, and meta title/description suggestions. Capability: `edit_posts`.
 
 ---
 
@@ -167,27 +182,32 @@ Every ability execution goes through these checks before any work is done. Think
 
 ## Customizing Abilities
 
-### Remove an ability
+### Remove an ability from MCP
+
+To prevent an ability from being discoverable via MCP (without unregistering it from WordPress entirely):
 
 ```php
-add_filter( 'wp_pinch_abilities', function ( array $abilities ): array {
-    unset( $abilities['delete_post'] );
-    return $abilities;
+add_filter( 'wp_pinch_mcp_server_abilities', function ( array $names ): array {
+    return array_values( array_filter( $names, fn( $n ) => 'wp-pinch/delete-post' !== $n ) );
 } );
 ```
 
 ### Add a custom ability
 
+Use the `wp_pinch_register_abilities` action to call `wp_register_ability()` after WP Pinch's core abilities are registered:
+
 ```php
-add_filter( 'wp_pinch_abilities', function ( array $abilities ): array {
-    $abilities['my_custom_ability'] = array(
-        'label'       => 'My Custom Ability',
-        'description' => 'Does something custom.',
-        'callback'    => 'my_custom_ability_callback',
-        'category'    => 'custom',
-        'capability'  => 'manage_options',
+add_action( 'wp_pinch_register_abilities', function (): void {
+    wp_register_ability(
+        'myplugin/my-ability',
+        array(
+            'label'       => 'My Custom Ability',
+            'description' => 'Does something custom.',
+            'callback'    => 'my_custom_ability_callback',
+            'category'    => 'wp-pinch',
+            'meta'        => array( 'mcp' => array( 'public' => true ) ),
+        )
     );
-    return $abilities;
 } );
 ```
 
@@ -236,7 +256,7 @@ Extend the allowlists:
 
 ```php
 // Allow reading additional options
-add_filter( 'wp_pinch_option_allowlist', function ( array $keys ): array {
+add_filter( 'wp_pinch_option_read_allowlist', function ( array $keys ): array {
     $keys[] = 'my_custom_option';
     return $keys;
 } );

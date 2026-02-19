@@ -26,24 +26,26 @@ See [Recipes](Recipes) for outcome-first flows (publish from chat, turn a post i
 
 ## Does this work with WooCommerce?
 
-Yes! WooCommerce order status changes trigger webhooks, and WP Pinch adds 2 WooCommerce abilities (`woo-list-products`, `woo-manage-order`) for listing products and managing orders. Your AI agent can check inventory faster than a lobster can snap a rubber band.
+Yes! WooCommerce order status changes trigger webhooks, and WP Pinch adds 30 WooCommerce abilities covering products, orders, inventory, fulfillment, refunds, coupons, customers, and analytics — when WooCommerce is active. See [Abilities Reference](Abilities-Reference#core-abilities) for the full list. Your AI agent can check inventory faster than a lobster can snap a rubber band.
 
 ---
 
 ## Can I add custom abilities?
 
-Absolutely. Use the `wp_pinch_abilities` filter:
+Absolutely. Hook into `wp_pinch_register_abilities` and call `wp_register_ability()`:
 
 ```php
-add_filter( 'wp_pinch_abilities', function ( array $abilities ): array {
-    $abilities['my_custom_ability'] = array(
-        'label'       => 'My Custom Ability',
-        'description' => 'Does something custom.',
-        'callback'    => 'my_custom_ability_callback',
-        'category'    => 'custom',
-        'capability'  => 'manage_options',
+add_action( 'wp_pinch_register_abilities', function (): void {
+    wp_register_ability(
+        'myplugin/my-ability',
+        array(
+            'label'       => 'My Custom Ability',
+            'description' => 'Does something custom.',
+            'callback'    => 'my_custom_ability_callback',
+            'category'    => 'wp-pinch',
+            'meta'        => array( 'mcp' => array( 'public' => true ) ),
+        )
     );
-    return $abilities;
 } );
 ```
 

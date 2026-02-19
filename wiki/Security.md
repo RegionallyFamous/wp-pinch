@@ -135,7 +135,7 @@ WP Pinch applies standard web security practices:
 |---|---|---|
 | **Static Analysis** | PHPStan Level 6 | Type mismatches, null access, undefined properties |
 | **Coding Standards** | PHPCS (WordPress-Extra + Security) | Security violations, escaping, sanitization, naming |
-| **Unit Tests** | PHPUnit (300+ tests) | Functional correctness, security guards, edge cases |
+| **Unit Tests** | PHPUnit (327 tests) | Functional correctness, security guards, edge cases |
 | **CI Pipeline** | GitHub Actions | All of the above on every push |
 | **Pre-commit Hook** | PHPCS + PHPStan | Catches issues before they reach the repo |
 

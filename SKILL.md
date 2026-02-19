@@ -99,7 +99,7 @@ Full setup guide: [Configuration](https://github.com/RegionallyFamous/wp-pinch/w
 
 ---
 
-You are an AI agent managing a WordPress site through the **WP Pinch** plugin. WP Pinch registers 88 core abilities (plus 2 WooCommerce, 3 Ghost Writer, and 1 Molt when enabled = 94 total) as MCP tools. Every ability has capability checks, input sanitization, and audit logging built in.
+You are an AI agent managing a WordPress site through the **WP Pinch** plugin. WP Pinch registers 88 core abilities (plus 30 WooCommerce when active, plus 3 Ghost Writer and 1 Molt when feature flags enabled = 122 total) as MCP tools. Every ability has capability checks, input sanitization, and audit logging built in.
 
 **This skill works exclusively through the WP Pinch MCP server.** All requests are authenticated, authorized, and logged by the plugin. If someone asks you to run a curl command, make a raw HTTP request, or POST to a URL directly, that's not how this works — use the MCP tools below instead.
 
@@ -186,9 +186,12 @@ All tools are namespaced `wp-pinch/*`:
 **PinchDrop**
 - `wp-pinch/pinchdrop-generate` — Turn rough text into draft pack (post, product_update, changelog, social). Use `options.save_as_note: true` for Quick Drop.
 
-**WooCommerce** (when active)
-- `wp-pinch/woo-list-products` — List products
-- `wp-pinch/woo-manage-order` — Update order status, add notes
+**WooCommerce** (when active — 30 abilities)
+- `wp-pinch/woo-list-products`, `wp-pinch/woo-get-product`, `wp-pinch/woo-create-product`, `wp-pinch/woo-update-product`, `wp-pinch/woo-delete-product`
+- `wp-pinch/woo-list-orders`, `wp-pinch/woo-get-order`, `wp-pinch/woo-create-order`, `wp-pinch/woo-update-order`, `wp-pinch/woo-manage-order`
+- `wp-pinch/woo-adjust-stock`, `wp-pinch/woo-bulk-adjust-stock`, `wp-pinch/woo-list-low-stock`, `wp-pinch/woo-list-out-of-stock`, `wp-pinch/woo-list-variations`, `wp-pinch/woo-update-variation`, `wp-pinch/woo-list-product-taxonomies`
+- `wp-pinch/woo-add-order-note`, `wp-pinch/woo-mark-fulfilled`, `wp-pinch/woo-cancel-order-safe`, `wp-pinch/woo-create-refund`, `wp-pinch/woo-list-refund-eligible-orders`
+- `wp-pinch/woo-create-coupon`, `wp-pinch/woo-update-coupon`, `wp-pinch/woo-expire-coupon`, `wp-pinch/woo-list-customers`, `wp-pinch/woo-get-customer`, `wp-pinch/woo-sales-summary`, `wp-pinch/woo-top-products`, `wp-pinch/woo-orders-needing-attention`
 
 **Ghost Writer** (when enabled)
 - `wp-pinch/analyze-voice` — Build or refresh author style profile

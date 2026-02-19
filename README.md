@@ -4,7 +4,7 @@
 
 One plugin. Connect OpenClaw (or any MCP client), and your site is in the same chat: publish, repurpose, moderate, audit, and maintain from WhatsApp, Slack, Telegram, or Discord.
 
-[OpenClaw](https://github.com/openclaw/openclaw) is the personal AI on those channels; it *does* things. **WP Pinch is the WordPress tool:** 88 core abilities (plus 24 WooCommerce when active; plus Ghost Writer and Molt when feature flags enabled = 116 total).
+[OpenClaw](https://github.com/openclaw/openclaw) is the personal AI on those channels; it *does* things. **WP Pinch is the WordPress tool:** 88 core abilities (plus 30 WooCommerce when active; plus Ghost Writer and Molt when feature flags enabled = 122 total).
 
 **[wp-pinch.com](https://wp-pinch.com)** · [Wiki](https://github.com/RegionallyFamous/wp-pinch/wiki) · [Releases](https://github.com/RegionallyFamous/wp-pinch/releases) · [ClawHub](https://clawhub.ai/nickhamze/pinch-to-post) · **[Install in 60 seconds →](https://github.com/RegionallyFamous/wp-pinch/wiki/Configuration)**
 
@@ -20,11 +20,19 @@ One plugin. Connect OpenClaw (or any MCP client), and your site is in the same c
 ## What ships in the box
 
 - **88 core abilities** across content, media, users/comments, settings, extension lifecycle, revisions/history, governance audits, and system admin operations.
+- **30 WooCommerce abilities** covering product/order CRUD, inventory controls, fulfillment/refunds, coupon lifecycle, customer lookups, and commerce analytics.
 - **Feature tools**: PinchDrop, Ghost Writer, Molt, What do I know, Project Assembly, Spaced Resurfacing, Find Similar, Knowledge Graph.
 - **Automation stack**: webhook dispatcher with retries + HMAC, governance scheduler + Tide Report, audit log, and circuit breaker.
 - **Distribution channels**: OpenClaw (WhatsApp/Telegram/Slack/Discord), any MCP client, and on-site Pinch Chat block.
 
-If you enable every optional module (WooCommerce + feature-flagged tools), you land at **116 total abilities/tools**. That is one extremely well-trained crustacean.
+If you enable every optional module (WooCommerce + feature-flagged tools), you land at **122 total abilities/tools**. That is one extremely well-trained crustacean.
+
+### Why the WooCommerce expansion matters
+
+- **Fewer handoffs** - agents can move from "draft catalog update" to "order follow-up" without bouncing between tools.
+- **Safer store ops** - high-risk flows (refunds, cancellations, sensitive customer data) include explicit guardrails and conservative defaults.
+- **Faster response time** - support and operations teams can answer order, stock, and promotion questions directly from chat.
+- **Better decision visibility** - built-in sales summaries and "orders needing attention" reduce blind spots during busy windows.
 
 ---
 
@@ -68,7 +76,7 @@ No extra logins. No "I'll do it at my desk." You talk; your assistant has the ke
 
 **OpenClaw** ([openclaw.ai](https://openclaw.ai), [GitHub](https://github.com/openclaw/openclaw)): open-source personal AI. You run it. It connects to WhatsApp, Telegram, Slack, Discord, and more — and *does* things via MCP tools, skills, and code.
 
-**WP Pinch** plugs WordPress in. Your site becomes an MCP server: 88 core abilities across content, media, users, comments, settings, lifecycle, menus/meta/revisions/cron, and system admin operations, plus 24 WooCommerce when active, plus PinchDrop, Molt, Ghost Writer when feature flags enabled. Bonus: **Pinch Chat** block and **webhooks** (publish/comment → OpenClaw). One plugin.
+**WP Pinch** plugs WordPress in. Your site becomes an MCP server: 88 core abilities across content, media, users, comments, settings, lifecycle, menus/meta/revisions/cron, GEO/SEO, and system admin operations, plus 30 WooCommerce when active, plus PinchDrop, Molt, Ghost Writer when feature flags enabled. Bonus: **Pinch Chat** block and **webhooks** (publish/comment → OpenClaw). One plugin.
 
 ---
 
@@ -85,7 +93,7 @@ No extra logins. No "I'll do it at my desk." You talk; your assistant has the ke
 | Have your site report what needs attention (stale posts, SEO, comments) | Governance tasks run on a schedule; Tide Report bundles findings into one daily webhook to OpenClaw. You see it in your channel. |
 | Let visitors chat with an AI that knows your content | Pinch Chat block on any page. Streaming, slash commands, optional public mode. |
 
-Plus: 88 core abilities (content, media, users, comments, settings, plugins/themes lifecycle, menus/meta/revisions/cron, and system admin), 24 WooCommerce when active, and Ghost Writer (3) + Molt (1) when feature flags enabled — 116 total. [Full abilities reference →](https://github.com/RegionallyFamous/wp-pinch/wiki/Abilities-Reference)
+Plus: 88 core abilities (content, media, users, comments, settings, plugins/themes lifecycle, menus/meta/revisions/cron, GEO/SEO, and system admin), 30 WooCommerce when active, and Ghost Writer (3) + Molt (1) when feature flags enabled — 122 total. [Full abilities reference →](https://github.com/RegionallyFamous/wp-pinch/wiki/Abilities-Reference)
 
 ---
 

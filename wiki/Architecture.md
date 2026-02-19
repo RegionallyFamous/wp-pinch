@@ -45,7 +45,7 @@ How the lobster trap is wired. WP Pinch sits inside WordPress and talks to OpenC
 
 ### Abilities Engine (`class-abilities.php`)
 
-The core of WP Pinch. Registers 88 core WordPress abilities (plus WooCommerce/feature-flagged abilities when available) and exposes them through both the MCP server and the incoming webhook receiver. Each ability is a self-contained function with:
+The core of WP Pinch. Registers 88 core WordPress abilities (plus 30 WooCommerce when active, plus Ghost Writer/Molt when feature-flagged — 122 total) and exposes them through both the MCP server and the incoming webhook receiver. Each ability is a self-contained function with:
 
 - A capability requirement (e.g., `edit_posts`)
 - Input parameter definitions with sanitization rules
@@ -119,13 +119,14 @@ Configurable failure threshold and recovery timeout. Admin notice when the circu
 
 ### Feature Flags (`class-feature-flags.php`)
 
-12 boolean toggles for enabling/disabling features without code changes:
+17 boolean toggles for enabling/disabling features without code changes:
 
 - `streaming_chat`, `webhook_signatures`, `circuit_breaker`, `ability_toggle`
 - `webhook_dashboard`, `audit_search`, `health_endpoint`, `public_chat`
 - `slash_commands`, `token_display`, `pinchdrop_engine`, `ghost_writer`
+- `molt`, `prompt_sanitizer`, `approval_workflow`, `auto_alt_text`, `rag_indexing`
 
-Toggle via the admin UI (WP Pinch > Features) or override with a filter. Your reef, your rules.
+Toggle via the admin UI (WP Pinch > Features) or override with `wp_pinch_feature_flag` filter. Your reef, your rules.
 
 ### REST API (`includes/class-rest-controller.php` + `includes/Rest/`)
 

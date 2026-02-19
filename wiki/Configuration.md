@@ -176,18 +176,22 @@ Toggle features on/off without code changes:
 | Flag | Default | Description |
 |---|---|---|
 | `streaming_chat` | Off | SSE streaming for chat responses |
-| `webhook_signatures` | Off | HMAC-SHA256 signed webhooks |
-| `circuit_breaker` | Off | Circuit breaker for gateway calls |
-| `ability_toggle` | Off | Admin UI to enable/disable individual abilities |
-| `webhook_dashboard` | Off | Webhook dashboard in admin |
-| `audit_search` | Off | Search and date filtering in audit log |
-| `health_endpoint` | Off | Public health check endpoint |
+| `webhook_signatures` | **On** | HMAC-SHA256 signed webhooks |
+| `circuit_breaker` | **On** | Circuit breaker for gateway calls |
+| `ability_toggle` | **On** | Admin UI to enable/disable individual abilities |
+| `webhook_dashboard` | **On** | Webhook dashboard in admin |
+| `audit_search` | **On** | Search and date filtering in audit log |
+| `health_endpoint` | **On** | Public health check endpoint |
 | `public_chat` | Off | Allow unauthenticated visitors to chat |
 | `slash_commands` | Off | Enable /new, /status, /compact in chat |
-| `prompt_sanitizer` | On | Mitigate instruction injection in content sent to LLMs (Molt, Ghost Writer, synthesize) |
+| `prompt_sanitizer` | **On** | Mitigate instruction injection in content sent to LLMs (Molt, Ghost Writer, synthesize) |
 | `approval_workflow` | Off | Queue destructive abilities (delete-post, toggle-plugin, etc.) for admin approval before execution |
 | `token_display` | Off | Show token usage in chat footer |
 | `pinchdrop_engine` | Off | Enable PinchDrop capture-anywhere pipeline |
+| `ghost_writer` | Off | Enable Ghost Writer (voice analysis + draft completion) |
+| `molt` | Off | Enable Molt content repackager |
+| `auto_alt_text` | Off | Automatically generate alt text for uploaded media |
+| `rag_indexing` | Off | Enable RAG (retrieval-augmented generation) chunk indexing |
 
 ---
 

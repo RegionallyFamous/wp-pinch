@@ -2,7 +2,7 @@
 
 **WordPress in your pocket. Your AI assistant runs it from the chat you never leave.**
 
-One plugin. Connect [OpenClaw](https://github.com/openclaw/openclaw) (or any MCP client); your site is in the same chat — 88 core abilities (plus 2 WooCommerce, plus Ghost Writer and Molt when feature flags enabled = 94 total), Molt, PinchDrop, What do I know, daily Tide Report (9 governance tasks), Pinch Chat block, webhooks. Self-hosted. Your data.
+One plugin. Connect [OpenClaw](https://github.com/openclaw/openclaw) (or any MCP client); your site is in the same chat — 88 core abilities (plus 30 WooCommerce when active, plus Ghost Writer and Molt when feature flags enabled = 122 total), Molt, PinchDrop, What do I know, daily Tide Report (9 governance tasks), Pinch Chat block, webhooks. Self-hosted. Your data.
 
 **One line:** Your site isn't another tab — it's in the same chat. You talk; your assistant has the keys. [Install & connect →](Configuration)
 
