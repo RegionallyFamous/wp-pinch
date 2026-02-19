@@ -128,115 +128,82 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 == Changelog ==
 
 = 3.0.3 =
-* New: Expanded system/admin toolset: transient CRUD, rewrite list/flush, maintenance mode status/toggle, scoped DB search/replace, language-pack management, extension lifecycle controls, expanded user/comment operations, media thumbnail regeneration.
-* Changed: Security hardening for destructive operations (explicit confirmations, dangerous capability blocking, safer maintenance marker deletion).
-* Fixed: E2E stability for settings/chat flows, local/CI test execution path consistency, and early translation timing notice.
+* Why it matters: teams can automate high-impact maintenance with more confidence and fewer release-check surprises.
+* Added: Expanded system/admin tools so high-impact maintenance work can be done safely from chat instead of brittle manual flows.
+* Changed: Hardened destructive paths with stronger confirmations and safer defaults to reduce "oops, wrong button" incidents.
+* Fixed: Improved E2E and CI/local parity so release confidence comes from green checks, not crossed claws.
 
 = 3.0.2 =
-* New: Molt output types — newsletter (blog-to-newsletter) and sections.
-* New: Abilities — analytics-narratives, suggest-seo-improvements, submit-conversational-form.
-* New: Governance task Semantic Content Freshness; schedule hash for version/settings change.
-* New: AI Dashboard settings tab (first tab, default view).
-* Changed: PHPCS — all inline ignores removed; exclusions in phpcs.xml.dist; 300 tests, 0 skipped; Action Scheduler in test bootstrap; clean test output.
-* Fixed: install-wp-tests.sh portable sed; site health and governance test expectations.
+* Why it matters: content moves faster from draft to channel-ready output, and quality signals are easier to trust.
+* Added: New Molt output types and content abilities to shorten the draft-to-publish cycle for editors and agents.
+* Added: Semantic Content Freshness governance + AI dashboard so teams can spot stale strategy and system status faster.
+* Changed: Lint/test architecture cleanup to make quality gates easier to trust and maintain.
+* Fixed: Cross-platform test environment issues that caused noisy or misleading failures.
 
 = 3.0.0 =
-* New: REST request handling moved to includes/Rest/ (Auth, Chat, Status, Incoming_Hook, Capture, Ghostwrite, Molt, Preview_Approve, Schemas, Helpers, Write_Budget). Route registration stays in class-rest-controller.php.
-* Changed: Settings use data-driven option registration (get_option_definitions + loop). Governance tests call task class run() methods.
-* Docs: Architecture, Developer-Guide, Test-Coverage, AGENTS.md, Security, FAQ, CONTRIBUTING updated for REST structure and 300+ tests.
+* Why it matters: architectural cleanup here makes future features safer to ship, easier to test, and easier to maintain.
+* Added: REST handlers were split into focused classes to improve maintainability and reduce controller sprawl.
+* Changed: Settings and governance tests were refactored to align with current architecture and reduce fragile test coupling.
+* Docs: Core architecture and testing docs updated so contributor onboarding is less "read 9 files and hope."
 
 = 2.9.0 =
-* New: Security hardening — prompt sanitization, webhook loop detection, kill switch, read-only mode, token masking, expanded option denylist.
-* New: OpenClaw Agent role with least-privilege capability picker.
-* New: Prompt sanitizer feature flag (default on) for instruction injection mitigation.
-* New: Approval workflow feature flag for destructive abilities.
-* New: Block-native Molt with faq_blocks output type.
-* Changed: SKILL.md v5.5.1 — marketing-forward rewrite, fixed metadata format (resolves registry mismatch), clarified credential architecture, MCP-only.
+* Why it matters: trust-first hardening keeps AI automation powerful without letting it run wild in production.
+* Added: Security hardening focused on real-world risk: sanitization, loop prevention, kill switch/read-only controls, and safer option boundaries.
+* Added: Least-privilege OpenClaw Agent role and approval workflow to keep automation useful without handing it the nuclear launch keys.
+* Changed: Skill/docs clarified trust boundaries and MCP-only flow for safer deployments.
 
 = 2.8.0 =
-* New: Capability manifest on GET /abilities (post types, taxonomies, plugins, features).
-* New: Daily write budget with optional cap and email alert (Connection tab).
-* New: Draft-first: preview_url in create/update-post, POST /preview-approve to publish.
-* New: content-health-report and suggest-terms abilities; block JSON in create/update-post.
-* New: Strict gateway reply sanitization option for chat.
-* Docs: Ability count standardized (48 core, 54 total). SKILL v5.2 ClawHub metadata, setup (Which site?). ClawHub install: clawhub install nickhamze/pinch-to-post. Don't have OpenClaw yet? Action Scheduler FAQ. Recommended features after install. FAQ troubleshooting. GitHub distribution note.
+* Why it matters: agents can reason before writing, and teams get a cleaner path from setup to daily use.
+* Added: Gateway vision features (manifest, draft-first preview flow, write budgets, content health + term suggestions) so agents can reason with better context before writing.
+* Added: Strict chat reply sanitization option to reduce prompt-injection and unsafe HTML edge cases.
+* Changed: Documentation alignment pass so install/setup paths and counts match shipped behavior.
 
 = 2.7.0 =
-* New: Autoload audit — migration sets autoload=no on all WP Pinch options.
-* New: REST API disabled detection — admin notice when REST API is blocked; Site Health test for WP Pinch REST availability.
-* New: Activity feed dashboard widget — last 10 audit entries on the main dashboard with link to full audit log.
-* New: Optimistic locking for update-post — pass post_modified from get-post; updates rejected when post changed since last read.
-* New: Troubleshooting wiki page — REST API, WAF, security plugins, managed hosting, page cache exclusions.
-* New: Classic Editor detection — filter wp_pinch_preferred_content_format; Molt faq_blocks returns HTML when Classic Editor is default.
-* Changed: Memory-conscious governance — no_found_rows on all governance get_posts() calls.
+* Why it matters: production behavior is more predictable across larger sites and mixed hosting/editor stacks.
+* Added: Operational resilience upgrades (autoload cleanup, REST availability detection, optimistic locking, clearer troubleshooting) to reduce production surprises.
+* Added: Better compatibility paths for Classic Editor and mixed hosting/security-plugin environments.
+* Changed: Governance queries are more memory-conscious to stay stable on larger sites.
 
 = 2.5.0 =
-* New: Block Bindings API for Pinch Chat (agentId and placeholder bound to post meta or site options). Requires WordPress 6.5+.
-* New: Default Chat Placeholder setting for site-wide placeholder text.
-* New: Pinch Chat block supports typography.fontSize and dimensions.minHeight in the editor.
-* New: wp_pinch_block_type_metadata filter for themes/plugins to modify block registration.
-* Changed: REST route checks use str_starts_with (PHP 8). Ability cache flush wrapped in try-catch for object cache backends that don't support group flush.
-* Docs: Recipes/FAQ/Configuration links, Limits (execute_batch cap, GET /abilities), Health & status endpoints, trace ID, execute_batch recipe, wizard "Try this first," OpenClaw-Skill as default path.
-* Fixed: PHPCS empty catch in ability cache (no-op added for backends without group flush).
+* Why it matters: site builders can tune chat UX faster without forking plugin code.
+* Added: Builder-friendly chat customization (Block Bindings, placeholder defaults, editor supports) so site teams can tune UX without custom code.
+* Changed: Compatibility hardening for route checks and cache flushing across different object-cache backends.
+* Fixed: PHPCS no-op handling for intentional compatibility paths.
 
 = 2.4.2 =
-* New: First-run wizard — step indicator, copy buttons for MCP URL and CLI command, Test Connection spinner and a11y. Wizard CSS/JS in admin assets.
-* New: Settings UI — Connection tab cards (Gateway & API, Webhook, Chat, PinchDrop). Audit log empty state, sticky table header. Design tokens in admin and block.
-* New: Pinch Chat — focus-visible outlines, "Scroll to bottom" when new message arrives off-screen, same-sender message grouping, design tokens and dark-mode contrast.
-* New: "Settings saved" admin notice after saving options.
-* Changed: Inline styles removed from wizard and audit; abilities table and circuit status in CSS. Audit page clamped to at least 1.
-* Security: Wizard loading state uses DOM APIs only (no innerHTML with translated text). Test Connection bound only when wpPinchAdmin.ajaxUrl exists.
-* Fixed: Lint (PHPCS, ESLint, Stylelint) and escaping.
+* Why it matters: first-run setup got friendlier, and daily admin workflows got less fiddly.
+* Added: First-run wizard and settings UX polish to cut onboarding friction and reduce setup drop-off.
+* Added: Chat usability/accessibility improvements (focus visibility, scroll hints, dark-mode tuning) for cleaner day-to-day use.
+* Changed: Admin styling moved to maintainable CSS paths so future UI changes are less brittle.
+* Security: Safer wizard scripting defaults to reduce risky DOM usage patterns.
+* Fixed: Lint and escaping cleanup to keep release quality gates quiet and trustworthy.
 
 = 2.4.1 =
-* New: CodeQL and dependency review workflows. CONTRIBUTING with E2E/load testing notes.
-* Changed: Editorconfig, issue/PR templates, CODEOWNERS. PHPUnit 11, Composer PHP 8.2. PHPCS fixes.
+* Why it matters: security checks moved earlier, so contributors catch problems before they become release blockers.
+* Added: CodeQL + dependency review so security checks happen earlier in the PR path.
+* Changed: Project hygiene upgrades (templates, ownership, toolchain notes) for smoother contributor workflow.
 
 = 2.4.0 =
-* New: Quick Drop — PinchDrop option `save_as_note: true` creates a minimal post (title + body only). Lightweight capture from any channel.
-* New: Memory Bait — ability `wp-pinch/site-digest` returns recent posts with title, excerpt, and taxonomy terms for agent memory or system prompt.
-* New: Tide Report — daily governance task that bundles content freshness, SEO, comments, and (optionally) draft necromancer into one webhook payload.
-* New: Echo Net — ability `wp-pinch/related-posts` returns backlinks and posts that share taxonomy terms for a given post ID.
-* New: Weave — ability `wp-pinch/synthesize` searches posts and returns a payload for LLM synthesis (first draft; human refines).
-* Governance: 7 tasks total; Tide Report added. Shared helpers for findings used by individual tasks and Tide Report.
+* Why it matters: WP Pinch shifted from one-off actions to a reusable capture-and-synthesis workflow loop.
+* Added: Workflow-oriented features (Quick Drop, site-digest, related-posts, synthesize) so agents can capture, remember, and draft in one loop.
+* Added: Tide Report bundling so teams get one daily action list instead of alert scatter.
+* Changed: Governance helper structure aligned around reusable findings for more consistent reporting.
 
 = 2.3.1 =
+* Why it matters: docs caught up with reality so new users spend less time reconciling mismatched messaging.
 * Doc: README and readme.txt now say "Six reasons to install WP Pinch" and list six governance tasks (including draft necromancy).
 
 = 2.3.0 =
-* New: Ghost Writer — AI voice profile engine that learns each author's writing style from their published posts. Tone, vocabulary, structural habits, quirks — all captured in a per-author profile.
-* New: Ghost Writer — draft completion. Resurrects abandoned drafts in the original author's voice via OpenClaw. Your draft graveyard just got a necromancer.
-* New: /ghostwrite slash command — type /ghostwrite in chat to see abandoned drafts, or /ghostwrite 123 to resurrect one.
-* New: Draft Necromancer governance task — weekly scan for abandoned drafts worth resurrecting, delivered via webhook.
-* New: 3 new abilities (analyze-voice, list-abandoned-drafts, ghostwrite) behind ghost_writer feature flag.
-* New: ghost_writer feature flag (disabled by default) — enable to unlock the full Ghost Writer system.
-* New: Ghost Writer threshold setting — configurable abandoned draft age (default 30 days).
-* New: PinchDrop (Capture Anywhere) pipeline — signed inbound capture endpoint (`/wp-pinch/v1/pinchdrop/capture`) with idempotency by `request_id`, source allowlist support, and draft-pack generation.
-* New: `pinchdrop_generate` ability to build structured draft packs and optionally persist draft posts with capture metadata (`source`, `author`, `request_id`, capture timestamp).
-* New: PinchDrop settings (`wp_pinch_pinchdrop_enabled`, default outputs, auto-save drafts, allowed sources) and `pinchdrop_engine` feature flag.
-* New: Per-block agent override — new agentId attribute lets individual chat blocks target different OpenClaw agents.
-* New: Slash commands — /new, /reset, /status, and /compact in the chat input (behind slash_commands feature flag). For power users who type faster than a lobster snaps.
-* New: Message feedback — thumbs up/down buttons on assistant messages.
-* New: Token usage display — tracks and shows token consumption from X-Token-Usage headers (behind token_display feature flag). Know exactly how many tokens your lobster is eating.
-* New: Session reset endpoint (/session/reset) for starting fresh conversations.
-* New: Incoming webhook receiver (/hook) — lets OpenClaw push ability execution requests back to WordPress with HMAC-SHA256 verification. The trap now works both ways.
-* New: SSE streaming in chat block — real-time character-by-character responses with animated cursor indicator.
-* New: 3 new feature flags (public_chat, slash_commands, token_display) for 10 total.
-* New: 14 new admin settings (agent ID, webhook channel/recipient/delivery/model/thinking/timeout, chat model/thinking/timeout, session idle minutes, and more).
-* New: Model and thinking overrides on chat endpoints.
-* New: Fetch retry with exponential backoff in the chat block.
-* New: Session persistence via sessionStorage keyed by block ID.
-* Security: Per-post capability checks on get-post-meta and update-post-meta abilities — now verifies current_user_can( 'edit_post', $post_id ).
-* Security: Uninstall cleanup expanded — all 24 registered options now deleted on uninstall.
-* Security: Public chat endpoint isolation with separate rate limiting and session key validation.
-* Improved: WCAG 2.1 AA prefers-reduced-motion support — disables all animations when requested.
-* Improved: WCAG 2.1 AA forced-colors (Windows High Contrast Mode) support with system color keywords.
-* Improved: Full dark mode coverage for all new UI elements.
-* Improved: Block editor sidebar controls for public mode toggle and agent ID override.
-* Fixed: Chat block session key initialization for authenticated and public users.
-* Fixed: Streaming endpoint properly scoped to authenticated users only.
+* Why it matters: abandoned drafts became recoverable assets instead of permanent editorial debt.
+* Added: Ghost Writer and Draft Necromancer to turn abandoned drafts into publishable work instead of content debt.
+* Added: PinchDrop capture pipeline and generation tools so rough ideas become structured drafts with traceability.
+* Added: Chat maturity features (slash commands, feedback, token usage, streaming, retries, session handling) for real operator workflows.
+* Security: Tightened permission checks, uninstall cleanup, and public endpoint isolation to match the expanded feature surface.
+* Improved: Accessibility and dark-mode coverage for broader production usability.
+* Fixed: Session and stream scoping issues for predictable authenticated/public behavior.
 
 = 2.1.0 =
+* Why it matters: it built the reliability and observability baseline later features depend on.
 * New: Circuit breaker for gateway calls — fails fast when gateway is down, auto-recovers with half-open probe.
 * New: Feature flags system — 7 toggleable features with admin UI and filter override.
 * New: SSE streaming chat endpoint for real-time responses (behind feature flag).
@@ -265,6 +232,7 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 * Fixed: PHP 8.2+ compatibility (mb_strtoupper, no dynamic properties).
 
 = 2.0.0 =
+* Why it matters: this trust-focused hardening pass reduced high-impact security risk before broader rollout.
 * **Major security hardening release** — 38 fixes across 12 files addressing access control, privilege escalation, IDOR, SSRF, information disclosure, PII redaction, input validation, XSS, and rate limiting.
 * Fixed: Chat block sessionStorage instability — messages now persist across page reloads via a stable `blockId` attribute.
 * Security: Post-level capability checks added to update-post, delete-post, list-posts, and search-content.
@@ -290,10 +258,12 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 * Breaking: User email removed from ability responses. Bulk delete uses trash. admin_email removed from option read allowlist. wp_pinch_blocked_roles filter default changed.
 
 = 1.0.2 =
+* Why it matters: local/source installs became easier to get right, and release packages became more predictable.
 * Fixed: Admin settings page 404 for admin.js/admin.css when running from source — documented build requirement (npm run build) in FAQ.
 * Changed: Release process now documents `make zip` step so release packages include built assets.
 
 = 1.0.1 =
+* Why it matters: critical launch-week accessibility and session reliability issues were addressed quickly.
 * Fixed: Screen reader announcements now work on the frontend (wp-a11y enqueued for Pinch Chat block).
 * Fixed: Session storage scoped per block instance — no more message cross-contamination with multiple chat blocks.
 * Fixed: Focus ring visible in Windows High Contrast Mode (transparent outline trick).
@@ -310,6 +280,7 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 * Added: Pre-commit Git hook and make check quality gate.
 
 = 1.0.0 =
+* Why it matters: it established the initial public foundation for AI-assisted WordPress operations.
 * Initial release — the lobster has landed.
 * 34 WordPress abilities across 9 categories (content, media, taxonomies, users, comments, settings, plugins/themes, analytics, advanced).
 * 2 bonus WooCommerce abilities (product listing, order management).
@@ -328,16 +299,16 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 == Upgrade Notice ==
 
 = 3.0.0 =
-Major: REST handlers moved to includes/Rest/ namespace; settings use data-driven registration. No API changes for MCP or REST consumers. Update any custom code that called Rest_Controller or Governance task methods directly.
+Major: REST handlers moved to `includes/Rest/`; settings use data-driven registration. MCP/REST API contracts did not change. Update custom code that called `Rest_Controller` or Governance task methods directly.
 
 = 2.5.0 =
-Block Bindings for Pinch Chat, default placeholder, block supports. Doc refresh. No breaking changes.
+Block Bindings for Pinch Chat, default placeholder, and block supports. Docs refreshed. No breaking changes.
 
 = 2.4.2 =
-UI polish: first-run wizard (step indicator, copy buttons, Test Connection spinner), settings cards and audit empty state, Pinch Chat focus and scroll-to-bottom. Lint and security hardening. No breaking changes.
+UI polish: first-run wizard (step indicator, copy buttons, Test Connection spinner), settings cards and audit empty state, plus Pinch Chat focus and scroll-to-bottom. Lint and security hardening. No breaking changes.
 
 = 2.4.1 =
-CI and docs: CodeQL, dependency review, CONTRIBUTING. PHPUnit 11, PHPCS fixes. No breaking changes.
+CI and docs: CodeQL, dependency review, and CONTRIBUTING updates. PHPUnit 11 and PHPCS fixes. No breaking changes.
 
 = 2.4.0 =
 Feature release: Quick Drop (save as note), Memory Bait (site-digest), Tide Report (daily digest webhook), Echo Net (related-posts), Weave (synthesize). Five new capabilities; seven governance tasks. No breaking changes from 2.3.1.
@@ -346,7 +317,7 @@ Feature release: Quick Drop (save as note), Memory Bait (site-digest), Tide Repo
 Documentation update: "Six reasons" and six governance tasks in README/readme.txt. No code changes from 2.3.0.
 
 = 2.3.0 =
-Ghost Writer, PinchDrop Capture. New /ghostwrite slash command and abilities. No breaking changes.
+Ghost Writer and PinchDrop Capture. New `/ghostwrite` slash command and abilities. No breaking changes.
 
 = 2.1.0 =
 Circuit breaker, feature flags, webhook signatures, SSE streaming, audit search/export, chat UX overhaul. No breaking changes.
