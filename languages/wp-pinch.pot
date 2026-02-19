@@ -9,20 +9,20 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-02-19T13:22:49+00:00\n"
+"POT-Creation-Date: 2026-02-19T17:02:38+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: wp-pinch\n"
 
 #. Plugin Name of the plugin
 #: wp-pinch.php
-#: includes/class-abilities.php:205
+#: includes/class-abilities.php:208
 #: includes/class-network-settings.php:35
 #: includes/class-network-settings.php:36
 #: includes/class-network-settings.php:132
 #: includes/class-privacy.php:55
-#: includes/class-settings.php:150
 #: includes/class-settings.php:151
+#: includes/class-settings.php:152
 #: includes/class-site-health.php:51
 #: includes/class-site-health.php:198
 #: includes/class-site-health.php:294
@@ -145,151 +145,59 @@ msgstr ""
 msgid "Ability \"%s\" not found."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:35
-msgid "Site Health"
-msgstr ""
-
-#: includes/Ability/Analytics_Abilities.php:36
-msgid "Get site health summary: PHP, WordPress, database, disk usage."
-msgstr ""
-
-#: includes/Ability/Analytics_Abilities.php:49
-msgid "Content Health Report"
-msgstr ""
-
-#: includes/Ability/Analytics_Abilities.php:50
-msgid "Get a content health report: missing alt text, broken internal links, thin content, orphaned media."
-msgstr ""
-
-#: includes/Ability/Analytics_Abilities.php:74
-msgid "Recent Activity"
-msgstr ""
-
-#: includes/Ability/Analytics_Abilities.php:75
-msgid "Get recent posts, comments, and user registrations."
-msgstr ""
-
-#: includes/Ability/Analytics_Abilities.php:93
-msgid "Search Content"
-msgstr ""
-
-#: includes/Ability/Analytics_Abilities.php:94
-msgid "Full-text search across posts, pages, and custom post types."
-msgstr ""
-
-#: includes/Ability/Analytics_Abilities.php:118
-msgid "Export Data"
-msgstr ""
-
-#: includes/Ability/Analytics_Abilities.php:119
-msgid "Export post, user, or comment data as JSON."
-msgstr ""
-
-#: includes/Ability/Analytics_Abilities.php:146
-msgid "Memory Bait (Site Digest)"
-msgstr ""
-
-#: includes/Ability/Analytics_Abilities.php:147
-msgid "Compact export of recent posts: title, excerpt, and key taxonomy terms. For agent memory-core or system prompt so the agent knows your site."
-msgstr ""
-
-#: includes/Ability/Analytics_Abilities.php:169
-msgid "Echo Net (Related Posts)"
-msgstr ""
-
-#: includes/Ability/Analytics_Abilities.php:170
-msgid "Given a post ID, return posts that link to it (backlinks) or share taxonomy terms. Enables \"you wrote about X before\" and graph-like discovery."
-msgstr ""
-
-#: includes/Ability/Analytics_Abilities.php:193
-msgid "Weave (Synthesize)"
-msgstr ""
-
-#: includes/Ability/Analytics_Abilities.php:194
-msgid "Given a query, search posts, fetch matching content, and return a payload for LLM synthesis. First-draft synthesis; human refines."
-msgstr ""
-
-#: includes/Ability/Analytics_Abilities.php:218
-msgid "Analytics Narratives"
-msgstr ""
-
-#: includes/Ability/Analytics_Abilities.php:219
-msgid "Turn site digest or recent activity data into a brief narrative: what happened this week, what is new."
-msgstr ""
-
-#: includes/Ability/Analytics_Abilities.php:226
-msgid "Data source: site_digest or recent_activity."
-msgstr ""
-
-#: includes/Ability/Analytics_Abilities.php:237
-msgid "Submit Conversational Form"
-msgstr ""
-
-#: includes/Ability/Analytics_Abilities.php:238
-msgid "Submit collected form data from a conversation. Provide fields (name/value pairs) and optionally a webhook URL to POST the payload to."
-msgstr ""
-
-#: includes/Ability/Analytics_Abilities.php:245
-msgid "Form fields: array of objects with \"name\" and \"value\"."
-msgstr ""
-
-#: includes/Ability/Analytics_Abilities.php:256
-msgid "Optional URL to POST the form payload to (JSON)."
-msgstr ""
-
-#: includes/Ability/Analytics_Abilities.php:387
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:632
+#: includes/Ability/Analytics/Analytics_Execute_Trait.php:147
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:355
 msgid "Unknown"
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:419
+#: includes/Ability/Analytics/Analytics_Execute_Trait.php:179
 #: includes/Ability/Content_Abilities.php:252
 msgid "Insufficient permissions for this post type."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:536
+#: includes/Ability/Analytics/Analytics_Execute_Trait.php:296
 msgid "Invalid export type."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:551
-#: includes/Ability/Analytics_Abilities.php:733
-#: includes/Ability/QuickWin_Abilities.php:764
+#: includes/Ability/Analytics/Analytics_Execute_Trait.php:311
+#: includes/Ability/Analytics/Analytics_Execute_Trait.php:493
+#: includes/Ability/QuickWin/QuickWin_Execute_Trait.php:398
 msgid "Invalid post type or insufficient permissions."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:622
-#: includes/Ability/QuickWin_Abilities.php:396
-#: includes/Ability/QuickWin_Abilities.php:423
-#: includes/Ability/QuickWin_Abilities.php:496
-#: includes/Ability/QuickWin_Abilities.php:591
-#: includes/Ability/QuickWin_Abilities.php:873
+#: includes/Ability/Analytics/Analytics_Execute_Trait.php:382
+#: includes/Ability/QuickWin/QuickWin_Execute_Trait.php:30
+#: includes/Ability/QuickWin/QuickWin_Execute_Trait.php:57
+#: includes/Ability/QuickWin/QuickWin_Execute_Trait.php:130
+#: includes/Ability/QuickWin/QuickWin_Execute_Trait.php:225
+#: includes/Ability/QuickWin/QuickWin_Execute_Trait.php:507
 msgid "Post not found or insufficient permissions."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:729
+#: includes/Ability/Analytics/Analytics_Execute_Trait.php:489
 msgid "Query is required."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:787
-#: includes/Ability/GEO_SEO_Abilities.php:183
-#: includes/Ability/GEO_SEO_Abilities.php:358
-#: includes/Ability/GEO_SEO_Abilities.php:638
-#: includes/Ability/GEO_SEO_Abilities.php:748
+#: includes/Ability/Analytics/Analytics_Execute_Trait.php:547
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:36
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:211
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:491
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:601
 #: includes/class-ghost-writer.php:238
 #: includes/class-ghost-writer.php:594
 #: includes/class-molt.php:143
 msgid "WP Pinch gateway is not configured."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:790
+#: includes/Ability/Analytics/Analytics_Execute_Trait.php:550
 msgid "API is in read-only mode."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:793
-#: includes/Ability/GEO_SEO_Abilities.php:191
-#: includes/Ability/GEO_SEO_Abilities.php:469
-#: includes/Ability/GEO_SEO_Abilities.php:641
-#: includes/Ability/GEO_SEO_Abilities.php:751
+#: includes/Ability/Analytics/Analytics_Execute_Trait.php:553
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:44
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:322
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:494
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:604
 #: includes/class-ghost-writer.php:246
 #: includes/class-ghost-writer.php:602
 #: includes/class-molt.php:151
@@ -297,11 +205,11 @@ msgstr ""
 msgid "The AI gateway is temporarily unavailable."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:827
-#: includes/Ability/GEO_SEO_Abilities.php:225
-#: includes/Ability/GEO_SEO_Abilities.php:501
-#: includes/Ability/GEO_SEO_Abilities.php:672
-#: includes/Ability/GEO_SEO_Abilities.php:785
+#: includes/Ability/Analytics/Analytics_Execute_Trait.php:587
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:78
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:354
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:525
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:638
 #: includes/class-ghost-writer.php:284
 #: includes/class-ghost-writer.php:648
 #: includes/class-molt.php:192
@@ -313,26 +221,118 @@ msgid "Gateway URL failed security validation."
 msgstr ""
 
 #. translators: %d: HTTP status code
-#: includes/Ability/Analytics_Abilities.php:853
-#: includes/Ability/GEO_SEO_Abilities.php:254
-#: includes/Ability/GEO_SEO_Abilities.php:531
-#: includes/Ability/GEO_SEO_Abilities.php:698
-#: includes/Ability/GEO_SEO_Abilities.php:811
-#: includes/Ability/QuickWin_Abilities.php:369
+#: includes/Ability/Analytics/Analytics_Execute_Trait.php:613
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:107
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:384
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:551
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:664
+#: includes/Ability/QuickWin_Abilities.php:368
 #, php-format
 msgid "Gateway returned HTTP %d."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:880
+#: includes/Ability/Analytics/Analytics_Execute_Trait.php:640
 msgid "fields must be an array of { name, value } objects."
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:893
+#: includes/Ability/Analytics/Analytics_Execute_Trait.php:653
 msgid "(empty)"
 msgstr ""
 
-#: includes/Ability/Analytics_Abilities.php:899
+#: includes/Ability/Analytics/Analytics_Execute_Trait.php:659
 msgid "No valid fields provided."
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:30
+msgid "Site Health"
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:31
+msgid "Get site health summary: PHP, WordPress, database, disk usage."
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:44
+msgid "Content Health Report"
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:45
+msgid "Get a content health report: missing alt text, broken internal links, thin content, orphaned media."
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:69
+msgid "Recent Activity"
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:70
+msgid "Get recent posts, comments, and user registrations."
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:88
+msgid "Search Content"
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:89
+msgid "Full-text search across posts, pages, and custom post types."
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:113
+msgid "Export Data"
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:114
+msgid "Export post, user, or comment data as JSON."
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:141
+msgid "Memory Bait (Site Digest)"
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:142
+msgid "Compact export of recent posts: title, excerpt, and key taxonomy terms. For agent memory-core or system prompt so the agent knows your site."
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:164
+msgid "Echo Net (Related Posts)"
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:165
+msgid "Given a post ID, return posts that link to it (backlinks) or share taxonomy terms. Enables \"you wrote about X before\" and graph-like discovery."
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:188
+msgid "Weave (Synthesize)"
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:189
+msgid "Given a query, search posts, fetch matching content, and return a payload for LLM synthesis. First-draft synthesis; human refines."
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:213
+msgid "Analytics Narratives"
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:214
+msgid "Turn site digest or recent activity data into a brief narrative: what happened this week, what is new."
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:221
+msgid "Data source: site_digest or recent_activity."
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:232
+msgid "Submit Conversational Form"
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:233
+msgid "Submit collected form data from a conversation. Provide fields (name/value pairs) and optionally a webhook URL to POST the payload to."
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:240
+msgid "Form fields: array of objects with \"name\" and \"value\"."
+msgstr ""
+
+#: includes/Ability/Analytics_Abilities.php:251
+msgid "Optional URL to POST the form payload to (JSON)."
 msgstr ""
 
 #: includes/Ability/Content_Abilities.php:26
@@ -404,9 +404,9 @@ msgstr ""
 #: includes/Ability/Content_Workflow_Abilities.php:280
 #: includes/Ability/Content_Workflow_Abilities.php:497
 #: includes/Ability/Media_Extended_Abilities.php:129
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:475
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:526
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:596
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:198
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:249
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:319
 #: includes/Ability/Site_Ops_Abilities.php:204
 #: includes/class-ghost-writer.php:501
 #: includes/class-molt.php:75
@@ -457,9 +457,9 @@ msgstr ""
 #: includes/Ability/Content_Abilities.php:610
 #: includes/Ability/Extension_Lifecycle_Abilities.php:106
 #: includes/Ability/Extension_Lifecycle_Abilities.php:223
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:462
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:798
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:972
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:185
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:521
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:695
 msgid "Invalid action."
 msgstr ""
 
@@ -661,149 +661,149 @@ msgstr ""
 msgid "Theme delete failed."
 msgstr ""
 
-#: includes/Ability/GEO_SEO_Abilities.php:46
-msgid "Generate llms.txt"
-msgstr ""
-
-#: includes/Ability/GEO_SEO_Abilities.php:47
-msgid "Generate an llms.txt file for AI crawlers (GEO). Uses site name, description, and structure. Optionally write to the site root."
-msgstr ""
-
-#: includes/Ability/GEO_SEO_Abilities.php:54
-msgid "If true, write the generated content to llms.txt at the site root."
-msgstr ""
-
-#: includes/Ability/GEO_SEO_Abilities.php:65
-msgid "Get llms.txt"
-msgstr ""
-
-#: includes/Ability/GEO_SEO_Abilities.php:66
-msgid "Read the current llms.txt file content from the site root, if it exists."
-msgstr ""
-
-#: includes/Ability/GEO_SEO_Abilities.php:76
-msgid "Bulk SEO Metadata"
-msgstr ""
-
-#: includes/Ability/GEO_SEO_Abilities.php:77
-msgid "Generate SEO titles and meta descriptions for multiple posts. Provide post_ids or a query (post_type, limit). Optionally apply updates."
-msgstr ""
-
-#: includes/Ability/GEO_SEO_Abilities.php:84
-msgid "Specific post IDs to process."
-msgstr ""
-
-#: includes/Ability/GEO_SEO_Abilities.php:97
-msgid "If true, update posts with generated title and meta description."
-msgstr ""
-
-#: includes/Ability/GEO_SEO_Abilities.php:108
-msgid "Suggest Internal Links"
-msgstr ""
-
-#: includes/Ability/GEO_SEO_Abilities.php:109
-msgid "Given a post ID or search query, return topically related posts to link to (uses RAG index when enabled)."
-msgstr ""
-
-#: includes/Ability/GEO_SEO_Abilities.php:115
-msgid "Post ID to suggest links for (uses its title/excerpt as query)."
-msgstr ""
-
-#: includes/Ability/GEO_SEO_Abilities.php:119
-msgid "Search query when post_id is not provided."
-msgstr ""
-
-#: includes/Ability/GEO_SEO_Abilities.php:135
-msgid "Generate Schema Markup"
-msgstr ""
-
-#: includes/Ability/GEO_SEO_Abilities.php:136
-msgid "Analyze post content and return JSON-LD schema (Article, Product, FAQ, HowTo, Recipe, etc.)."
-msgstr ""
-
-#: includes/Ability/GEO_SEO_Abilities.php:143
-msgid "Post ID to generate schema for."
-msgstr ""
-
-#: includes/Ability/GEO_SEO_Abilities.php:154
-msgid "Suggest SEO Improvements"
-msgstr ""
-
-#: includes/Ability/GEO_SEO_Abilities.php:155
-msgid "Analyze a post for inline SEO: keyword density, heading structure, and meta title/description suggestions."
-msgstr ""
-
-#: includes/Ability/GEO_SEO_Abilities.php:162
-msgid "Post ID to analyze."
-msgstr ""
-
-#: includes/Ability/GEO_SEO_Abilities.php:187
-#: includes/class-abilities.php:474
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:40
+#: includes/class-abilities.php:318
 msgid "API is in read-only mode. Write operations are disabled."
 msgstr ""
 
-#: includes/Ability/GEO_SEO_Abilities.php:288
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:141
 msgid "llms.txt generated and written to site root."
 msgstr ""
 
-#: includes/Ability/GEO_SEO_Abilities.php:312
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:165
 msgid "llms.txt path must be under the site root."
 msgstr ""
 
-#: includes/Ability/GEO_SEO_Abilities.php:317
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:170
 msgid "Could not write llms.txt file."
 msgstr ""
 
-#: includes/Ability/GEO_SEO_Abilities.php:362
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:215
 msgid "API is in read-only mode. Set apply to false or disable read-only mode."
 msgstr ""
 
 #. translators: %d: number of posts
-#: includes/Ability/GEO_SEO_Abilities.php:443
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:296
 #, php-format
 msgid "Bulk SEO metadata applied to %d posts."
 msgstr ""
 
-#: includes/Ability/GEO_SEO_Abilities.php:541
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:394
 #: includes/class-ghost-writer.php:698
 #: includes/class-molt.php:242
 msgid "The AI returned an empty response."
 msgstr ""
 
-#: includes/Ability/GEO_SEO_Abilities.php:550
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:403
 msgid "The AI response was not valid JSON."
 msgstr ""
 
-#: includes/Ability/GEO_SEO_Abilities.php:573
-#: includes/Ability/GEO_SEO_Abilities.php:632
-#: includes/Ability/GEO_SEO_Abilities.php:742
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:426
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:485
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:595
 msgid "Post not found or access denied."
 msgstr ""
 
-#: includes/Ability/GEO_SEO_Abilities.php:585
-#: includes/Ability/QuickWin_Abilities.php:429
-#: includes/Ability/QuickWin_Abilities.php:879
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:438
+#: includes/Ability/QuickWin/QuickWin_Execute_Trait.php:63
+#: includes/Ability/QuickWin/QuickWin_Execute_Trait.php:513
 msgid "Provide post_id or query."
 msgstr ""
 
-#: includes/Ability/GEO_SEO_Abilities.php:592
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:445
 msgid "Enable RAG indexing in Features to use internal link suggestions."
 msgstr ""
 
-#: includes/Ability/GEO_SEO_Abilities.php:627
-#: includes/Ability/GEO_SEO_Abilities.php:737
-#: includes/Ability/QuickWin_Abilities.php:587
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:480
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:590
+#: includes/Ability/QuickWin/QuickWin_Execute_Trait.php:221
 msgid "post_id is required."
 msgstr ""
 
-#: includes/Ability/GEO_SEO_Abilities.php:709
-#: includes/Ability/GEO_SEO_Abilities.php:822
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:562
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:675
 msgid "Empty gateway response."
 msgstr ""
 
-#: includes/Ability/GEO_SEO_Abilities.php:716
-#: includes/Ability/GEO_SEO_Abilities.php:829
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:569
+#: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:682
 msgid "Response was not valid JSON."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:40
+msgid "Generate llms.txt"
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:41
+msgid "Generate an llms.txt file for AI crawlers (GEO). Uses site name, description, and structure. Optionally write to the site root."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:48
+msgid "If true, write the generated content to llms.txt at the site root."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:59
+msgid "Get llms.txt"
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:60
+msgid "Read the current llms.txt file content from the site root, if it exists."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:70
+msgid "Bulk SEO Metadata"
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:71
+msgid "Generate SEO titles and meta descriptions for multiple posts. Provide post_ids or a query (post_type, limit). Optionally apply updates."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:78
+msgid "Specific post IDs to process."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:91
+msgid "If true, update posts with generated title and meta description."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:102
+msgid "Suggest Internal Links"
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:103
+msgid "Given a post ID or search query, return topically related posts to link to (uses RAG index when enabled)."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:109
+msgid "Post ID to suggest links for (uses its title/excerpt as query)."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:113
+msgid "Search query when post_id is not provided."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:129
+msgid "Generate Schema Markup"
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:130
+msgid "Analyze post content and return JSON-LD schema (Article, Product, FAQ, HowTo, Recipe, etc.)."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:137
+msgid "Post ID to generate schema for."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:148
+msgid "Suggest SEO Improvements"
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:149
+msgid "Analyze a post for inline SEO: keyword density, heading structure, and meta title/description suggestions."
+msgstr ""
+
+#: includes/Ability/GEO_SEO_Abilities.php:156
+msgid "Post ID to analyze."
 msgstr ""
 
 #: includes/Ability/GhostWriter_Molt_Abilities.php:33
@@ -979,6 +979,111 @@ msgstr ""
 msgid "Failed to generate metadata."
 msgstr ""
 
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:32
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:82
+msgid "Menu not found."
+msgstr ""
+
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:124
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:164
+msgid "Menu item not found."
+msgstr ""
+
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:160
+msgid "Menu item ID required."
+msgstr ""
+
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:168
+msgid "Failed to delete menu item."
+msgstr ""
+
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:201
+msgid "You do not have permission to read meta for this post."
+msgstr ""
+
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:206
+msgid "This meta key is protected."
+msgstr ""
+
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:252
+msgid "You do not have permission to modify meta for this post."
+msgstr ""
+
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:256
+msgid "This meta key is protected and cannot be modified."
+msgstr ""
+
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:281
+msgid "Nested arrays are not supported for post meta values."
+msgstr ""
+
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:290
+msgid "Unsupported value type. Use string, number, boolean, or array of strings."
+msgstr ""
+
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:322
+msgid "You do not have permission to view revisions for this post."
+msgstr ""
+
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:325
+msgid "Revisions are not enabled for this post type."
+msgstr ""
+
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:377
+msgid "Revision not found."
+msgstr ""
+
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:381
+msgid "You do not have permission to restore revisions for this post."
+msgstr ""
+
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:385
+msgid "Failed to restore revision."
+msgstr ""
+
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:413
+msgid "Maximum 50 posts per bulk operation."
+msgstr ""
+
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:416
+msgid "No valid post IDs provided."
+msgstr ""
+
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:426
+msgid "Not found."
+msgstr ""
+
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:437
+msgid "Status required."
+msgstr ""
+
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:468
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:487
+msgid "Category ID required."
+msgstr ""
+
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:507
+msgid "Failed to delete."
+msgstr ""
+
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:618
+msgid "Hook is not a scheduled cron event."
+msgstr ""
+
+#. translators: %s: cron hook name
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:624
+#, php-format
+msgid "No callbacks registered for hook \"%s\"."
+msgstr ""
+
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:643
+msgid "Cannot delete core WordPress cron events."
+msgstr ""
+
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:674
+msgid "Cron event not found at that timestamp."
+msgstr ""
+
 #: includes/Ability/Menu_Meta_Revisions_Abilities.php:42
 msgid "List Navigation Menus"
 msgstr ""
@@ -1049,111 +1154,6 @@ msgstr ""
 
 #: includes/Ability/Menu_Meta_Revisions_Abilities.php:248
 msgid "Run or delete a scheduled cron event."
-msgstr ""
-
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:309
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:359
-msgid "Menu not found."
-msgstr ""
-
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:401
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:441
-msgid "Menu item not found."
-msgstr ""
-
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:437
-msgid "Menu item ID required."
-msgstr ""
-
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:445
-msgid "Failed to delete menu item."
-msgstr ""
-
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:478
-msgid "You do not have permission to read meta for this post."
-msgstr ""
-
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:483
-msgid "This meta key is protected."
-msgstr ""
-
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:529
-msgid "You do not have permission to modify meta for this post."
-msgstr ""
-
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:533
-msgid "This meta key is protected and cannot be modified."
-msgstr ""
-
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:558
-msgid "Nested arrays are not supported for post meta values."
-msgstr ""
-
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:567
-msgid "Unsupported value type. Use string, number, boolean, or array of strings."
-msgstr ""
-
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:599
-msgid "You do not have permission to view revisions for this post."
-msgstr ""
-
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:602
-msgid "Revisions are not enabled for this post type."
-msgstr ""
-
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:654
-msgid "Revision not found."
-msgstr ""
-
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:658
-msgid "You do not have permission to restore revisions for this post."
-msgstr ""
-
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:662
-msgid "Failed to restore revision."
-msgstr ""
-
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:690
-msgid "Maximum 50 posts per bulk operation."
-msgstr ""
-
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:693
-msgid "No valid post IDs provided."
-msgstr ""
-
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:703
-msgid "Not found."
-msgstr ""
-
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:714
-msgid "Status required."
-msgstr ""
-
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:745
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:764
-msgid "Category ID required."
-msgstr ""
-
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:784
-msgid "Failed to delete."
-msgstr ""
-
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:895
-msgid "Hook is not a scheduled cron event."
-msgstr ""
-
-#. translators: %s: cron hook name
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:901
-#, php-format
-msgid "No callbacks registered for hook \"%s\"."
-msgstr ""
-
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:920
-msgid "Cannot delete core WordPress cron events."
-msgstr ""
-
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:951
-msgid "Cron event not found at that timestamp."
 msgstr ""
 
 #: includes/Ability/PinchDrop_Abilities.php:30
@@ -1240,128 +1240,128 @@ msgstr ""
 msgid "is now in progress. Want early access?"
 msgstr ""
 
-#: includes/Ability/QuickWin_Abilities.php:37
-msgid "Generate TL;DR"
-msgstr ""
-
-#: includes/Ability/QuickWin_Abilities.php:38
-msgid "Generate a 1–2 sentence summary for a post and store it in post meta (wp_pinch_tldr). Used automatically on publish when Molt is enabled."
-msgstr ""
-
-#: includes/Ability/QuickWin_Abilities.php:56
-msgid "Link Suggester"
-msgstr ""
-
-#: includes/Ability/QuickWin_Abilities.php:57
-msgid "Given a post ID or text snippet, return existing posts that are good link candidates (by search and related-posts)."
-msgstr ""
-
-#: includes/Ability/QuickWin_Abilities.php:83
-msgid "Suggest Categories & Tags"
-msgstr ""
-
-#: includes/Ability/QuickWin_Abilities.php:84
-msgid "Given a draft post ID or content, return suggested categories and tags (by content similarity and term match)."
-msgstr ""
-
-#: includes/Ability/QuickWin_Abilities.php:110
-msgid "Quote Bank"
-msgstr ""
-
-#: includes/Ability/QuickWin_Abilities.php:111
-msgid "Extract notable sentences from a post (heuristic: medium-length sentences). Returns a list of strings; optional save step can be added later."
-msgstr ""
-
-#: includes/Ability/QuickWin_Abilities.php:134
-msgid "What do I know about X?"
-msgstr ""
-
-#: includes/Ability/QuickWin_Abilities.php:135
-msgid "Natural-language query: search content, synthesize with the gateway, and return a coherent answer plus source post IDs. Flagship retrieval experience."
-msgstr ""
-
-#: includes/Ability/QuickWin_Abilities.php:158
-msgid "Project Assembly"
-msgstr ""
-
-#: includes/Ability/QuickWin_Abilities.php:159
-msgid "Given a list of post IDs and optional prompt, produce one drafted post (or long text) weaving those posts with citations. Returns draft text; optionally save as draft."
-msgstr ""
-
-#: includes/Ability/QuickWin_Abilities.php:187
-msgid "Spaced Resurfacing"
-msgstr ""
-
-#: includes/Ability/QuickWin_Abilities.php:188
-msgid "List posts not updated in N days (optionally filtered by category or tag). Surface notes worth revisiting."
-msgstr ""
-
-#: includes/Ability/QuickWin_Abilities.php:218
-msgid "Find Similar"
-msgstr ""
-
-#: includes/Ability/QuickWin_Abilities.php:219
-msgid "Given a post ID or text query, return related posts (by search and taxonomy). MVP: similar by title/excerpt; full semantic search with embeddings may follow."
-msgstr ""
-
-#: includes/Ability/QuickWin_Abilities.php:245
-msgid "Knowledge Graph"
-msgstr ""
-
-#: includes/Ability/QuickWin_Abilities.php:246
-msgid "Return a graph of nodes (posts, optionally terms) and edges (content links, shared tags). Payload suitable for external visualization."
-msgstr ""
-
-#: includes/Ability/QuickWin_Abilities.php:303
-msgid "Molt is not enabled."
-msgstr ""
-
-#: includes/Ability/QuickWin_Abilities.php:310
-msgid "Molt returned an empty summary."
-msgstr ""
-
-#: includes/Ability/QuickWin_Abilities.php:324
-msgid "Gateway is not configured."
-msgstr ""
-
-#: includes/Ability/QuickWin_Abilities.php:327
-msgid "Gateway is temporarily unavailable."
-msgstr ""
-
-#: includes/Ability/QuickWin_Abilities.php:331
-msgid "Gateway URL failed validation."
-msgstr ""
-
-#: includes/Ability/QuickWin_Abilities.php:382
-msgid "Gateway returned an empty response."
-msgstr ""
-
-#: includes/Ability/QuickWin_Abilities.php:502
+#: includes/Ability/QuickWin/QuickWin_Execute_Trait.php:136
 msgid "Provide post_id or content."
 msgstr ""
 
-#: includes/Ability/QuickWin_Abilities.php:629
+#: includes/Ability/QuickWin/QuickWin_Execute_Trait.php:263
 msgid "query is required."
 msgstr ""
 
-#: includes/Ability/QuickWin_Abilities.php:645
+#: includes/Ability/QuickWin/QuickWin_Execute_Trait.php:279
 msgid "No relevant posts found for that query."
 msgstr ""
 
-#: includes/Ability/QuickWin_Abilities.php:683
+#: includes/Ability/QuickWin/QuickWin_Execute_Trait.php:317
 msgid "post_ids (non-empty array) is required."
 msgstr ""
 
-#: includes/Ability/QuickWin_Abilities.php:707
+#: includes/Ability/QuickWin/QuickWin_Execute_Trait.php:341
 msgid "No readable posts found for the given IDs."
 msgstr ""
 
-#: includes/Ability/QuickWin_Abilities.php:714
+#: includes/Ability/QuickWin/QuickWin_Execute_Trait.php:348
 msgid "Weave the following posts into one coherent draft with inline citations (e.g. [123]). Use clear structure and preserve key points."
 msgstr ""
 
-#: includes/Ability/QuickWin_Abilities.php:733
+#: includes/Ability/QuickWin/QuickWin_Execute_Trait.php:367
 msgid "Assembled draft"
+msgstr ""
+
+#: includes/Ability/QuickWin_Abilities.php:36
+msgid "Generate TL;DR"
+msgstr ""
+
+#: includes/Ability/QuickWin_Abilities.php:37
+msgid "Generate a 1–2 sentence summary for a post and store it in post meta (wp_pinch_tldr). Used automatically on publish when Molt is enabled."
+msgstr ""
+
+#: includes/Ability/QuickWin_Abilities.php:55
+msgid "Link Suggester"
+msgstr ""
+
+#: includes/Ability/QuickWin_Abilities.php:56
+msgid "Given a post ID or text snippet, return existing posts that are good link candidates (by search and related-posts)."
+msgstr ""
+
+#: includes/Ability/QuickWin_Abilities.php:82
+msgid "Suggest Categories & Tags"
+msgstr ""
+
+#: includes/Ability/QuickWin_Abilities.php:83
+msgid "Given a draft post ID or content, return suggested categories and tags (by content similarity and term match)."
+msgstr ""
+
+#: includes/Ability/QuickWin_Abilities.php:109
+msgid "Quote Bank"
+msgstr ""
+
+#: includes/Ability/QuickWin_Abilities.php:110
+msgid "Extract notable sentences from a post (heuristic: medium-length sentences). Returns a list of strings; optional save step can be added later."
+msgstr ""
+
+#: includes/Ability/QuickWin_Abilities.php:133
+msgid "What do I know about X?"
+msgstr ""
+
+#: includes/Ability/QuickWin_Abilities.php:134
+msgid "Natural-language query: search content, synthesize with the gateway, and return a coherent answer plus source post IDs. Flagship retrieval experience."
+msgstr ""
+
+#: includes/Ability/QuickWin_Abilities.php:157
+msgid "Project Assembly"
+msgstr ""
+
+#: includes/Ability/QuickWin_Abilities.php:158
+msgid "Given a list of post IDs and optional prompt, produce one drafted post (or long text) weaving those posts with citations. Returns draft text; optionally save as draft."
+msgstr ""
+
+#: includes/Ability/QuickWin_Abilities.php:186
+msgid "Spaced Resurfacing"
+msgstr ""
+
+#: includes/Ability/QuickWin_Abilities.php:187
+msgid "List posts not updated in N days (optionally filtered by category or tag). Surface notes worth revisiting."
+msgstr ""
+
+#: includes/Ability/QuickWin_Abilities.php:217
+msgid "Find Similar"
+msgstr ""
+
+#: includes/Ability/QuickWin_Abilities.php:218
+msgid "Given a post ID or text query, return related posts (by search and taxonomy). MVP: similar by title/excerpt; full semantic search with embeddings may follow."
+msgstr ""
+
+#: includes/Ability/QuickWin_Abilities.php:244
+msgid "Knowledge Graph"
+msgstr ""
+
+#: includes/Ability/QuickWin_Abilities.php:245
+msgid "Return a graph of nodes (posts, optionally terms) and edges (content links, shared tags). Payload suitable for external visualization."
+msgstr ""
+
+#: includes/Ability/QuickWin_Abilities.php:302
+msgid "Molt is not enabled."
+msgstr ""
+
+#: includes/Ability/QuickWin_Abilities.php:309
+msgid "Molt returned an empty summary."
+msgstr ""
+
+#: includes/Ability/QuickWin_Abilities.php:323
+msgid "Gateway is not configured."
+msgstr ""
+
+#: includes/Ability/QuickWin_Abilities.php:326
+msgid "Gateway is temporarily unavailable."
+msgstr ""
+
+#: includes/Ability/QuickWin_Abilities.php:330
+msgid "Gateway URL failed validation."
+msgstr ""
+
+#: includes/Ability/QuickWin_Abilities.php:381
+msgid "Gateway returned an empty response."
 msgstr ""
 
 #: includes/Ability/Settings_Abilities.php:30
@@ -1810,386 +1810,386 @@ msgstr ""
 msgid "Failed to delete comment."
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:71
-msgid "List WooCommerce Products"
+#: includes/Ability/Woo/Woo_Helpers_Trait.php:24
+msgid "WooCommerce is not active."
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:72
-msgid "List WooCommerce products with filters and pagination."
+#: includes/Ability/Woo/Woo_Inventory_Execute_Trait.php:34
+msgid "quantity_delta cannot be 0."
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:107
-msgid "Get WooCommerce Product"
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:108
-msgid "Get a WooCommerce product by ID."
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:122
-msgid "Create WooCommerce Product"
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:123
-msgid "Create a WooCommerce product with safe defaults."
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:176
-msgid "Update WooCommerce Product"
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:177
-msgid "Update mutable WooCommerce product fields."
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:204
-msgid "Delete WooCommerce Product"
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:205
-msgid "Delete or trash a WooCommerce product."
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:229
-msgid "List WooCommerce Orders"
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:230
-msgid "List WooCommerce orders with filters and pagination."
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:276
-msgid "Get WooCommerce Order"
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:277
-msgid "Get a WooCommerce order by ID."
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:297
-msgid "Create WooCommerce Order"
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:298
-msgid "Create a WooCommerce order from product line items."
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:328
-msgid "Update WooCommerce Order"
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:329
-msgid "Update mutable WooCommerce order fields safely."
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:355
-msgid "Manage WooCommerce Order"
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:356
-msgid "Compatibility alias for order get/update status workflows."
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:389
-msgid "Adjust WooCommerce Stock"
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:390
-msgid "Adjust stock quantity for a single product by a delta."
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:414
-msgid "Bulk Adjust WooCommerce Stock"
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:415
-msgid "Adjust stock quantity for multiple products."
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:428
-msgid "List WooCommerce Low Stock Products"
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:429
-msgid "List products below a given stock threshold."
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:455
-msgid "List WooCommerce Out of Stock Products"
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:456
-msgid "List out-of-stock products."
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:478
-msgid "List WooCommerce Variations"
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:479
-msgid "List variations for a variable product."
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:503
-msgid "Update WooCommerce Variation"
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:504
-msgid "Update mutable fields for a product variation."
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:531
-msgid "List WooCommerce Product Taxonomies"
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:532
-msgid "List product categories, tags, and global attributes."
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:547
-msgid "Add WooCommerce Order Note"
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:548
-msgid "Add an internal or customer-visible note to an order."
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:568
-msgid "Mark WooCommerce Order Fulfilled"
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:569
-msgid "Safely mark an order as completed with optional fulfillment note."
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:596
-msgid "Cancel WooCommerce Order Safely"
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:597
-msgid "Cancel an order only from supported pre-fulfillment statuses."
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:620
-msgid "Create WooCommerce Refund"
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:621
-msgid "Create a full or partial refund with safety guards."
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:649
-msgid "List Refund Eligible WooCommerce Orders"
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:650
-msgid "List orders with refundable remaining amount."
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:677
-msgid "Create WooCommerce Coupon"
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:678
-msgid "Create a WooCommerce coupon with validation."
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:715
-msgid "Update WooCommerce Coupon"
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:716
-msgid "Update mutable fields of a WooCommerce coupon."
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:740
-msgid "Expire WooCommerce Coupon"
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:741
-msgid "Force a coupon to expire immediately."
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:759
-msgid "List WooCommerce Customers"
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:760
-msgid "List WooCommerce customers with balanced redaction defaults."
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:790
-msgid "Get WooCommerce Customer"
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:791
-msgid "Get a WooCommerce customer by user ID with safe redaction defaults."
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:816
-msgid "WooCommerce Sales Summary"
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:817
-msgid "Summarize WooCommerce sales for day/week/month/custom range."
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:848
-msgid "WooCommerce Top Products"
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:849
-msgid "Return top-selling products for a date window."
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:875
-msgid "WooCommerce Orders Needing Attention"
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:876
-msgid "Find aged or potentially stuck orders that require manual review."
-msgstr ""
-
-#: includes/Ability/Woo_Abilities.php:967
-#: includes/Ability/Woo_Abilities.php:1036
-#: includes/Ability/Woo_Abilities.php:1114
-#: includes/Ability/Woo_Abilities.php:1412
+#: includes/Ability/Woo/Woo_Inventory_Execute_Trait.php:39
+#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:89
+#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:158
+#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:236
 msgid "Product not found."
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:986
-msgid "Product name is required."
+#: includes/Ability/Woo/Woo_Inventory_Execute_Trait.php:50
+msgid "Could not adjust stock."
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:992
-#: includes/Ability/Woo_Abilities.php:1047
-msgid "Invalid product status."
+#: includes/Ability/Woo/Woo_Inventory_Execute_Trait.php:81
+msgid "adjustments must be a non-empty array."
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:1119
-msgid "Failed to delete product."
+#: includes/Ability/Woo/Woo_Inventory_Execute_Trait.php:215
+msgid "Variable product not found."
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:1196
-msgid "Could not load orders."
+#: includes/Ability/Woo/Woo_Inventory_Execute_Trait.php:262
+msgid "Variation not found."
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:1229
-#: includes/Ability/Woo_Abilities.php:1322
-#: includes/Ability/Woo_Abilities.php:1724
-#: includes/Ability/Woo_Abilities.php:1756
-#: includes/Ability/Woo_Abilities.php:1808
-#: includes/Ability/Woo_Abilities.php:1840
+#: includes/Ability/Woo/Woo_Inventory_Execute_Trait.php:283
+msgid "Invalid variation status."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Operations_Insights_Execute_Trait.php:31
+#: includes/Ability/Woo/Woo_Operations_Insights_Execute_Trait.php:63
+#: includes/Ability/Woo/Woo_Operations_Insights_Execute_Trait.php:115
+#: includes/Ability/Woo/Woo_Operations_Insights_Execute_Trait.php:147
+#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:351
+#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:444
 msgid "Order not found."
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:1250
+#: includes/Ability/Woo/Woo_Operations_Insights_Execute_Trait.php:36
+msgid "Note is required."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Operations_Insights_Execute_Trait.php:68
+msgid "Order cannot be marked fulfilled from its current status."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Operations_Insights_Execute_Trait.php:110
+msgid "confirm=true is required to cancel an order."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Operations_Insights_Execute_Trait.php:120
+msgid "Order status is not cancellable by this ability."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Operations_Insights_Execute_Trait.php:154
+msgid "Duplicate refund request blocked by idempotency key."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Operations_Insights_Execute_Trait.php:162
+msgid "Refund amount must be greater than 0."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Operations_Insights_Execute_Trait.php:165
+msgid "Refund amount exceeds refundable total."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Operations_Insights_Execute_Trait.php:180
+msgid "Could not create refund."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Operations_Insights_Execute_Trait.php:260
+msgid "Coupon code and amount are required."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Operations_Insights_Execute_Trait.php:263
+msgid "Coupon code already exists."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Operations_Insights_Execute_Trait.php:268
+#: includes/Ability/Woo/Woo_Operations_Insights_Execute_Trait.php:319
+msgid "Invalid coupon discount type."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Operations_Insights_Execute_Trait.php:284
+#: includes/Ability/Woo/Woo_Operations_Insights_Execute_Trait.php:340
+msgid "Invalid expires_at datetime."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Operations_Insights_Execute_Trait.php:310
+#: includes/Ability/Woo/Woo_Operations_Insights_Execute_Trait.php:367
+msgid "Coupon not found."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Operations_Insights_Execute_Trait.php:439
+msgid "Customer not found."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:108
+msgid "Product name is required."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:114
+#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:169
+msgid "Invalid product status."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:241
+msgid "Failed to delete product."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:318
+msgid "Could not load orders."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:372
 msgid "line_items is required."
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:1259
+#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:381
 msgid "Could not create order."
 msgstr ""
 
 #. translators: %d: WooCommerce product ID.
-#: includes/Ability/Woo_Abilities.php:1271
+#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:393
 #, php-format
 msgid "Product %d not found."
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:1288
-#: includes/Ability/Woo_Abilities.php:1330
+#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:410
+#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:452
 msgid "Invalid order status."
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:1407
-msgid "quantity_delta cannot be 0."
+#: includes/Ability/Woo/Woo_Register_Commercial_Intelligence_Trait.php:25
+msgid "Create WooCommerce Coupon"
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:1423
-msgid "Could not adjust stock."
+#: includes/Ability/Woo/Woo_Register_Commercial_Intelligence_Trait.php:26
+msgid "Create a WooCommerce coupon with validation."
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:1454
-msgid "adjustments must be a non-empty array."
+#: includes/Ability/Woo/Woo_Register_Commercial_Intelligence_Trait.php:63
+msgid "Update WooCommerce Coupon"
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:1588
-msgid "Variable product not found."
+#: includes/Ability/Woo/Woo_Register_Commercial_Intelligence_Trait.php:64
+msgid "Update mutable fields of a WooCommerce coupon."
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:1635
-msgid "Variation not found."
+#: includes/Ability/Woo/Woo_Register_Commercial_Intelligence_Trait.php:88
+msgid "Expire WooCommerce Coupon"
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:1656
-msgid "Invalid variation status."
+#: includes/Ability/Woo/Woo_Register_Commercial_Intelligence_Trait.php:89
+msgid "Force a coupon to expire immediately."
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:1729
-msgid "Note is required."
+#: includes/Ability/Woo/Woo_Register_Commercial_Intelligence_Trait.php:107
+msgid "List WooCommerce Customers"
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:1761
-msgid "Order cannot be marked fulfilled from its current status."
+#: includes/Ability/Woo/Woo_Register_Commercial_Intelligence_Trait.php:108
+msgid "List WooCommerce customers with balanced redaction defaults."
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:1803
-msgid "confirm=true is required to cancel an order."
+#: includes/Ability/Woo/Woo_Register_Commercial_Intelligence_Trait.php:138
+msgid "Get WooCommerce Customer"
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:1813
-msgid "Order status is not cancellable by this ability."
+#: includes/Ability/Woo/Woo_Register_Commercial_Intelligence_Trait.php:139
+msgid "Get a WooCommerce customer by user ID with safe redaction defaults."
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:1847
-msgid "Duplicate refund request blocked by idempotency key."
+#: includes/Ability/Woo/Woo_Register_Commercial_Intelligence_Trait.php:164
+msgid "WooCommerce Sales Summary"
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:1855
-msgid "Refund amount must be greater than 0."
+#: includes/Ability/Woo/Woo_Register_Commercial_Intelligence_Trait.php:165
+msgid "Summarize WooCommerce sales for day/week/month/custom range."
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:1858
-msgid "Refund amount exceeds refundable total."
+#: includes/Ability/Woo/Woo_Register_Commercial_Intelligence_Trait.php:196
+msgid "WooCommerce Top Products"
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:1873
-msgid "Could not create refund."
+#: includes/Ability/Woo/Woo_Register_Commercial_Intelligence_Trait.php:197
+msgid "Return top-selling products for a date window."
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:1953
-msgid "Coupon code and amount are required."
+#: includes/Ability/Woo/Woo_Register_Commercial_Intelligence_Trait.php:223
+msgid "WooCommerce Orders Needing Attention"
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:1956
-msgid "Coupon code already exists."
+#: includes/Ability/Woo/Woo_Register_Commercial_Intelligence_Trait.php:224
+msgid "Find aged or potentially stuck orders that require manual review."
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:1961
-#: includes/Ability/Woo_Abilities.php:2012
-msgid "Invalid coupon discount type."
+#: includes/Ability/Woo/Woo_Register_Inventory_Operations_Trait.php:25
+msgid "Adjust WooCommerce Stock"
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:1977
-#: includes/Ability/Woo_Abilities.php:2033
-msgid "Invalid expires_at datetime."
+#: includes/Ability/Woo/Woo_Register_Inventory_Operations_Trait.php:26
+msgid "Adjust stock quantity for a single product by a delta."
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:2003
-#: includes/Ability/Woo_Abilities.php:2060
-msgid "Coupon not found."
+#: includes/Ability/Woo/Woo_Register_Inventory_Operations_Trait.php:50
+msgid "Bulk Adjust WooCommerce Stock"
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:2132
-msgid "Customer not found."
+#: includes/Ability/Woo/Woo_Register_Inventory_Operations_Trait.php:51
+msgid "Adjust stock quantity for multiple products."
 msgstr ""
 
-#: includes/Ability/Woo_Abilities.php:2316
-msgid "WooCommerce is not active."
+#: includes/Ability/Woo/Woo_Register_Inventory_Operations_Trait.php:64
+msgid "List WooCommerce Low Stock Products"
 msgstr ""
 
-#: includes/class-abilities.php:206
+#: includes/Ability/Woo/Woo_Register_Inventory_Operations_Trait.php:65
+msgid "List products below a given stock threshold."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Inventory_Operations_Trait.php:91
+msgid "List WooCommerce Out of Stock Products"
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Inventory_Operations_Trait.php:92
+msgid "List out-of-stock products."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Inventory_Operations_Trait.php:114
+msgid "List WooCommerce Variations"
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Inventory_Operations_Trait.php:115
+msgid "List variations for a variable product."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Inventory_Operations_Trait.php:139
+msgid "Update WooCommerce Variation"
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Inventory_Operations_Trait.php:140
+msgid "Update mutable fields for a product variation."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Inventory_Operations_Trait.php:167
+msgid "List WooCommerce Product Taxonomies"
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Inventory_Operations_Trait.php:168
+msgid "List product categories, tags, and global attributes."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Inventory_Operations_Trait.php:183
+msgid "Add WooCommerce Order Note"
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Inventory_Operations_Trait.php:184
+msgid "Add an internal or customer-visible note to an order."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Inventory_Operations_Trait.php:204
+msgid "Mark WooCommerce Order Fulfilled"
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Inventory_Operations_Trait.php:205
+msgid "Safely mark an order as completed with optional fulfillment note."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Inventory_Operations_Trait.php:232
+msgid "Cancel WooCommerce Order Safely"
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Inventory_Operations_Trait.php:233
+msgid "Cancel an order only from supported pre-fulfillment statuses."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Inventory_Operations_Trait.php:256
+msgid "Create WooCommerce Refund"
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Inventory_Operations_Trait.php:257
+msgid "Create a full or partial refund with safety guards."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Inventory_Operations_Trait.php:285
+msgid "List Refund Eligible WooCommerce Orders"
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Inventory_Operations_Trait.php:286
+msgid "List orders with refundable remaining amount."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:25
+msgid "List WooCommerce Products"
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:26
+msgid "List WooCommerce products with filters and pagination."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:61
+msgid "Get WooCommerce Product"
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:62
+msgid "Get a WooCommerce product by ID."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:76
+msgid "Create WooCommerce Product"
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:77
+msgid "Create a WooCommerce product with safe defaults."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:130
+msgid "Update WooCommerce Product"
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:131
+msgid "Update mutable WooCommerce product fields."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:158
+msgid "Delete WooCommerce Product"
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:159
+msgid "Delete or trash a WooCommerce product."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:183
+msgid "List WooCommerce Orders"
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:184
+msgid "List WooCommerce orders with filters and pagination."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:230
+msgid "Get WooCommerce Order"
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:231
+msgid "Get a WooCommerce order by ID."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:251
+msgid "Create WooCommerce Order"
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:252
+msgid "Create a WooCommerce order from product line items."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:282
+msgid "Update WooCommerce Order"
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:283
+msgid "Update mutable WooCommerce order fields safely."
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:309
+msgid "Manage WooCommerce Order"
+msgstr ""
+
+#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:310
+msgid "Compatibility alias for order get/update status workflows."
+msgstr ""
+
+#: includes/class-abilities.php:209
 msgid "Abilities for content, media, options, and site management via OpenClaw."
 msgstr ""
 
@@ -2264,8 +2264,8 @@ msgstr ""
 
 #: includes/class-approval-queue.php:293
 #: includes/class-approval-queue.php:318
-#: includes/class-settings.php:657
-#: includes/class-settings.php:717
+#: includes/Settings/Settings_Admin_Pages_Trait.php:119
+#: includes/Settings/Settings_Admin_Pages_Trait.php:179
 msgid "Permission denied."
 msgstr ""
 
@@ -2314,7 +2314,7 @@ msgid "Webhook"
 msgstr ""
 
 #: includes/class-dashboard-widget.php:126
-#: includes/class-settings.php:834
+#: includes/Settings/Settings_Admin_Pages_Trait.php:296
 msgid "Governance"
 msgstr ""
 
@@ -2668,8 +2668,8 @@ msgid "The WordPress REST API appears to be disabled or blocked. WP Pinch requir
 msgstr ""
 
 #: includes/class-rest-availability.php:122
-#: includes/class-settings.php:842
 #: includes/class-site-health.php:345
+#: includes/Settings/Settings_Admin_Pages_Trait.php:304
 msgid "WP Pinch Settings"
 msgstr ""
 
@@ -2709,148 +2709,8 @@ msgstr ""
 msgid "post_id must be a positive integer."
 msgstr ""
 
-#: includes/class-settings.php:137
+#: includes/class-settings.php:138
 msgid "Settings"
-msgstr ""
-
-#. translators: 1: current step number, 2: total steps
-#: includes/class-settings.php:611
-#: includes/Settings/Wizard.php:76
-#, php-format
-msgid "Step %1$d of %2$d"
-msgstr ""
-
-#: includes/class-settings.php:612
-msgid "Please enter a gateway URL first."
-msgstr ""
-
-#: includes/class-settings.php:613
-msgid "Testing…"
-msgstr ""
-
-#: includes/class-settings.php:614
-msgid "Claws at the ready!"
-msgstr ""
-
-#. translators: %s: HTTP status code
-#: includes/class-settings.php:616
-#, php-format
-msgid "Connection failed (HTTP %s)."
-msgstr ""
-
-#: includes/class-settings.php:617
-msgid "Unable to reach gateway. Check the URL."
-msgstr ""
-
-#: includes/class-settings.php:618
-msgid "Snatched!"
-msgstr ""
-
-#: includes/class-settings.php:663
-msgid "Please wait a few seconds before testing again."
-msgstr ""
-
-#: includes/class-settings.php:671
-msgid "Gateway URL is not configured."
-msgstr ""
-
-#: includes/class-settings.php:676
-msgid "Gateway URL failed security validation. Use a public HTTP or HTTPS URL."
-msgstr ""
-
-#: includes/class-settings.php:692
-msgid "Unable to reach the gateway. Check the URL and try again."
-msgstr ""
-
-#: includes/class-settings.php:700
-msgid "Connection secured. Claws at the ready!"
-msgstr ""
-
-#. translators: %d: HTTP status code returned by the gateway.
-#: includes/class-settings.php:706
-#, php-format
-msgid "Connection failed (HTTP %d)."
-msgstr ""
-
-#: includes/class-settings.php:728
-msgid "OpenClaw agent user created. Go to Users → Profile to generate an application password for this user."
-msgstr ""
-
-#: includes/class-settings.php:755
-msgid "Agent identity (least privilege)"
-msgstr ""
-
-#: includes/class-settings.php:757
-msgid "Abilities executed via the incoming webhook run as a WordPress user. Use a dedicated OpenClaw agent with limited capabilities for better security."
-msgstr ""
-
-#: includes/class-settings.php:762
-msgid "Webhook execution user"
-msgstr ""
-
-#: includes/class-settings.php:767
-msgid "Use first administrator (default)"
-msgstr ""
-
-#: includes/class-settings.php:779
-msgid "Create OpenClaw agent user"
-msgstr ""
-
-#: includes/class-settings.php:784
-msgid "Create an application password for the agent user in Users → Profile. Use it for MCP/REST connections."
-msgstr ""
-
-#: includes/class-settings.php:789
-msgid "Capability groups"
-msgstr ""
-
-#: includes/class-settings.php:801
-msgid "Controls what the OpenClaw agent role can do. Only affects users with the OpenClaw Agent role."
-msgstr ""
-
-#: includes/class-settings.php:830
-msgid "Dashboard"
-msgstr ""
-
-#: includes/class-settings.php:831
-msgid "What can I pinch?"
-msgstr ""
-
-#: includes/class-settings.php:832
-msgid "Connection"
-msgstr ""
-
-#: includes/class-settings.php:833
-msgid "Webhooks"
-msgstr ""
-
-#: includes/class-settings.php:835
-msgid "Abilities"
-msgstr ""
-
-#: includes/class-settings.php:836
-msgid "Usage"
-msgstr ""
-
-#: includes/class-settings.php:837
-msgid "Features"
-msgstr ""
-
-#: includes/class-settings.php:838
-#: includes/Settings/Tabs/Audit_Tab.php:46
-msgid "Audit Log"
-msgstr ""
-
-#: includes/class-settings.php:850
-msgid "Settings saved. Territory secured."
-msgstr ""
-
-#: includes/class-settings.php:857
-msgid "Settings tabs"
-msgstr ""
-
-#: includes/class-settings.php:921
-msgid "Nonce verification failed."
 msgstr ""
 
 #: includes/class-site-health.php:52
@@ -3446,6 +3306,146 @@ msgstr ""
 #: includes/Rest/Write_Budget.php:162
 #, php-format
 msgid "WP Pinch has used %1$d of %2$d daily write operations (%3$d%%). Adjust the limit or alert threshold in WP Pinch → Connection if needed."
+msgstr ""
+
+#. translators: 1: current step number, 2: total steps
+#: includes/Settings/Settings_Admin_Pages_Trait.php:73
+#: includes/Settings/Wizard.php:76
+#, php-format
+msgid "Step %1$d of %2$d"
+msgstr ""
+
+#: includes/Settings/Settings_Admin_Pages_Trait.php:74
+msgid "Please enter a gateway URL first."
+msgstr ""
+
+#: includes/Settings/Settings_Admin_Pages_Trait.php:75
+msgid "Testing…"
+msgstr ""
+
+#: includes/Settings/Settings_Admin_Pages_Trait.php:76
+msgid "Claws at the ready!"
+msgstr ""
+
+#. translators: %s: HTTP status code
+#: includes/Settings/Settings_Admin_Pages_Trait.php:78
+#, php-format
+msgid "Connection failed (HTTP %s)."
+msgstr ""
+
+#: includes/Settings/Settings_Admin_Pages_Trait.php:79
+msgid "Unable to reach gateway. Check the URL."
+msgstr ""
+
+#: includes/Settings/Settings_Admin_Pages_Trait.php:80
+msgid "Snatched!"
+msgstr ""
+
+#: includes/Settings/Settings_Admin_Pages_Trait.php:125
+msgid "Please wait a few seconds before testing again."
+msgstr ""
+
+#: includes/Settings/Settings_Admin_Pages_Trait.php:133
+msgid "Gateway URL is not configured."
+msgstr ""
+
+#: includes/Settings/Settings_Admin_Pages_Trait.php:138
+msgid "Gateway URL failed security validation. Use a public HTTP or HTTPS URL."
+msgstr ""
+
+#: includes/Settings/Settings_Admin_Pages_Trait.php:154
+msgid "Unable to reach the gateway. Check the URL and try again."
+msgstr ""
+
+#: includes/Settings/Settings_Admin_Pages_Trait.php:162
+msgid "Connection secured. Claws at the ready!"
+msgstr ""
+
+#. translators: %d: HTTP status code returned by the gateway.
+#: includes/Settings/Settings_Admin_Pages_Trait.php:168
+#, php-format
+msgid "Connection failed (HTTP %d)."
+msgstr ""
+
+#: includes/Settings/Settings_Admin_Pages_Trait.php:190
+msgid "OpenClaw agent user created. Go to Users → Profile to generate an application password for this user."
+msgstr ""
+
+#: includes/Settings/Settings_Admin_Pages_Trait.php:217
+msgid "Agent identity (least privilege)"
+msgstr ""
+
+#: includes/Settings/Settings_Admin_Pages_Trait.php:219
+msgid "Abilities executed via the incoming webhook run as a WordPress user. Use a dedicated OpenClaw agent with limited capabilities for better security."
+msgstr ""
+
+#: includes/Settings/Settings_Admin_Pages_Trait.php:224
+msgid "Webhook execution user"
+msgstr ""
+
+#: includes/Settings/Settings_Admin_Pages_Trait.php:229
+msgid "Use first administrator (default)"
+msgstr ""
+
+#: includes/Settings/Settings_Admin_Pages_Trait.php:241
+msgid "Create OpenClaw agent user"
+msgstr ""
+
+#: includes/Settings/Settings_Admin_Pages_Trait.php:246
+msgid "Create an application password for the agent user in Users → Profile. Use it for MCP/REST connections."
+msgstr ""
+
+#: includes/Settings/Settings_Admin_Pages_Trait.php:251
+msgid "Capability groups"
+msgstr ""
+
+#: includes/Settings/Settings_Admin_Pages_Trait.php:263
+msgid "Controls what the OpenClaw agent role can do. Only affects users with the OpenClaw Agent role."
+msgstr ""
+
+#: includes/Settings/Settings_Admin_Pages_Trait.php:292
+msgid "Dashboard"
+msgstr ""
+
+#: includes/Settings/Settings_Admin_Pages_Trait.php:293
+msgid "What can I pinch?"
+msgstr ""
+
+#: includes/Settings/Settings_Admin_Pages_Trait.php:294
+msgid "Connection"
+msgstr ""
+
+#: includes/Settings/Settings_Admin_Pages_Trait.php:295
+msgid "Webhooks"
+msgstr ""
+
+#: includes/Settings/Settings_Admin_Pages_Trait.php:297
+msgid "Abilities"
+msgstr ""
+
+#: includes/Settings/Settings_Admin_Pages_Trait.php:298
+msgid "Usage"
+msgstr ""
+
+#: includes/Settings/Settings_Admin_Pages_Trait.php:299
+msgid "Features"
+msgstr ""
+
+#: includes/Settings/Settings_Admin_Pages_Trait.php:300
+#: includes/Settings/Tabs/Audit_Tab.php:46
+msgid "Audit Log"
+msgstr ""
+
+#: includes/Settings/Settings_Admin_Pages_Trait.php:312
+msgid "Settings saved. Territory secured."
+msgstr ""
+
+#: includes/Settings/Settings_Admin_Pages_Trait.php:319
+msgid "Settings tabs"
+msgstr ""
+
+#: includes/Settings/Settings_Admin_Pages_Trait.php:379
+msgid "Nonce verification failed."
 msgstr ""
 
 #: includes/Settings/Tabs/Abilities_Tab.php:33
@@ -4405,12 +4405,12 @@ msgstr ""
 msgid "Enter the warren"
 msgstr ""
 
-#: wp-pinch.php:171
+#: wp-pinch.php:188
 msgid "Important:"
 msgstr ""
 
 #. translators: %s: new version number
-#: wp-pinch.php:175
+#: wp-pinch.php:192
 #, php-format
 msgid "WP Pinch %s is a major release with breaking changes. Please review the changelog and back up your site before updating."
 msgstr ""
