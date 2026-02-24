@@ -123,10 +123,11 @@ wp plugin install https://github.com/RegionallyFamous/wp-pinch/releases/latest/d
 
 > **Note:** WP Pinch is distributed via GitHub (not yet on wordpress.org). The zip above is built from source for each release.
 
-1. Open **WP Pinch** in your admin sidebar.
-2. Enter your **OpenClaw Gateway URL** and **API Token**.
-3. Click **Test Connection**.
-4. In OpenClaw: connect to the MCP endpoint. Command syntax may vary by version — see [OpenClaw CLI docs](https://docs.openclaw.ai/cli). Example: `npx openclaw connect --mcp-url https://your-site.com/wp-json/wp-pinch/mcp`
+1. Install and activate the **[MCP Adapter plugin](https://github.com/WordPress/mcp-adapter)** — this is what registers the `/wp-json/wp-pinch/mcp` endpoint.
+2. Open **WP Pinch** in your admin sidebar.
+3. Enter your **OpenClaw Gateway URL** and **API Token**.
+4. Click **Test Connection**.
+5. In OpenClaw: connect to the MCP endpoint. Command syntax may vary by version — see [OpenClaw CLI docs](https://docs.openclaw.ai/cli). Example: `npx openclaw connect --mcp-url https://your-site.com/wp-json/wp-pinch/mcp`
 
 **Done.** Manage your site from WhatsApp, Slack, or Telegram — or add the **Pinch Chat** block so visitors can chat with an AI that knows your content. To give your agent WordPress-specific behavior, install the skill from ClawHub: `clawhub install nickhamze/pinch-to-post` — or see the [OpenClaw Skill](https://github.com/RegionallyFamous/wp-pinch/wiki/OpenClaw-Skill) guide.
 
@@ -168,6 +169,7 @@ Capability checks, sanitization, audit logging, HMAC webhooks, rate limiting, ci
 |-------------|---------|
 | WordPress | 6.9+ (Abilities API) |
 | PHP | 8.1+ |
+| MCP Adapter plugin | Required for MCP. Registers the `/wp-json/wp-pinch/mcp` endpoint. Without it, AI clients get a 404. Install from [GitHub](https://github.com/WordPress/mcp-adapter). |
 | Action Scheduler | Required for governance (scheduled tasks, webhook retries). Abilities and Chat block work without it. Install from [WooCommerce](https://wordpress.org/plugins/woocommerce/) or [standalone](https://github.com/woocommerce/action-scheduler/releases). See [FAQ](https://github.com/RegionallyFamous/wp-pinch/wiki/FAQ#why-do-i-need-action-scheduler). |
 | OpenClaw | For chat/channel integration; any MCP client can use the abilities |
 

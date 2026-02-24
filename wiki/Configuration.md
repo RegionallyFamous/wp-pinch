@@ -260,7 +260,7 @@ When the `audit_search` feature flag is enabled, the Audit tab shows **search** 
 |---|---|---|
 | WordPress | 6.9+ | For the Abilities API |
 | PHP | 8.1+ | For type hints and enums |
-| MCP Adapter plugin | Recommended | For full MCP integration |
+| MCP Adapter plugin | Required for MCP | Registers the `/wp-json/wp-pinch/mcp` endpoint. Without it, AI clients get a 404. Install from [GitHub](https://github.com/WordPress/mcp-adapter). |
 | Action Scheduler | Optional | Required for: recurring governance tasks (content freshness, SEO, comment sweep, broken links, security scan, draft necromancer, spaced resurfacing), webhook retry on failure, and audit log cleanup. Without it, the plugin activates and runs; those features no-op. Install from [WooCommerce](https://wordpress.org/plugins/woocommerce/) or [standalone](https://github.com/woocommerce/action-scheduler/releases). A dismissible admin notice appears on the WP Pinch settings/dashboard when Action Scheduler is missing. |
 
 ---
