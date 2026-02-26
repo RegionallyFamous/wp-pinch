@@ -132,6 +132,12 @@ class Content_Abilities {
 						'default'     => '',
 						'description' => 'Alt text for the featured image.',
 					),
+					'format'                => array(
+						'type'        => 'string',
+						'description' => __( 'Post format.', 'wp-pinch' ),
+						'enum'        => array( 'standard', 'aside', 'chat', 'gallery', 'link', 'image', 'quote', 'status', 'video', 'audio' ),
+						'default'     => 'standard',
+					),
 				),
 			),
 			array( 'type' => 'object' ),
@@ -159,6 +165,11 @@ class Content_Abilities {
 					'post_modified' => array(
 						'type'        => 'string',
 						'description' => 'Value from get-post modified field for optimistic locking. If provided and the post has changed since, the update is rejected.',
+					),
+					'format'        => array(
+						'type'        => 'string',
+						'description' => __( 'Post format.', 'wp-pinch' ),
+						'enum'        => array( 'standard', 'aside', 'chat', 'gallery', 'link', 'image', 'quote', 'status', 'video', 'audio' ),
 					),
 				),
 			),
@@ -341,6 +352,10 @@ class Content_Abilities {
 			return array( 'error' => $post_id->get_error_message() );
 		}
 
+		if ( ! empty( $input['format'] ) && 'standard' !== $input['format'] ) {
+			set_post_format( $post_id, $input['format'] );
+		}
+
 		update_post_meta( $post_id, '_wp_pinch_ai_generated', time() );
 
 		if ( ! empty( $input['tags'] ) ) {
@@ -438,6 +453,14 @@ class Content_Abilities {
 
 		if ( is_wp_error( $result ) ) {
 			return array( 'error' => $result->get_error_message() );
+		}
+
+		if ( ! empty( $input['format'] ) ) {
+			if ( 'standard' === $input['format'] ) {
+				set_post_format( $post_id, false );
+			} else {
+				set_post_format( $post_id, $input['format'] );
+			}
 		}
 
 		update_post_meta( $post_id, '_wp_pinch_ai_generated', time() );
