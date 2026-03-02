@@ -12,11 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Why this matters: dependency upgrades are only useful when they keep CI and release confidence high. This release tightens both by moving key tooling forward while re-verifying the full quality gate.
 
 Key outcomes:
-- Better dependency hygiene with newer CI/tooling baselines (`codecov-action` v5, `@wordpress/env` 11, `@wordpress/block-editor` 15.13.1, `fast-xml-parser` 5.4.1).
+- Better dependency hygiene with newer CI/tooling baselines (`codecov-action` v5, `@wordpress/block-editor` 15.13.1, `fast-xml-parser` 5.4.1) while pinning `@wordpress/env` to the latest compatible v10 line.
 - Full local release verification still green: PHPCS, PHPStan, JS lint, and 377 PHPUnit tests.
 
 ### Changed
-- **Dependency updates** — `@wordpress/env` 10 → 11 (adds `wp-env status` command, MySQL health-check to prevent startup race conditions, auto-port fallback so parallel test runs no longer collide), `@wordpress/components` 32.1 → 32.2, `@wordpress/interactivity` 6.39 → 6.40, `@wordpress/e2e-test-utils-playwright` 1.39 → 1.40.
+- **Dependency updates** — `@wordpress/env` pinned to `10.39.0` for `@wordpress/scripts` peer compatibility, plus `@wordpress/components` 32.1 → 32.2, `@wordpress/interactivity` 6.39 → 6.40, `@wordpress/e2e-test-utils-playwright` 1.39 → 1.40.
 - **CI upload action refresh** — `codecov/codecov-action` 4 → 5 to stay current with upstream maintenance and security posture.
 - **Parser hardening by dependency bump** — `fast-xml-parser` 5.3.6 → 5.4.1 via npm overrides.
 - **Test suite grows to 377** — five additional PHPUnit tests added, all passing.

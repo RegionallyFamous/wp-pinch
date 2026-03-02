@@ -131,7 +131,7 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 
 = 3.0.5 =
 * Why it matters: dependency hygiene stays ahead of CI surprises, while release checks remain trustworthy under heavier local/CI parallelism.
-* Changed: Updated build and CI dependencies (`@wordpress/env` 11, `@wordpress/block-editor` 15.13.1, `fast-xml-parser` 5.4.1) and moved Codecov action to v5.
+* Changed: Updated build and CI dependencies (`@wordpress/block-editor` 15.13.1, `fast-xml-parser` 5.4.1), moved Codecov action to v5, and pinned `@wordpress/env` to the latest compatible v10 line for reliable `npm ci`.
 * Fixed: Release quality gate now validated against the latest dependency set with all 377 PHPUnit tests passing.
 
 = 3.0.4 =
