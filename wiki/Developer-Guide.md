@@ -19,7 +19,7 @@ composer install
 npm install
 npm run build
 make setup-hooks   # Install pre-commit quality gates
-npx wp-env start   # http://localhost:8888 (admin/password)
+npx wp-env start   # http://localhost:8888 by default (run `npx wp-env status` to confirm ports)
 ```
 
 ---
@@ -45,7 +45,7 @@ WP Pinch uses a multi-layered quality system. Think of it as a lobster cage with
 | **CI Pipeline** | GitHub Actions | PHPCS, PHPStan, PHPUnit, ESLint, Stylelint, Build |
 | **Static Analysis** | PHPStan Level 6 | Type mismatches, null access, undefined properties |
 | **Coding Standards** | PHPCS (WordPress-Extra + Security) | Security, escaping, sanitization, naming |
-| **Unit Tests** | PHPUnit (372 tests) | Functional correctness, security guards, edge cases |
+| **Unit Tests** | PHPUnit (377 tests) | Functional correctness, security guards, edge cases |
 | **JS Lint** | ESLint (wp-scripts) | JavaScript errors, Prettier formatting |
 | **CSS Lint** | Stylelint (wp-scripts) | CSS errors, specificity issues |
 | **Branch Protection** | GitHub | All checks must pass before merging to main |
@@ -66,7 +66,7 @@ npm run lint:js    # ESLint
 npm run lint:css   # Stylelint
 
 # Tests (requires WordPress test env: run `npx wp-env start` first)
-make test-wp-env   # PHPUnit inside wp-env (372 tests)
+make test-wp-env   # PHPUnit inside wp-env (377 tests)
 make test          # Alias to composer test (wp-env PHPUnit)
 npm test           # Jest (frontend tests)
 npm run test:e2e   # Playwright end-to-end tests

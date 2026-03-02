@@ -122,22 +122,28 @@ class Content_Abilities {
 						'default'     => '',
 						'description' => 'URL of image to set as featured image. Use this or featured_image_base64, not both.',
 					),
-					'featured_image_base64' => array(
-						'type'        => 'string',
-						'default'     => '',
-						'description' => 'Base64-encoded image data (or data URL) to set as featured image.',
-					),
-					'featured_image_alt'    => array(
-						'type'        => 'string',
-						'default'     => '',
-						'description' => 'Alt text for the featured image.',
-					),
+				'featured_image_base64' => array(
+					'type'        => 'string',
+					'default'     => '',
+					'description' => 'Base64-encoded image data (or data URL) to set as featured image.',
+				),
+				'featured_image_alt'    => array(
+					'type'        => 'string',
+					'default'     => '',
+					'description' => 'Alt text for the featured image.',
+				),
+				'format'                => array(
+					'type'        => 'string',
+					'default'     => 'standard',
+					'enum'        => array( 'standard', 'aside', 'chat', 'gallery', 'link', 'image', 'quote', 'status', 'video', 'audio' ),
+					'description' => 'Post format. Defaults to standard.',
 				),
 			),
-			array( 'type' => 'object' ),
-			'publish_posts',
-			array( __CLASS__, 'execute_create_post' )
-		);
+		),
+		array( 'type' => 'object' ),
+		'publish_posts',
+		array( __CLASS__, 'execute_create_post' )
+	);
 
 		Abilities::register_ability(
 			'wp-pinch/update-post',
@@ -154,18 +160,22 @@ class Content_Abilities {
 						'type'        => 'array',
 						'description' => 'Optional. Array of block objects (blockName, attrs, innerContent, innerBlocks) to set as post content. Takes precedence over content when provided.',
 					),
-					'status'        => array( 'type' => 'string' ),
-					'excerpt'       => array( 'type' => 'string' ),
-					'post_modified' => array(
-						'type'        => 'string',
-						'description' => 'Value from get-post modified field for optimistic locking. If provided and the post has changed since, the update is rejected.',
-					),
+				'status'        => array( 'type' => 'string' ),
+				'excerpt'       => array( 'type' => 'string' ),
+				'post_modified' => array(
+					'type'        => 'string',
+					'description' => 'Value from get-post modified field for optimistic locking. If provided and the post has changed since, the update is rejected.',
+				),
+				'format'        => array(
+					'type' => 'string',
+					'enum' => array( 'standard', 'aside', 'chat', 'gallery', 'link', 'image', 'quote', 'status', 'video', 'audio' ),
 				),
 			),
-			array( 'type' => 'object' ),
-			'edit_posts',
-			array( __CLASS__, 'execute_update_post' )
-		);
+		),
+		array( 'type' => 'object' ),
+		'edit_posts',
+		array( __CLASS__, 'execute_update_post' )
+	);
 
 		Abilities::register_ability(
 			'wp-pinch/delete-post',
@@ -347,6 +357,9 @@ class Content_Abilities {
 			wp_set_post_tags( $post_id, array_map( 'sanitize_text_field', $input['tags'] ) );
 		}
 
+		$format = sanitize_key( $input['format'] ?? 'standard' );
+		set_post_format( $post_id, $format );
+
 		$featured_url           = isset( $input['featured_image_url'] ) && is_string( $input['featured_image_url'] ) ? trim( $input['featured_image_url'] ) : '';
 		$featured_b64           = isset( $input['featured_image_base64'] ) && is_string( $input['featured_image_base64'] ) ? trim( $input['featured_image_base64'] ) : '';
 		$featured_alt           = isset( $input['featured_image_alt'] ) && is_string( $input['featured_image_alt'] ) ? sanitize_text_field( $input['featured_image_alt'] ) : '';
@@ -441,6 +454,10 @@ class Content_Abilities {
 		}
 
 		update_post_meta( $post_id, '_wp_pinch_ai_generated', time() );
+
+		if ( isset( $input['format'] ) ) {
+			set_post_format( $post_id, sanitize_key( $input['format'] ) );
+		}
 
 		$context = array( 'post_id' => $post_id );
 		if ( isset( $post_data['post_title'] ) || isset( $post_data['post_content'] ) ) {

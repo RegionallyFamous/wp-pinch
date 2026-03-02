@@ -179,6 +179,82 @@ class Test_Abilities extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test create-post sets post format when provided.
+	 */
+	public function test_create_post_with_format(): void {
+		$result = Abilities::execute_create_post(
+			array(
+				'title'  => 'Aside Post',
+				'status' => 'draft',
+				'format' => 'aside',
+			)
+		);
+
+		$this->assertArrayHasKey( 'id', $result );
+		$this->assertEquals( 'aside', get_post_format( $result['id'] ) );
+	}
+
+	/**
+	 * Test create-post without format defaults to standard.
+	 */
+	public function test_create_post_format_defaults_to_standard(): void {
+		$result = Abilities::execute_create_post(
+			array(
+				'title'  => 'Standard Post',
+				'status' => 'draft',
+			)
+		);
+
+		$this->assertArrayHasKey( 'id', $result );
+		// get_post_format returns false for standard; set_post_format with 'standard' removes the term.
+		$this->assertFalse( get_post_format( $result['id'] ) );
+	}
+
+	/**
+	 * Test update-post changes post format.
+	 */
+	public function test_update_post_format(): void {
+		$post_id = $this->factory->post->create( array( 'post_title' => 'Format Test' ) );
+		set_post_format( $post_id, 'link' );
+
+		$result = Abilities::execute_update_post(
+			array(
+				'id'     => $post_id,
+				'format' => 'quote',
+			)
+		);
+
+		$this->assertArrayHasKey( 'updated', $result );
+		$this->assertTrue( $result['updated'] );
+		$this->assertEquals( 'quote', get_post_format( $post_id ) );
+	}
+
+	/**
+	 * Test get-post response includes format field.
+	 */
+	public function test_get_post_includes_format(): void {
+		$post_id = $this->factory->post->create( array( 'post_title' => 'Video Post' ) );
+		set_post_format( $post_id, 'video' );
+
+		$result = Abilities::execute_get_post( array( 'id' => $post_id ) );
+
+		$this->assertArrayHasKey( 'format', $result );
+		$this->assertEquals( 'video', $result['format'] );
+	}
+
+	/**
+	 * Test get-post reports standard for posts without a format.
+	 */
+	public function test_get_post_format_standard_by_default(): void {
+		$post_id = $this->factory->post->create( array( 'post_title' => 'Plain Post' ) );
+
+		$result = Abilities::execute_get_post( array( 'id' => $post_id ) );
+
+		$this->assertArrayHasKey( 'format', $result );
+		$this->assertEquals( 'standard', $result['format'] );
+	}
+
+	/**
 	 * Test create-post rejects non-existent post types.
 	 */
 	public function test_create_post_invalid_post_type(): void {

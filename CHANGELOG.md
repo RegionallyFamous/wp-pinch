@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Dependency updates** — `@wordpress/env` 10 → 11 (adds `wp-env status` command, MySQL health-check to prevent startup race conditions, auto-port fallback so parallel test runs no longer collide), `@wordpress/components` 32.1 → 32.2, `@wordpress/interactivity` 6.39 → 6.40, `@wordpress/e2e-test-utils-playwright` 1.39 → 1.40.
+- **Test suite grows to 377** — five additional PHPUnit tests added, all passing.
+
+Why this matters: `wp-env` 11 fixes a real Docker race condition where WordPress containers would start before MySQL was ready, causing flaky test runs. The `status` command also makes it trivial to inspect port assignments when running parallel environments.
+
 ## [3.0.4] - 2026-02-19
 
 Why this matters: WooCommerce automation now covers the full day-to-day operator loop (catalog, orders, fulfillment, refunds, promotions, customer lookup, and reporting) instead of just basic product/order calls. The ability engine was also refactored into a trait-based architecture so the codebase stays maintainable as the ability surface continues to grow.

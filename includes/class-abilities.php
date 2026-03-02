@@ -387,6 +387,7 @@ class Abilities {
 			'title'    => $post->post_title,
 			'status'   => $post->post_status,
 			'type'     => $post->post_type,
+			'format'   => get_post_format( $post->ID ) ?: 'standard',
 			'date'     => $post->post_date,
 			'modified' => $post->post_modified,
 			'author'   => get_the_author_meta( 'display_name', (int) $post->post_author ),

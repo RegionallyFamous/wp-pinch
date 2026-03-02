@@ -51,7 +51,7 @@ One post, 10 formats. Molt repackages a single post into social (Twitter, Linked
 
 = Production-Ready Security =
 
-Capability checks on every operation. Input sanitization. Output escaping. Nonce verification. Prepared SQL. HMAC-SHA256 webhook signatures. Circuit breaker. Rate limiting. PHPStan Level 6. 372 PHPUnit tests. See the [GitHub Wiki](https://github.com/RegionallyFamous/wp-pinch/wiki/Security) for the full security model.
+Capability checks on every operation. Input sanitization. Output escaping. Nonce verification. Prepared SQL. HMAC-SHA256 webhook signatures. Circuit breaker. Rate limiting. PHPStan Level 6. 377 PHPUnit tests. See the [GitHub Wiki](https://github.com/RegionallyFamous/wp-pinch/wiki/Security) for the full security model.
 
 == Installation ==
 
@@ -113,7 +113,7 @@ It's stored in the WordPress options table with `show_in_rest => false`. For pro
 
 = Is it production-ready? =
 
-WP Pinch passes PHPCS (WordPress-Extra + Security), PHPStan Level 6, and 372 PHPUnit tests. Every ability has security guards, every input is sanitized, every output is escaped. Ship it with confidence.
+WP Pinch passes PHPCS (WordPress-Extra + Security), PHPStan Level 6, and 377 PHPUnit tests. Every ability has security guards, every input is sanitized, every output is escaped. Ship it with confidence.
 
 = Why lobster puns? =
 

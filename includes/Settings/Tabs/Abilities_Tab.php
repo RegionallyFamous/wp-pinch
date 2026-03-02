@@ -30,7 +30,7 @@ class Abilities_Tab {
 		<form method="post" action="options.php">
 			<?php settings_fields( 'wp_pinch_abilities' ); ?>
 
-			<p><?php esc_html_e( 'Uncheck abilities you want to disable. Disabled abilities will not be registered or available via MCP.', 'wp-pinch' ); ?></p>
+			<p><?php esc_html_e( 'Check abilities you want to disable. Disabled abilities will not be registered or available via MCP.', 'wp-pinch' ); ?></p>
 
 			<table class="form-table wp-pinch-abilities-table">
 				<thead>
