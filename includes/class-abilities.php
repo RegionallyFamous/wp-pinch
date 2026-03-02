@@ -382,12 +382,13 @@ class Abilities {
 	 * @return array<string, mixed> Formatted post data.
 	 */
 	public static function format_post( \WP_Post $post, bool $full = false ): array {
-		$data = array(
+		$post_format = get_post_format( $post->ID );
+		$data        = array(
 			'id'       => $post->ID,
 			'title'    => $post->post_title,
 			'status'   => $post->post_status,
 			'type'     => $post->post_type,
-			'format'   => get_post_format( $post->ID ) ?: 'standard',
+			'format'   => $post_format ? $post_format : 'standard',
 			'date'     => $post->post_date,
 			'modified' => $post->post_modified,
 			'author'   => get_the_author_meta( 'display_name', (int) $post->post_author ),

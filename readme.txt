@@ -4,7 +4,7 @@ Tags: ai, agent, openclaw, mcp, automation
 Requires at least: 6.9
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 3.0.4
+Stable tag: 3.0.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -128,6 +128,11 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 5. Audit log showing recent ability executions, webhooks, and chat messages.
 
 == Changelog ==
+
+= 3.0.5 =
+* Why it matters: dependency hygiene stays ahead of CI surprises, while release checks remain trustworthy under heavier local/CI parallelism.
+* Changed: Updated build and CI dependencies (`@wordpress/env` 11, `@wordpress/block-editor` 15.13.1, `fast-xml-parser` 5.4.1) and moved Codecov action to v5.
+* Fixed: Release quality gate now validated against the latest dependency set with all 377 PHPUnit tests passing.
 
 = 3.0.4 =
 * Why it matters: WooCommerce automation now covers the full store operations loop, and release docs/tests now stay in lockstep so teams can ship with confidence.
