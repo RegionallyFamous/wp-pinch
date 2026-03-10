@@ -18,19 +18,20 @@
     "@playwright/test": "^1.58.2",
     "@wordpress/e2e-test-utils-playwright": "^1.40.0",
     "@wordpress/env": "^10.39.0",
-    "@wordpress/scripts": "^31.5.0"
+    "@wordpress/scripts": "^31.6.0"
   },
   "dependencies": {
-    "@wordpress/block-editor": "^15.13.1",
+    "@wordpress/block-editor": "^15.14.0",
     "@wordpress/blocks": "^15.13.0",
     "@wordpress/components": "^32.2.0",
-    "@wordpress/element": "^6.39.0",
+    "@wordpress/element": "^6.41.0",
     "@wordpress/i18n": "^6.12.0",
     "@wordpress/interactivity": "^6.40.0"
   },
   "overrides": {
     "webpack-dev-server": "^5.2.1",
     "glob": "^13.0.0",
-    "fast-xml-parser": "^5.4.1"
+    "fast-xml-parser": "^5.4.1",
+    "svgo": "3.3.3"
   }
 }

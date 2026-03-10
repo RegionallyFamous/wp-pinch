@@ -156,15 +156,19 @@ trait Woo_Register_Products_Orders_Trait {
 		Abilities::register_ability(
 			'wp-pinch/woo-delete-product',
 			__( 'Delete WooCommerce Product', 'wp-pinch' ),
-			__( 'Delete or trash a WooCommerce product.', 'wp-pinch' ),
+			__( 'Delete or trash a WooCommerce product. Requires confirm=true.', 'wp-pinch' ),
 			array(
 				'type'       => 'object',
-				'required'   => array( 'product_id' ),
+				'required'   => array( 'product_id', 'confirm' ),
 				'properties' => array(
 					'product_id' => array( 'type' => 'integer' ),
 					'force'      => array(
 						'type'    => 'boolean',
 						'default' => false,
+					),
+					'confirm'    => array(
+						'type'        => 'boolean',
+						'description' => 'Must be true to confirm the destructive action.',
 					),
 				),
 			),

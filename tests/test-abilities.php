@@ -358,12 +358,26 @@ class Test_Abilities extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test delete-post requires confirm=true.
+	 */
+	public function test_delete_post_requires_confirm(): void {
+		$post_id = $this->factory->post->create();
+		$result  = Abilities::execute_delete_post( array( 'id' => $post_id ) );
+		$this->assertArrayHasKey( 'error', $result );
+		$this->assertStringContainsString( 'confirm', $result['error'] );
+
+		$result = Abilities::execute_delete_post( array( 'id' => $post_id, 'confirm' => false ) );
+		$this->assertArrayHasKey( 'error', $result );
+		$this->assertStringContainsString( 'confirm', $result['error'] );
+	}
+
+	/**
 	 * Test delete-post trashes by default.
 	 */
 	public function test_delete_post_trash(): void {
 		$post_id = $this->factory->post->create();
 
-		$result = Abilities::execute_delete_post( array( 'id' => $post_id ) );
+		$result = Abilities::execute_delete_post( array( 'id' => $post_id, 'confirm' => true ) );
 
 		$this->assertArrayHasKey( 'deleted', $result );
 		$this->assertTrue( $result['deleted'] );
@@ -379,8 +393,9 @@ class Test_Abilities extends WP_UnitTestCase {
 
 		$result = Abilities::execute_delete_post(
 			array(
-				'id'    => $post_id,
-				'force' => true,
+				'id'      => $post_id,
+				'force'   => true,
+				'confirm' => true,
 			)
 		);
 
@@ -393,7 +408,7 @@ class Test_Abilities extends WP_UnitTestCase {
 	 * Test delete-post with non-existent ID returns error.
 	 */
 	public function test_delete_post_not_found(): void {
-		$result = Abilities::execute_delete_post( array( 'id' => 99999 ) );
+		$result = Abilities::execute_delete_post( array( 'id' => 99999, 'confirm' => true ) );
 		$this->assertArrayHasKey( 'error', $result );
 		$this->assertStringContainsString( 'not found', $result['error'] );
 	}
@@ -450,6 +465,22 @@ class Test_Abilities extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test manage-terms delete requires confirm=true.
+	 */
+	public function test_manage_terms_delete_requires_confirm(): void {
+		$term_id = $this->factory->term->create( array( 'taxonomy' => 'category' ) );
+		$result  = Abilities::execute_manage_terms(
+			array(
+				'action'   => 'delete',
+				'taxonomy' => 'category',
+				'term_id'  => $term_id,
+			)
+		);
+		$this->assertArrayHasKey( 'error', $result );
+		$this->assertStringContainsString( 'confirm', $result['error'] );
+	}
+
+	/**
 	 * Test manage-terms delete with non-existent term returns error.
 	 */
 	public function test_manage_terms_delete_not_found(): void {
@@ -458,6 +489,7 @@ class Test_Abilities extends WP_UnitTestCase {
 				'action'   => 'delete',
 				'taxonomy' => 'category',
 				'term_id'  => 999999,
+				'confirm'  => true,
 			)
 		);
 
@@ -481,10 +513,19 @@ class Test_Abilities extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test delete-media requires confirm=true.
+	 */
+	public function test_delete_media_requires_confirm(): void {
+		$result = Abilities::execute_delete_media( array( 'id' => 1 ) );
+		$this->assertArrayHasKey( 'error', $result );
+		$this->assertStringContainsString( 'confirm', $result['error'] );
+	}
+
+	/**
 	 * Test delete-media with non-existent attachment returns error.
 	 */
 	public function test_delete_media_not_found(): void {
-		$result = Abilities::execute_delete_media( array( 'id' => 99999 ) );
+		$result = Abilities::execute_delete_media( array( 'id' => 99999, 'confirm' => true ) );
 		$this->assertArrayHasKey( 'error', $result );
 		$this->assertStringContainsString( 'not found', $result['error'] );
 	}
@@ -495,7 +536,7 @@ class Test_Abilities extends WP_UnitTestCase {
 	public function test_delete_media_wrong_type(): void {
 		$post_id = $this->factory->post->create();
 
-		$result = Abilities::execute_delete_media( array( 'id' => $post_id ) );
+		$result = Abilities::execute_delete_media( array( 'id' => $post_id, 'confirm' => true ) );
 		$this->assertArrayHasKey( 'error', $result );
 		$this->assertStringContainsString( 'not found', $result['error'] );
 	}
@@ -1149,6 +1190,21 @@ class Test_Abilities extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test bulk-edit-posts trash/delete requires confirm=true.
+	 */
+	public function test_bulk_edit_posts_trash_requires_confirm(): void {
+		$post_ids = $this->factory->post->create_many( 2 );
+		$result   = Abilities::execute_bulk_edit_posts(
+			array(
+				'post_ids' => $post_ids,
+				'action'   => 'trash',
+			)
+		);
+		$this->assertArrayHasKey( 'error', $result );
+		$this->assertStringContainsString( 'confirm', $result['error'] );
+	}
+
+	/**
 	 * Test bulk-edit-posts rejects more than 50 posts.
 	 */
 	public function test_bulk_edit_posts_max_limit(): void {
@@ -1156,6 +1212,7 @@ class Test_Abilities extends WP_UnitTestCase {
 			array(
 				'post_ids' => range( 1, 51 ),
 				'action'   => 'trash',
+				'confirm'  => true,
 			)
 		);
 
@@ -1171,6 +1228,7 @@ class Test_Abilities extends WP_UnitTestCase {
 			array(
 				'post_ids' => array( 99999, 99998 ),
 				'action'   => 'trash',
+				'confirm'  => true,
 			)
 		);
 
@@ -1191,6 +1249,49 @@ class Test_Abilities extends WP_UnitTestCase {
 		$this->assertArrayHasKey( 'events', $result );
 		$this->assertArrayHasKey( 'total', $result );
 		$this->assertIsArray( $result['events'] );
+	}
+
+	/**
+	 * Test manage-cron delete requires confirm=true.
+	 */
+	public function test_manage_cron_delete_requires_confirm(): void {
+		$result = Abilities::execute_manage_cron(
+			array(
+				'action' => 'delete',
+				'hook'   => 'wp_pinch_test_cron_hook',
+			)
+		);
+		$this->assertArrayHasKey( 'error', $result );
+		$this->assertStringContainsString( 'confirm', $result['error'] );
+	}
+
+	/**
+	 * Test manage-menu-item delete requires confirm=true.
+	 */
+	public function test_manage_menu_item_delete_requires_confirm(): void {
+		$menu_id = wp_create_nav_menu( 'Test Menu for Pinch' );
+		$this->assertNotWPError( $menu_id );
+		$item_id = wp_update_nav_menu_item(
+			$menu_id,
+			0,
+			array(
+				'menu-item-title'   => 'Test Item',
+				'menu-item-url'     => 'https://example.com',
+				'menu-item-status'  => 'publish',
+				'menu-item-type'    => 'custom',
+			)
+		);
+		$this->assertNotWPError( $item_id );
+		$menu = wp_get_nav_menu_object( $menu_id );
+		$result = Abilities::execute_manage_menu_item(
+			array(
+				'action'  => 'delete',
+				'menu'    => $menu->slug,
+				'item_id' => $item_id,
+			)
+		);
+		$this->assertArrayHasKey( 'error', $result );
+		$this->assertStringContainsString( 'confirm', $result['error'] );
 	}
 
 	// =========================================================================
@@ -2040,6 +2141,17 @@ class Test_Abilities extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test delete-comment requires confirm=true.
+	 */
+	public function test_delete_comment_requires_confirm(): void {
+		$post_id = $this->factory->post->create( array( 'post_status' => 'publish' ) );
+		$c       = $this->factory->comment->create( array( 'comment_post_ID' => $post_id ) );
+		$result  = Abilities::execute_delete_comment( array( 'id' => $c ) );
+		$this->assertArrayHasKey( 'error', $result );
+		$this->assertStringContainsString( 'confirm', $result['error'] );
+	}
+
+	/**
 	 * Test extended user abilities and comment CRUD.
 	 */
 	public function test_extended_user_and_comment_abilities(): void {
@@ -2083,8 +2195,9 @@ class Test_Abilities extends WP_UnitTestCase {
 
 		$d = Abilities::execute_delete_comment(
 			array(
-				'id'    => $c['id'],
-				'force' => true,
+				'id'      => $c['id'],
+				'force'   => true,
+				'confirm' => true,
 			)
 		);
 		$this->assertArrayNotHasKey( 'error', $d );
@@ -2247,6 +2360,15 @@ class Test_Abilities extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test woo-delete-product requires confirm=true.
+	 */
+	public function test_woo_delete_product_requires_confirm(): void {
+		$result = Abilities::execute_woo_delete_product( array( 'product_id' => 1 ) );
+		$this->assertArrayHasKey( 'error', $result );
+		$this->assertStringContainsString( 'confirm', $result['error'] );
+	}
+
+	/**
 	 * Test Woo refund idempotency/guard path returns structured errors when unavailable.
 	 */
 	public function test_woo_refund_structured_error_without_woocommerce(): void {
@@ -2330,7 +2452,7 @@ class Test_Abilities extends WP_UnitTestCase {
 			),
 			'wp-pinch/woo-delete-product'              => array(
 				'method'  => 'execute_woo_delete_product',
-				'payload' => array( 'product_id' => 1 ),
+				'payload' => array( 'product_id' => 1, 'confirm' => true ),
 			),
 			'wp-pinch/woo-list-orders'                 => array(
 				'method'  => 'execute_woo_list_orders',

@@ -185,7 +185,7 @@ Toggle features on/off without code changes:
 | `public_chat` | Off | Allow unauthenticated visitors to chat |
 | `slash_commands` | Off | Enable /new, /status, /compact in chat |
 | `prompt_sanitizer` | **On** | Mitigate instruction injection in content sent to LLMs (Molt, Ghost Writer, synthesize) |
-| `approval_workflow` | Off | Queue destructive abilities (delete-post, toggle-plugin, etc.) for admin approval before execution |
+| `approval_workflow` | Off | Queue destructive abilities (delete-post, delete-media, delete-user, delete-comment, woo-delete-product, toggle-plugin, switch-theme, update-user-role, bulk-edit-posts, manage-cron) for admin approval before execution when called via incoming webhook |
 | `token_display` | Off | Show token usage in chat footer |
 | `pinchdrop_engine` | Off | Enable PinchDrop capture-anywhere pipeline |
 | `ghost_writer` | Off | Enable Ghost Writer (voice analysis + draft completion) |

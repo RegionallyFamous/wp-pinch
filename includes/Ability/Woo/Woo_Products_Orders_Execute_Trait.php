@@ -228,6 +228,9 @@ trait Woo_Products_Orders_Execute_Trait {
 		if ( is_array( $check ) ) {
 			return $check;
 		}
+		if ( empty( $input['confirm'] ) ) {
+			return array( 'error' => __( 'confirm=true is required to delete.', 'wp-pinch' ) );
+		}
 
 		$product_id = absint( $input['product_id'] ?? 0 );
 		$force      = ! empty( $input['force'] );

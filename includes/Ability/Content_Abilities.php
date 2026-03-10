@@ -180,15 +180,19 @@ class Content_Abilities {
 		Abilities::register_ability(
 			'wp-pinch/delete-post',
 			__( 'Delete Post', 'wp-pinch' ),
-			__( 'Trash or permanently delete a post.', 'wp-pinch' ),
+			__( 'Trash or permanently delete a post. Requires confirm=true.', 'wp-pinch' ),
 			array(
 				'type'       => 'object',
-				'required'   => array( 'id' ),
+				'required'   => array( 'id', 'confirm' ),
 				'properties' => array(
-					'id'    => array( 'type' => 'integer' ),
-					'force' => array(
+					'id'      => array( 'type' => 'integer' ),
+					'force'   => array(
 						'type'    => 'boolean',
 						'default' => false,
+					),
+					'confirm' => array(
+						'type'        => 'boolean',
+						'description' => 'Must be true to confirm the destructive action.',
 					),
 				),
 			),
@@ -223,7 +227,7 @@ class Content_Abilities {
 		Abilities::register_ability(
 			'wp-pinch/manage-terms',
 			__( 'Manage Terms', 'wp-pinch' ),
-			__( 'Create, update, or delete taxonomy terms.', 'wp-pinch' ),
+			__( 'Create, update, or delete taxonomy terms. When action is delete, confirm=true is required.', 'wp-pinch' ),
 			array(
 				'type'       => 'object',
 				'required'   => array( 'action', 'taxonomy' ),
@@ -236,6 +240,10 @@ class Content_Abilities {
 					'term_id'  => array( 'type' => 'integer' ),
 					'name'     => array( 'type' => 'string' ),
 					'slug'     => array( 'type' => 'string' ),
+					'confirm'  => array(
+						'type'        => 'boolean',
+						'description' => 'Must be true when action is delete.',
+					),
 				),
 			),
 			array( 'type' => 'object' ),
@@ -489,6 +497,10 @@ class Content_Abilities {
 	 * @return array<string, mixed> Result with id, deleted, force; or error key.
 	 */
 	public static function execute_delete_post( array $input ): array {
+		if ( empty( $input['confirm'] ) ) {
+			return array( 'error' => __( 'confirm=true is required to delete.', 'wp-pinch' ) );
+		}
+
 		$post_id = absint( $input['id'] );
 
 		if ( ! get_post( $post_id ) ) {
@@ -613,6 +625,9 @@ class Content_Abilities {
 				);
 
 			case 'delete':
+				if ( empty( $input['confirm'] ) ) {
+					return array( 'error' => __( 'confirm=true is required for this action.', 'wp-pinch' ) );
+				}
 				$delete_term_id = absint( $input['term_id'] ?? 0 );
 				if ( ! term_exists( $delete_term_id, $taxonomy ) ) {
 					return array( 'error' => __( 'Term not found.', 'wp-pinch' ) );

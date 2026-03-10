@@ -155,6 +155,9 @@ trait Menu_Meta_Revisions_Execute_Trait {
 				);
 
 			case 'delete':
+				if ( empty( $input['confirm'] ) ) {
+					return array( 'error' => __( 'confirm=true is required for this action.', 'wp-pinch' ) );
+				}
 				$item_id = absint( $input['item_id'] ?? 0 );
 				if ( ! $item_id ) {
 					return array( 'error' => __( 'Menu item ID required.', 'wp-pinch' ) );
@@ -409,6 +412,9 @@ trait Menu_Meta_Revisions_Execute_Trait {
 	public static function execute_bulk_edit_posts( array $input ): array {
 		$post_ids = array_values( array_filter( array_map( 'absint', $input['post_ids'] ?? array() ) ) );
 		$action   = sanitize_key( $input['action'] );
+		if ( in_array( $action, array( 'trash', 'delete' ), true ) && empty( $input['confirm'] ) ) {
+			return array( 'error' => __( 'confirm=true is required when action is trash or delete.', 'wp-pinch' ) );
+		}
 		if ( count( $post_ids ) > 50 ) {
 			return array( 'error' => __( 'Maximum 50 posts per bulk operation.', 'wp-pinch' ) );
 		}
@@ -602,6 +608,9 @@ trait Menu_Meta_Revisions_Execute_Trait {
 		$action    = sanitize_key( $input['action'] );
 		$hook      = sanitize_text_field( $input['hook'] );
 		$timestamp = absint( $input['timestamp'] ?? 0 );
+		if ( 'delete' === $action && empty( $input['confirm'] ) ) {
+			return array( 'error' => __( 'confirm=true is required for this action.', 'wp-pinch' ) );
+		}
 		switch ( $action ) {
 			case 'run':
 				$cron_array   = _get_cron_array();

@@ -31,6 +31,9 @@ class Approval_Queue {
 	const DESTRUCTIVE_ABILITIES = array(
 		'wp-pinch/delete-post',
 		'wp-pinch/delete-media',
+		'wp-pinch/delete-user',
+		'wp-pinch/delete-comment',
+		'wp-pinch/woo-delete-product',
 		'wp-pinch/toggle-plugin',
 		'wp-pinch/switch-theme',
 		'wp-pinch/update-user-role',

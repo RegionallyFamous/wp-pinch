@@ -82,15 +82,19 @@ class Media_Abilities {
 		Abilities::register_ability(
 			'wp-pinch/delete-media',
 			__( 'Delete Media', 'wp-pinch' ),
-			__( 'Delete a media attachment.', 'wp-pinch' ),
+			__( 'Delete a media attachment. Requires confirm=true.', 'wp-pinch' ),
 			array(
 				'type'       => 'object',
-				'required'   => array( 'id' ),
+				'required'   => array( 'id', 'confirm' ),
 				'properties' => array(
-					'id'    => array( 'type' => 'integer' ),
-					'force' => array(
+					'id'      => array( 'type' => 'integer' ),
+					'force'  => array(
 						'type'    => 'boolean',
 						'default' => false,
+					),
+					'confirm' => array(
+						'type'        => 'boolean',
+						'description' => 'Must be true to confirm the destructive action.',
 					),
 				),
 			),
@@ -206,6 +210,10 @@ class Media_Abilities {
 	 * @return array<string, mixed> Result with id, deleted; or error key.
 	 */
 	public static function execute_delete_media( array $input ): array {
+		if ( empty( $input['confirm'] ) ) {
+			return array( 'error' => __( 'confirm=true is required to delete.', 'wp-pinch' ) );
+		}
+
 		$id = absint( $input['id'] );
 
 		if ( ! get_post( $id ) || 'attachment' !== get_post_type( $id ) ) {

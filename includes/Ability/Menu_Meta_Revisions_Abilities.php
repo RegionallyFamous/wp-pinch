@@ -60,7 +60,7 @@ class Menu_Meta_Revisions_Abilities {
 		Abilities::register_ability(
 			'wp-pinch/manage-menu-item',
 			__( 'Manage Menu Item', 'wp-pinch' ),
-			__( 'Create, update, or delete a navigation menu item.', 'wp-pinch' ),
+			__( 'Create, update, or delete a navigation menu item. When action is delete, confirm=true is required.', 'wp-pinch' ),
 			array(
 				'type'       => 'object',
 				'required'   => array( 'action', 'menu' ),
@@ -76,6 +76,10 @@ class Menu_Meta_Revisions_Abilities {
 					'item_id'   => array(
 						'type'        => 'integer',
 						'description' => 'Menu item ID (required for update/delete).',
+					),
+					'confirm'   => array(
+						'type'        => 'boolean',
+						'description' => 'Must be true when action is delete.',
 					),
 					'title'     => array(
 						'type'        => 'string',
@@ -193,7 +197,7 @@ class Menu_Meta_Revisions_Abilities {
 		Abilities::register_ability(
 			'wp-pinch/bulk-edit-posts',
 			__( 'Bulk Edit Posts', 'wp-pinch' ),
-			__( 'Batch update status, category, or delete multiple posts at once.', 'wp-pinch' ),
+			__( 'Batch update status, category, or delete multiple posts at once. When action is trash or delete, confirm=true is required.', 'wp-pinch' ),
 			array(
 				'type'       => 'object',
 				'required'   => array( 'post_ids', 'action' ),
@@ -214,6 +218,10 @@ class Menu_Meta_Revisions_Abilities {
 					'category_id' => array(
 						'type'        => 'integer',
 						'description' => 'Category term ID (for add/remove_category).',
+					),
+					'confirm'     => array(
+						'type'        => 'boolean',
+						'description' => 'Must be true when action is trash or delete.',
 					),
 				),
 			),
@@ -245,7 +253,7 @@ class Menu_Meta_Revisions_Abilities {
 		Abilities::register_ability(
 			'wp-pinch/manage-cron',
 			__( 'Manage Cron Event', 'wp-pinch' ),
-			__( 'Run or delete a scheduled cron event.', 'wp-pinch' ),
+			__( 'Run or delete a scheduled cron event. When action is delete, confirm=true is required.', 'wp-pinch' ),
 			array(
 				'type'       => 'object',
 				'required'   => array( 'action', 'hook' ),
@@ -262,6 +270,10 @@ class Menu_Meta_Revisions_Abilities {
 						'type'        => 'integer',
 						'default'     => 0,
 						'description' => 'Specific event timestamp (for delete). 0 = all events for hook.',
+					),
+					'confirm'   => array(
+						'type'        => 'boolean',
+						'description' => 'Must be true when action is delete.',
 					),
 				),
 			),

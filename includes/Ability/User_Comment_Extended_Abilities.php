@@ -142,15 +142,19 @@ class User_Comment_Extended_Abilities {
 		Abilities::register_ability(
 			'wp-pinch/delete-comment',
 			__( 'Delete Comment', 'wp-pinch' ),
-			__( 'Delete or trash a comment.', 'wp-pinch' ),
+			__( 'Delete or trash a comment. Requires confirm=true.', 'wp-pinch' ),
 			array(
 				'type'       => 'object',
-				'required'   => array( 'id' ),
+				'required'   => array( 'id', 'confirm' ),
 				'properties' => array(
-					'id'    => array( 'type' => 'integer' ),
-					'force' => array(
+					'id'      => array( 'type' => 'integer' ),
+					'force'   => array(
 						'type'    => 'boolean',
 						'default' => false,
+					),
+					'confirm' => array(
+						'type'        => 'boolean',
+						'description' => 'Must be true to confirm the destructive action.',
 					),
 				),
 			),
@@ -442,6 +446,10 @@ class User_Comment_Extended_Abilities {
 	 * @return array<string, mixed>
 	 */
 	public static function execute_delete_comment( array $input ): array {
+		if ( empty( $input['confirm'] ) ) {
+			return array( 'error' => __( 'confirm=true is required to delete.', 'wp-pinch' ) );
+		}
+
 		$id    = absint( $input['id'] ?? 0 );
 		$force = ! empty( $input['force'] );
 

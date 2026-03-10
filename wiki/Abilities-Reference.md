@@ -166,6 +166,16 @@ The AI that writes like *you*. Ghost Writer learns each author's writing voice f
 
 - **`knowledge-graph`** — Returns nodes (posts, optionally terms) and edges (content links, shared tags). Input: `post_type` (default `post`), `limit` (default 200), `include_terms` (default true). Payload suitable for external graph visualization.
 
+### Destructive abilities (confirm required)
+
+These abilities require **`confirm: true`** so the agent must explicitly confirm before the action runs:
+
+- **`delete-post`**, **`delete-media`**, **`delete-comment`**, **`woo-delete-product`** — require `confirm: true` on every call.
+- **`manage-terms`**, **`manage-cron`**, **`manage-menu-item`** — require `confirm: true` when `action` is `delete`.
+- **`bulk-edit-posts`** — require `confirm: true` when `action` is `trash` or `delete`.
+
+Existing abilities that already required confirm: **`delete-user`**, **`woo-cancel-order-safe`**, **`manage-plugin-lifecycle`** / **`manage-theme-lifecycle`** (update/delete), **`set-maintenance-mode`** (enable), **`search-replace-db-scoped`** (when `dry_run` is false).
+
 ---
 
 ## Security Guards
