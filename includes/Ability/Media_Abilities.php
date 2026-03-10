@@ -88,7 +88,7 @@ class Media_Abilities {
 				'required'   => array( 'id', 'confirm' ),
 				'properties' => array(
 					'id'      => array( 'type' => 'integer' ),
-					'force'  => array(
+					'force'   => array(
 						'type'    => 'boolean',
 						'default' => false,
 					),

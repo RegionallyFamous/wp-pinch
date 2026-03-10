@@ -4,7 +4,7 @@ Tags: ai, agent, openclaw, mcp, automation
 Requires at least: 6.9
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 3.0.6
+Stable tag: 3.0.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -128,6 +128,10 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 5. Audit log showing recent ability executions, webhooks, and chat messages.
 
 == Changelog ==
+
+= 3.0.7 =
+* Why it matters: dev environment stays on a supported @wordpress/env release; Dependabot bump resolved.
+* Changed: Bumped `@wordpress/env` from 10.39.0 to 11.1.0.
 
 = 3.0.6 =
 * Why it matters: disabling an ability or using approval workflow now works on every path (including MCP); less error log noise and a clear test-all guide.

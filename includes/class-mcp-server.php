@@ -72,9 +72,12 @@ class MCP_Server {
 
 		// Only pass abilities that are actually registered so the MCP Adapter never looks up missing ones (e.g. disabled) and logs "does not exist".
 		if ( function_exists( 'wp_get_ability' ) ) {
-			$all_abilities = array_values( array_filter( $all_abilities, function ( $name ) {
-				return (bool) wp_get_ability( $name );
-			} ) );
+			$all_abilities = array_values( array_filter(
+				$all_abilities,
+				function ( $name ) {
+					return (bool) wp_get_ability( $name );
+				}
+			) );
 		}
 
 		// Determine transport classes.

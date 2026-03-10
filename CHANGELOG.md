@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.7] - 2026-03-10
+
+Why this matters: `@wordpress/env` 11.1.0 addresses Docker/MySQL startup race conditions and keeps the dev environment on a supported version; Dependabot can close the bump PR.
+
+### Changed
+- **Dependency** — `@wordpress/env` 10.39.0 → 11.1.0 (Dependabot).
+
 ## [3.0.6] - 2026-03-10
 
 Why this matters: disabling an ability or using the approval workflow now works on every execution path (including MCP). You get less error log noise and a single place to see how to run the full test suite.
@@ -389,7 +396,8 @@ Key outcomes:
 ### Added
 - **Initial launch** — shipped MCP-connected WordPress abilities, governance automation, chat block, CLI/admin controls, audit logging, and CI foundations to make AI-assisted site management practical from day one.
 
-[Unreleased]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.0.6...HEAD
+[Unreleased]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.0.7...HEAD
+[3.0.7]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.0.6...v3.0.7
 [3.0.6]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.0.5...v3.0.6
 [3.0.5]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.0.4...v3.0.5
 [3.0.4]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.0.3...v3.0.4
