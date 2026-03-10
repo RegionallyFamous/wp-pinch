@@ -70,6 +70,13 @@ class MCP_Server {
 		 */
 		$all_abilities = apply_filters( 'wp_pinch_mcp_server_abilities', $all_abilities );
 
+		// Only pass abilities that are actually registered so the MCP Adapter never looks up missing ones (e.g. disabled) and logs "does not exist".
+		if ( function_exists( 'wp_get_ability' ) ) {
+			$all_abilities = array_values( array_filter( $all_abilities, function ( $name ) {
+				return (bool) wp_get_ability( $name );
+			} ) );
+		}
+
 		// Determine transport classes.
 		$http_transport = '\\WP\\MCP\\Transport\\HttpTransport';
 		$transports     = class_exists( $http_transport ) ? array( $http_transport ) : array();

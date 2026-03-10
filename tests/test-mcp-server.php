@@ -195,7 +195,7 @@ class Test_MCP_Server extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test that the wp_pinch_mcp_server_abilities filter works.
+	 * Test that the wp_pinch_mcp_server_abilities filter is applied, but only registered abilities are passed through.
 	 */
 	public function test_mcp_server_abilities_filter(): void {
 		$captured_abilities = null;
@@ -223,9 +223,39 @@ class Test_MCP_Server extends WP_UnitTestCase {
 
 		MCP_Server::register_server( $mock );
 
-		$this->assertContains( 'custom/my-ability', $captured_abilities );
+		// Unregistered ability names added by the filter are dropped so the MCP Adapter never logs "does not exist".
+		$this->assertNotContains( 'custom/my-ability', $captured_abilities );
 
 		remove_all_filters( 'wp_pinch_mcp_server_abilities' );
+	}
+
+	/**
+	 * Test that only actually registered abilities are passed to create_server.
+	 */
+	public function test_register_server_passes_only_registered_abilities(): void {
+		$captured_abilities = null;
+
+		$mock = $this->getMockBuilder( stdClass::class )
+			->addMethods( array( 'create_server' ) )
+			->getMock();
+
+		$mock->expects( $this->once() )
+			->method( 'create_server' )
+			->willReturnCallback(
+				function () use ( &$captured_abilities ) {
+					$args               = func_get_args();
+					$captured_abilities = $args[9];
+				}
+			);
+
+		MCP_Server::register_server( $mock );
+
+		foreach ( $captured_abilities as $name ) {
+			$this->assertTrue(
+				function_exists( 'wp_get_ability' ) && (bool) wp_get_ability( $name ),
+				sprintf( 'Ability "%s" passed to create_server must be registered.', $name )
+			);
+		}
 	}
 
 	/**
