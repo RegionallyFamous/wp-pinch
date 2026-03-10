@@ -111,6 +111,48 @@ bin/install-wp-tests.sh wordpress_test root '' localhost latest
 ./vendor/bin/phpunit -c phpunit.xml.dist --filter 'Prompt_Sanitizer|loop_detection|should_skip|api_disabled|read_only|denylist_home|denylist_siteurl|mask_token'
 ```
 
+## Testing all features (one-shot procedure)
+
+To verify the full stack locally (e.g. before release or after big changes), run these in order. All should pass.
+
+| Step | Command | What it verifies |
+|------|---------|------------------|
+| 1 | `make check` | PHPCS, PHPStan, test-file lint (no Docker). |
+| 2 | `npx wp-env start` then `make test-wp-env` | All PHPUnit tests (388) in Docker. |
+| 3 | `npm run lint:js`, `npm run lint:css`, `npm run build`, `npm test` | Frontend lint, build, and JS unit tests. |
+| 4 | `npm run test:e2e` | Playwright E2E (if configured). |
+| 5 | `npm run test:plugin-check` | WordPress.org Plugin Check in wp-env. |
+
+**Full release gate:** After `npx wp-env start`, run `make release-check-full` to run build, check, and test-wp-env in one go.
+
+## Feature-to-test mapping
+
+Use this table to see which test file covers which area when debugging or adding tests.
+
+| Feature area | Test file |
+|--------------|-----------|
+| Abilities (execute, schemas, disabled, Woo, approval in callback) | `tests/test-abilities.php` |
+| REST (routes, auth, chat, status, incoming hook, capture, kill switch, read-only) | `tests/test-rest-controller.php` |
+| MCP server (ability list, only-registered) | `tests/test-mcp-server.php` |
+| Governance (tasks, intervals, enabled/disabled) | `tests/test-governance.php` |
+| Webhooks (dispatch, retry, loop detection) | `tests/test-webhook-dispatcher.php` |
+| Settings (options, tabs) | `tests/test-settings.php`, `tests/test-network-settings.php` |
+| Feature flags | `tests/test-feature-flags.php` |
+| Audit table (insert, query, cleanup) | `tests/test-audit-table.php` |
+| Circuit breaker | `tests/test-circuit-breaker.php` |
+| WP-CLI commands | `tests/test-cli.php` |
+| Plugin bootstrap, kill switch, read-only | `tests/test-plugin.php` |
+| Privacy (export, erase) | `tests/test-privacy.php` |
+| REST availability / health | `tests/test-rest-availability.php` |
+| Site health (checks) | `tests/test-site-health.php` |
+| Dashboard widget | `tests/test-dashboard-widget.php` |
+| Molt / Ghost Writer | `tests/test-molt.php` |
+| OpenClaw role | `tests/test-openclaw-role.php` |
+| Prompt sanitizer | `tests/test-prompt-sanitizer.php` |
+| Utils (e.g. token masking) | `tests/test-utils.php` |
+| Docs / counts consistency | `tests/test-docs.php` |
+| Maintainability (line budgets) | `tests/test-maintainability.php` |
+
 ## Coverage Summary
 
 | Area | Before | After |

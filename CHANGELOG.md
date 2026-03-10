@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.6] - 2026-03-10
+
+Why this matters: disabling an ability or using the approval workflow now works on every execution path (including MCP). You get less error log noise and a single place to see how to run the full test suite.
+
+### Added
+- **Destructive toggles enforced in execute callback** — Disabled abilities now return an error from the ability callback itself, so no path can run them. Approval workflow is enforced in the same callback: destructive abilities only run when executed from an approved queue item, so MCP or any direct `wp_execute_ability` call cannot bypass the queue.
+- **Approval_Queue "executing approved" flag** — `approve_item()` sets a request-scoped flag before calling `wp_execute_ability` and clears it in `finally`, so the ability callback can allow execution only when that flag is set.
+- **Tests for approval in execute path** — `test_destructive_ability_requires_approval_when_workflow_enabled` and `test_destructive_ability_runs_when_executing_approved` ensure the approval guard and flag behave correctly.
+- **Testing all features guide** — [Test-Coverage.md](wiki/Test-Coverage.md) now has a one-shot procedure (make check, test-wp-env, npm lint/build/test, e2e, plugin-check) and a feature-to-test-file mapping table.
+
+### Fixed
+- **MCP server only passes registered abilities** — The list sent to the MCP Adapter is now filtered to ability names that actually exist (`wp_get_ability`), so disabled abilities (e.g. delete-post) are no longer in the tool list and the adapter no longer logs "ability does not exist" repeatedly.
+- **Woo delete-product confirm test** — Assertion now accepts either "confirm" or "WooCommerce" in the error message so the test passes when WooCommerce is inactive.
+- **MCP server tests in wp-env** — Tests that call `register_server` are skipped when `core/get-site-info` is not registered (e.g. wp-env without MCP Adapter) to avoid incorrect usage notices.
+
+### Changed
+- **FAQ and Configuration docs** — New FAQ "How do I stop the AI from deleting posts?" clarifies that governance toggles control reports only; disable the delete-post ability in Abilities to remove the tool. Approval workflow is documented as applying to all execution paths. Governance and Abilities tabs in Configuration mention the same.
+
 ## [3.0.5] - 2026-03-02
 
 Why this matters: dependency upgrades are only useful when they keep CI and release confidence high. This release tightens both by moving key tooling forward while re-verifying the full quality gate.
@@ -371,7 +389,9 @@ Key outcomes:
 ### Added
 - **Initial launch** — shipped MCP-connected WordPress abilities, governance automation, chat block, CLI/admin controls, audit logging, and CI foundations to make AI-assisted site management practical from day one.
 
-[Unreleased]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.0.4...HEAD
+[Unreleased]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.0.6...HEAD
+[3.0.6]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.0.5...v3.0.6
+[3.0.5]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.0.4...v3.0.5
 [3.0.4]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.0.3...v3.0.4
 [3.0.3]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.0.2...v3.0.3
 [3.0.2]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.0.0...v3.0.2

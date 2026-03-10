@@ -51,6 +51,13 @@ class Approval_Queue {
 	}
 
 	/**
+	 * Whether we are currently executing an approved queue item (so the ability callback allows it).
+	 *
+	 * @var bool
+	 */
+	private static $executing_approved = false;
+
+	/**
 	 * Check whether an ability requires approval.
 	 *
 	 * @param string $ability_name Ability name (e.g. wp-pinch/delete-post).
@@ -61,6 +68,24 @@ class Approval_Queue {
 			return false;
 		}
 		return in_array( $ability_name, self::DESTRUCTIVE_ABILITIES, true );
+	}
+
+	/**
+	 * Whether the current execution is from an approved queue item.
+	 *
+	 * @return bool
+	 */
+	public static function is_executing_approved(): bool {
+		return self::$executing_approved;
+	}
+
+	/**
+	 * Set the executing-approved flag (used by approve_item so the ability callback allows execution).
+	 *
+	 * @param bool $value True when about to run an approved item.
+	 */
+	public static function set_executing_approved( bool $value ): void {
+		self::$executing_approved = $value;
 	}
 
 	/**
@@ -238,7 +263,12 @@ class Approval_Queue {
 		if ( $execution_user > 0 ) {
 			wp_set_current_user( $execution_user );
 		}
-		$result = wp_execute_ability( $ability, $params );
+		self::set_executing_approved( true );
+		try {
+			$result = wp_execute_ability( $ability, $params );
+		} finally {
+			self::set_executing_approved( false );
+		}
 		wp_set_current_user( $previous_user );
 
 		Audit_Table::insert(

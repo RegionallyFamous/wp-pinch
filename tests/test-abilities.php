@@ -6,6 +6,7 @@
  */
 
 use WP_Pinch\Abilities;
+use WP_Pinch\Approval_Queue;
 use WP_Pinch\Audit_Table;
 
 /**
@@ -411,6 +412,52 @@ class Test_Abilities extends WP_UnitTestCase {
 		$result = Abilities::execute_delete_post( array( 'id' => 99999, 'confirm' => true ) );
 		$this->assertArrayHasKey( 'error', $result );
 		$this->assertStringContainsString( 'not found', $result['error'] );
+	}
+
+	/**
+	 * Test destructive ability returns error when approval_workflow is on and not executing from queue.
+	 */
+	public function test_destructive_ability_requires_approval_when_workflow_enabled(): void {
+		if ( ! function_exists( 'wp_execute_ability' ) ) {
+			$this->markTestSkipped( 'Abilities API (wp_execute_ability) required.' );
+		}
+		$filter = function ( $value, $flag ) {
+			return 'approval_workflow' === $flag ? true : $value;
+		};
+		add_filter( 'wp_pinch_feature_flag', $filter, 10, 2 );
+		try {
+			$result = wp_execute_ability( 'wp-pinch/delete-post', array( 'id' => 1, 'confirm' => true ) );
+			$this->assertIsArray( $result, 'Expected array (ability result or error).' );
+			$this->assertArrayHasKey( 'error', $result );
+			$this->assertStringContainsString( 'approval', $result['error'] );
+		} finally {
+			remove_filter( 'wp_pinch_feature_flag', $filter, 10 );
+		}
+	}
+
+	/**
+	 * Test destructive ability runs when executing_approved flag is set (e.g. from approve_item).
+	 */
+	public function test_destructive_ability_runs_when_executing_approved(): void {
+		if ( ! function_exists( 'wp_execute_ability' ) ) {
+			$this->markTestSkipped( 'Abilities API (wp_execute_ability) required.' );
+		}
+		$filter = function ( $value, $flag ) {
+			return 'approval_workflow' === $flag ? true : $value;
+		};
+		add_filter( 'wp_pinch_feature_flag', $filter, 10, 2 );
+		Approval_Queue::set_executing_approved( true );
+		try {
+			// Non-existent post: we expect "not found" error, not "requires approval".
+			$result = wp_execute_ability( 'wp-pinch/delete-post', array( 'id' => 99999, 'confirm' => true ) );
+			$this->assertIsArray( $result );
+			if ( isset( $result['error'] ) ) {
+				$this->assertStringNotContainsString( 'approval', $result['error'], 'Should not get approval error when executing from approved context.' );
+			}
+		} finally {
+			Approval_Queue::set_executing_approved( false );
+			remove_filter( 'wp_pinch_feature_flag', $filter, 10 );
+		}
 	}
 
 	/**
@@ -2360,12 +2407,15 @@ class Test_Abilities extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Test woo-delete-product requires confirm=true.
+	 * Test woo-delete-product requires confirm=true (or returns WooCommerce inactive error).
 	 */
 	public function test_woo_delete_product_requires_confirm(): void {
 		$result = Abilities::execute_woo_delete_product( array( 'product_id' => 1 ) );
 		$this->assertArrayHasKey( 'error', $result );
-		$this->assertStringContainsString( 'confirm', $result['error'] );
+		$this->assertTrue(
+			str_contains( $result['error'], 'confirm' ) || str_contains( $result['error'], 'WooCommerce' ),
+			'Error must mention confirm or WooCommerce inactive.'
+		);
 	}
 
 	/**

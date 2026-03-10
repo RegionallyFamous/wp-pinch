@@ -55,7 +55,7 @@ If you can dream it, you can register it.
 
 ## Is it production-ready?
 
-WP Pinch passes PHPCS (WordPress-Extra + Security), PHPStan Level 6, and 377 PHPUnit tests. Every ability has security guards, every input is sanitized, every output is escaped. It's as battle-tested as a lobster that survived the tank at Red Lobster.
+WP Pinch passes PHPCS (WordPress-Extra + Security), PHPStan Level 6, and 388 PHPUnit tests. Every ability has security guards, every input is sanitized, every output is escaped. It's as battle-tested as a lobster that survived the tank at Red Lobster.
 
 ---
 
@@ -112,6 +112,13 @@ You're running from source without built assets. Run `npm install && npm run bui
 - **Action Scheduler** is required. Install it (WooCommerce includes it) or the standalone package.
 - **Tasks enabled?** Check **WP Pinch → Governance** — enable the tasks you want (content freshness, SEO, broken links, etc.).
 - **Schedule** — Tasks run on a schedule (e.g. daily). Check Action Scheduler in wp-admin for pending actions.
+
+---
+
+## How do I stop the AI from deleting posts or other destructive actions?
+
+- **Governance task toggles** (e.g. Content Freshness, Semantic Content Freshness) in **WP Pinch → Governance** only control which **reports** are sent to the AI (e.g. "these posts are stale"). They do not remove tools. To prevent the AI from deleting posts, **disable the `delete-post` ability** in **WP Pinch → Abilities** (check the box next to it to disable).
+- **Approval workflow:** When the `approval_workflow` feature flag is enabled (**WP Pinch → Features**), destructive abilities (delete-post, delete-media, toggle-plugin, etc.) are queued when requested. An administrator must approve or reject each request in **WP Pinch → Approvals**. This applies to **all** execution paths (including MCP): if an ability is destructive and approval is required, it will not run until approved from the queue.
 
 ---
 

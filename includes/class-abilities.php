@@ -313,6 +313,12 @@ class Abilities {
 					return current_user_can( $capability );
 				},
 				'execute_callback'    => function ( $input ) use ( $name, $callback, $readonly ) {
+					if ( self::is_disabled( $name ) ) {
+						return array( 'error' => __( 'This ability is currently disabled.', 'wp-pinch' ) );
+					}
+					if ( Approval_Queue::requires_approval( $name ) && ! Approval_Queue::is_executing_approved() ) {
+						return array( 'error' => __( 'This ability requires approval. Use the incoming webhook so it can be queued, or approve it from WP Pinch → Approvals.', 'wp-pinch' ) );
+					}
 					// Read-only mode: block all write abilities.
 					if ( ! $readonly && Plugin::is_read_only_mode() ) {
 						return array( 'error' => __( 'API is in read-only mode. Write operations are disabled.', 'wp-pinch' ) );

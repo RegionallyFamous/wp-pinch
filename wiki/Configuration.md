@@ -224,7 +224,7 @@ Auth model matches hook receivers:
 
 ### Governance Tab
 
-Configure which governance tasks run and on what schedule:
+Configure which governance tasks run and on what schedule. These toggles control which **reports** are sent (e.g. "these posts are stale"); they do not remove abilities. To prevent the AI from deleting posts, disable the **delete-post** ability in the Abilities tab.
 
 - Content Freshness
 - SEO Health
@@ -246,7 +246,7 @@ See [Hooks & Filters](Hooks-and-Filters) for details.
 
 ### Abilities Tab
 
-When the `ability_toggle` feature flag is enabled, you can enable/disable individual abilities from the admin UI without writing code.
+When the `ability_toggle` feature flag is enabled, you can enable/disable individual abilities from the admin UI without writing code. Disabled abilities are not registered and do not appear in the MCP tool list, so the AI cannot call them.
 
 ### Audit Tab
 

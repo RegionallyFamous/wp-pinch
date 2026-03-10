@@ -4,7 +4,7 @@ Tags: ai, agent, openclaw, mcp, automation
 Requires at least: 6.9
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 3.0.5
+Stable tag: 3.0.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -51,7 +51,7 @@ One post, 10 formats. Molt repackages a single post into social (Twitter, Linked
 
 = Production-Ready Security =
 
-Capability checks on every operation. Input sanitization. Output escaping. Nonce verification. Prepared SQL. HMAC-SHA256 webhook signatures. Circuit breaker. Rate limiting. PHPStan Level 6. 377 PHPUnit tests. See the [GitHub Wiki](https://github.com/RegionallyFamous/wp-pinch/wiki/Security) for the full security model.
+Capability checks on every operation. Input sanitization. Output escaping. Nonce verification. Prepared SQL. HMAC-SHA256 webhook signatures. Circuit breaker. Rate limiting. PHPStan Level 6. 388 PHPUnit tests. See the [GitHub Wiki](https://github.com/RegionallyFamous/wp-pinch/wiki/Security) for the full security model.
 
 == Installation ==
 
@@ -113,7 +113,7 @@ It's stored in the WordPress options table with `show_in_rest => false`. For pro
 
 = Is it production-ready? =
 
-WP Pinch passes PHPCS (WordPress-Extra + Security), PHPStan Level 6, and 377 PHPUnit tests. Every ability has security guards, every input is sanitized, every output is escaped. Ship it with confidence.
+WP Pinch passes PHPCS (WordPress-Extra + Security), PHPStan Level 6, and 388 PHPUnit tests. Every ability has security guards, every input is sanitized, every output is escaped. Ship it with confidence.
 
 = Why lobster puns? =
 
@@ -128,6 +128,11 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 5. Audit log showing recent ability executions, webhooks, and chat messages.
 
 == Changelog ==
+
+= 3.0.6 =
+* Why it matters: disabling an ability or using approval workflow now works on every path (including MCP); less error log noise and a clear test-all guide.
+* Fixed: MCP server only passes registered abilities so the adapter no longer logs "ability does not exist" for disabled abilities (e.g. delete-post).
+* Added: Destructive toggles enforced in the ability execute callback — disabled abilities and approval workflow apply to all execution paths. New FAQ and Configuration notes for governance vs ability toggles. Testing all features procedure and feature-to-test mapping in Test-Coverage wiki.
 
 = 3.0.5 =
 * Why it matters: dependency hygiene stays ahead of CI surprises, while release checks remain trustworthy under heavier local/CI parallelism.

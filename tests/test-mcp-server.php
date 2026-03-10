@@ -134,6 +134,20 @@ class Test_MCP_Server extends WP_UnitTestCase {
 	// =========================================================================
 
 	/**
+	 * Skip if core/get-site-info is not registered (e.g. wp-env without MCP Adapter).
+	 * register_server filters by wp_get_ability(); if core is missing, that triggers a notice and fails the test.
+	 */
+	private function skip_if_core_ability_not_registered(): void {
+		if ( ! function_exists( 'wp_get_ability' ) ) {
+			$this->markTestSkipped( 'Abilities API required.' );
+		}
+		$core = @wp_get_ability( 'core/get-site-info' );
+		if ( ! $core ) {
+			$this->markTestSkipped( 'Requires core/get-site-info to be registered (e.g. by MCP Adapter).' );
+		}
+	}
+
+	/**
 	 * Test that register_server exits gracefully when adapter lacks create_server.
 	 */
 	public function test_register_server_exits_gracefully_without_create_server(): void {
@@ -148,6 +162,7 @@ class Test_MCP_Server extends WP_UnitTestCase {
 	 * Test that register_server calls create_server with correct arguments.
 	 */
 	public function test_register_server_calls_create_server(): void {
+		$this->skip_if_core_ability_not_registered();
 		$mock = $this->getMockBuilder( stdClass::class )
 			->addMethods( array( 'create_server' ) )
 			->getMock();
@@ -174,6 +189,7 @@ class Test_MCP_Server extends WP_UnitTestCase {
 	 * Test that register_server includes CORE_ABILITIES in the abilities list.
 	 */
 	public function test_register_server_includes_core_abilities(): void {
+		$this->skip_if_core_ability_not_registered();
 		$captured_abilities = null;
 
 		$mock = $this->getMockBuilder( stdClass::class )
@@ -198,6 +214,7 @@ class Test_MCP_Server extends WP_UnitTestCase {
 	 * Test that the wp_pinch_mcp_server_abilities filter is applied, but only registered abilities are passed through.
 	 */
 	public function test_mcp_server_abilities_filter(): void {
+		$this->skip_if_core_ability_not_registered();
 		$captured_abilities = null;
 
 		$mock = $this->getMockBuilder( stdClass::class )
@@ -233,6 +250,7 @@ class Test_MCP_Server extends WP_UnitTestCase {
 	 * Test that only actually registered abilities are passed to create_server.
 	 */
 	public function test_register_server_passes_only_registered_abilities(): void {
+		$this->skip_if_core_ability_not_registered();
 		$captured_abilities = null;
 
 		$mock = $this->getMockBuilder( stdClass::class )
@@ -262,6 +280,7 @@ class Test_MCP_Server extends WP_UnitTestCase {
 	 * Test that register_server logs error on create_server failure.
 	 */
 	public function test_register_server_logs_error_on_failure(): void {
+		$this->skip_if_core_ability_not_registered();
 		$mock = $this->getMockBuilder( stdClass::class )
 			->addMethods( array( 'create_server' ) )
 			->getMock();
