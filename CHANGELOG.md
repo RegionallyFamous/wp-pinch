@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-03-10
+
+Why this matters: CI and local `npm ci` work with @wordpress/env 11.x, and PHPCS stays green so releases don’t fail on style.
+
+### Added
+- **`.npmrc` with `legacy-peer-deps=true`** — Resolves peer conflict between `@wordpress/scripts` (optional peer `@wordpress/env@^10`) and our `@wordpress/env@^11.1.0` so `npm ci` succeeds in CI and locally.
+
+### Fixed
+- **PHPCS** — Multi-line function call formatting in `class-mcp-server.php` and `tests/test-abilities.php` (PEAR.Functions.FunctionCallSignature). Array double-arrow and assignment alignment in test-abilities to satisfy WordPress and Generic sniffs.
+
 ## [3.0.7] - 2026-03-10
 
 Why this matters: `@wordpress/env` 11.1.0 addresses Docker/MySQL startup race conditions and keeps the dev environment on a supported version; Dependabot can close the bump PR.
@@ -396,7 +406,8 @@ Key outcomes:
 ### Added
 - **Initial launch** — shipped MCP-connected WordPress abilities, governance automation, chat block, CLI/admin controls, audit logging, and CI foundations to make AI-assisted site management practical from day one.
 
-[Unreleased]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.0.7...HEAD
+[Unreleased]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.1.0...HEAD
+[3.1.0]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.0.7...v3.1.0
 [3.0.7]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.0.6...v3.0.7
 [3.0.6]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.0.5...v3.0.6
 [3.0.5]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.0.4...v3.0.5

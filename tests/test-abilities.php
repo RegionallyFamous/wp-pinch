@@ -367,10 +367,12 @@ class Test_Abilities extends WP_UnitTestCase {
 		$this->assertArrayHasKey( 'error', $result );
 		$this->assertStringContainsString( 'confirm', $result['error'] );
 
-		$result = Abilities::execute_delete_post( array(
-			'id'      => $post_id,
-			'confirm' => false,
-		) );
+		$result = Abilities::execute_delete_post(
+			array(
+				'id'      => $post_id,
+				'confirm' => false,
+			)
+		);
 		$this->assertArrayHasKey( 'error', $result );
 		$this->assertStringContainsString( 'confirm', $result['error'] );
 	}
@@ -381,10 +383,12 @@ class Test_Abilities extends WP_UnitTestCase {
 	public function test_delete_post_trash(): void {
 		$post_id = $this->factory->post->create();
 
-		$result = Abilities::execute_delete_post( array(
-			'id'      => $post_id,
-			'confirm' => true,
-		) );
+		$result = Abilities::execute_delete_post(
+			array(
+				'id'      => $post_id,
+				'confirm' => true,
+			)
+		);
 
 		$this->assertArrayHasKey( 'deleted', $result );
 		$this->assertTrue( $result['deleted'] );
@@ -415,10 +419,12 @@ class Test_Abilities extends WP_UnitTestCase {
 	 * Test delete-post with non-existent ID returns error.
 	 */
 	public function test_delete_post_not_found(): void {
-		$result = Abilities::execute_delete_post( array(
-			'id'      => 99999,
-			'confirm' => true,
-		) );
+		$result = Abilities::execute_delete_post(
+			array(
+				'id'      => 99999,
+				'confirm' => true,
+			)
+		);
 		$this->assertArrayHasKey( 'error', $result );
 		$this->assertStringContainsString( 'not found', $result['error'] );
 	}
@@ -435,10 +441,13 @@ class Test_Abilities extends WP_UnitTestCase {
 		};
 		add_filter( 'wp_pinch_feature_flag', $filter, 10, 2 );
 		try {
-			$result = wp_execute_ability( 'wp-pinch/delete-post', array(
-				'id'      => 1,
-				'confirm' => true,
-			) );
+			$result = wp_execute_ability(
+				'wp-pinch/delete-post',
+				array(
+					'id'      => 1,
+					'confirm' => true,
+				)
+			);
 			$this->assertIsArray( $result, 'Expected array (ability result or error).' );
 			$this->assertArrayHasKey( 'error', $result );
 			$this->assertStringContainsString( 'approval', $result['error'] );
@@ -461,10 +470,13 @@ class Test_Abilities extends WP_UnitTestCase {
 		Approval_Queue::set_executing_approved( true );
 		try {
 			// Non-existent post: we expect "not found" error, not "requires approval".
-			$result = wp_execute_ability( 'wp-pinch/delete-post', array(
-				'id'      => 99999,
-				'confirm' => true,
-			) );
+			$result = wp_execute_ability(
+				'wp-pinch/delete-post',
+				array(
+					'id'      => 99999,
+					'confirm' => true,
+				)
+			);
 			$this->assertIsArray( $result );
 			if ( isset( $result['error'] ) ) {
 				$this->assertStringNotContainsString( 'approval', $result['error'], 'Should not get approval error when executing from approved context.' );
@@ -587,10 +599,12 @@ class Test_Abilities extends WP_UnitTestCase {
 	 * Test delete-media with non-existent attachment returns error.
 	 */
 	public function test_delete_media_not_found(): void {
-		$result = Abilities::execute_delete_media( array(
-			'id'      => 99999,
-			'confirm' => true,
-		) );
+		$result = Abilities::execute_delete_media(
+			array(
+				'id'      => 99999,
+				'confirm' => true,
+			)
+		);
 		$this->assertArrayHasKey( 'error', $result );
 		$this->assertStringContainsString( 'not found', $result['error'] );
 	}
@@ -601,10 +615,12 @@ class Test_Abilities extends WP_UnitTestCase {
 	public function test_delete_media_wrong_type(): void {
 		$post_id = $this->factory->post->create();
 
-		$result = Abilities::execute_delete_media( array(
-			'id'      => $post_id,
-			'confirm' => true,
-		) );
+		$result = Abilities::execute_delete_media(
+			array(
+				'id'      => $post_id,
+				'confirm' => true,
+			)
+		);
 		$this->assertArrayHasKey( 'error', $result );
 		$this->assertStringContainsString( 'not found', $result['error'] );
 	}
@@ -1325,8 +1341,8 @@ class Test_Abilities extends WP_UnitTestCase {
 	public function test_manage_cron_delete_requires_confirm(): void {
 		$result = Abilities::execute_manage_cron(
 			array(
-				'action'  => 'delete',
-				'hook'    => 'wp_pinch_test_cron_hook',
+				'action' => 'delete',
+				'hook'   => 'wp_pinch_test_cron_hook',
 			)
 		);
 		$this->assertArrayHasKey( 'error', $result );
@@ -1350,7 +1366,7 @@ class Test_Abilities extends WP_UnitTestCase {
 			)
 		);
 		$this->assertNotWPError( $item_id );
-		$menu = wp_get_nav_menu_object( $menu_id );
+		$menu   = wp_get_nav_menu_object( $menu_id );
 		$result = Abilities::execute_manage_menu_item(
 			array(
 				'action'  => 'delete',

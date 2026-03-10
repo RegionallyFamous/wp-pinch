@@ -4,7 +4,7 @@ Tags: ai, agent, openclaw, mcp, automation
 Requires at least: 6.9
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 3.0.7
+Stable tag: 3.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -128,6 +128,11 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 5. Audit log showing recent ability executions, webhooks, and chat messages.
 
 == Changelog ==
+
+= 3.1.0 =
+* Why it matters: CI and local `npm ci` work with @wordpress/env 11.x; PHPCS stays green.
+* Added: `.npmrc` with `legacy-peer-deps=true` so `npm ci` succeeds despite @wordpress/scripts optional peer on env v10.
+* Fixed: PHPCS multi-line function call and array alignment in MCP server and test-abilities.
 
 = 3.0.7 =
 * Why it matters: dev environment stays on a supported @wordpress/env release; Dependabot bump resolved.
