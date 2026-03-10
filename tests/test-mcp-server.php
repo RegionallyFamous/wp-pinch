@@ -142,9 +142,16 @@ class Test_MCP_Server extends WP_UnitTestCase {
 			$this->markTestSkipped( 'Abilities API required.' );
 		}
 		// wp_get_ability() triggers a doing_it_wrong notice for unregistered abilities; swallow it for this check only.
-		set_error_handler( function ( $errno, $errstr ) {
-			return ( E_USER_NOTICE === $errno && str_contains( (string) $errstr, 'get-site-info' ) );
-		}, E_USER_NOTICE );
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_set_error_handler -- intentional in test to avoid notice
+		set_error_handler(
+			function (
+				$errno,
+				$errstr
+			) {
+				return ( E_USER_NOTICE === $errno && str_contains( (string) $errstr, 'get-site-info' ) );
+			},
+			E_USER_NOTICE
+		);
 		$core = wp_get_ability( 'core/get-site-info' );
 		restore_error_handler();
 		if ( ! $core ) {
