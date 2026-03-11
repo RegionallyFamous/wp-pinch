@@ -4,7 +4,7 @@ Tags: ai, agent, openclaw, mcp, automation
 Requires at least: 6.9
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 3.1.0
+Stable tag: 3.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -128,6 +128,11 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 5. Audit log showing recent ability executions, webhooks, and chat messages.
 
 == Changelog ==
+
+= 3.1.1 =
+* Why it matters: rich post content via hooks is preserved; dependency hygiene.
+* Fixed: `/hooks/receive` now sanitizes the `content` param with `wp_kses_post()` so headings, links, and bold survive (other params still use `sanitize_text_field()`).
+* Changed: `simple-git` 3.30.0 → 3.33.0 via npm overrides.
 
 = 3.1.0 =
 * Why it matters: CI and local `npm ci` work with @wordpress/env 11.x; PHPCS stays green.

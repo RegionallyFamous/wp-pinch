@@ -1,6 +1,6 @@
 {
   "name": "wp-pinch",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "OpenClaw + WordPress integration plugin",
   "private": true,
   "scripts": {
@@ -29,6 +29,7 @@
     "@wordpress/interactivity": "^6.40.0"
   },
   "overrides": {
+    "simple-git": "3.33.0",
     "webpack-dev-server": "^5.2.1",
     "glob": "^13.0.0",
     "fast-xml-parser": "^5.4.1",

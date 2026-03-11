@@ -314,7 +314,11 @@ class Helpers {
 			}
 			$key = sanitize_key( $key );
 			if ( is_string( $value ) ) {
-				$sanitized[ $key ] = sanitize_text_field( $value );
+				if ( 'content' === $key ) {
+					$sanitized[ $key ] = wp_kses_post( $value );
+				} else {
+					$sanitized[ $key ] = sanitize_text_field( $value );
+				}
 			} elseif ( is_int( $value ) || is_float( $value ) || is_bool( $value ) ) {
 				$sanitized[ $key ] = $value;
 			} elseif ( is_array( $value ) ) {

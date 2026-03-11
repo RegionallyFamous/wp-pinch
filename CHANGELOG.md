@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.1] - 2026-03-10
+
+Why this matters: rich post content sent via the Hook API (e.g. from OpenClaw) now keeps headings, links, and bold instead of being flattened; you get one less reason to patch the plugin on the server.
+
+### Fixed
+- **Hook API content sanitization** — `/hooks/receive` now sanitizes the `content` param with `wp_kses_post()` so allowed HTML (H2/H3, links, bold) is preserved. Other string params still use `sanitize_text_field()`.
+
+### Changed
+- **Dependency** — `simple-git` 3.30.0 → 3.33.0 via npm overrides (Dependabot #31).
+
 ## [3.1.0] - 2026-03-10
 
 Why this matters: CI and local `npm ci` work with @wordpress/env 11.x, and PHPCS stays green so releases don’t fail on style.
