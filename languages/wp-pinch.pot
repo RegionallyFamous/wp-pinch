@@ -2,14 +2,14 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: WP Pinch 3.0.4\n"
+"Project-Id-Version: WP Pinch 3.1.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wp-pinch\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-02-19T17:02:38+00:00\n"
+"POT-Creation-Date: 2026-03-11T00:19:04+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: wp-pinch\n"
@@ -146,12 +146,12 @@ msgid "Ability \"%s\" not found."
 msgstr ""
 
 #: includes/Ability/Analytics/Analytics_Execute_Trait.php:147
-#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:355
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:358
 msgid "Unknown"
 msgstr ""
 
 #: includes/Ability/Analytics/Analytics_Execute_Trait.php:179
-#: includes/Ability/Content_Abilities.php:252
+#: includes/Ability/Content_Abilities.php:270
 msgid "Insufficient permissions for this post type."
 msgstr ""
 
@@ -359,54 +359,54 @@ msgstr ""
 msgid "Create a new post, page, or custom post type."
 msgstr ""
 
-#: includes/Ability/Content_Abilities.php:144
+#: includes/Ability/Content_Abilities.php:150
 msgid "Update Post"
 msgstr ""
 
-#: includes/Ability/Content_Abilities.php:145
+#: includes/Ability/Content_Abilities.php:151
 msgid "Update an existing post by ID. Pass post_modified from get-post for optimistic locking; updates are rejected if the post changed since then."
 msgstr ""
 
-#: includes/Ability/Content_Abilities.php:172
+#: includes/Ability/Content_Abilities.php:182
 msgid "Delete Post"
 msgstr ""
 
-#: includes/Ability/Content_Abilities.php:173
-msgid "Trash or permanently delete a post."
+#: includes/Ability/Content_Abilities.php:183
+msgid "Trash or permanently delete a post. Requires confirm=true."
 msgstr ""
 
-#: includes/Ability/Content_Abilities.php:192
+#: includes/Ability/Content_Abilities.php:206
 msgid "List Taxonomies"
 msgstr ""
 
-#: includes/Ability/Content_Abilities.php:193
+#: includes/Ability/Content_Abilities.php:207
 msgid "List registered taxonomies and their terms."
 msgstr ""
 
-#: includes/Ability/Content_Abilities.php:215
+#: includes/Ability/Content_Abilities.php:229
 msgid "Manage Terms"
 msgstr ""
 
-#: includes/Ability/Content_Abilities.php:216
-msgid "Create, update, or delete taxonomy terms."
+#: includes/Ability/Content_Abilities.php:230
+msgid "Create, update, or delete taxonomy terms. When action is delete, confirm=true is required."
 msgstr ""
 
-#: includes/Ability/Content_Abilities.php:249
+#: includes/Ability/Content_Abilities.php:267
 #: includes/Ability/Content_Workflow_Abilities.php:355
 #: includes/Ability/Site_Ops_Abilities.php:330
 msgid "Invalid post type."
 msgstr ""
 
-#: includes/Ability/Content_Abilities.php:295
-#: includes/Ability/Content_Abilities.php:392
-#: includes/Ability/Content_Abilities.php:478
+#: includes/Ability/Content_Abilities.php:313
+#: includes/Ability/Content_Abilities.php:413
+#: includes/Ability/Content_Abilities.php:507
 #: includes/Ability/Content_Workflow_Abilities.php:190
 #: includes/Ability/Content_Workflow_Abilities.php:280
 #: includes/Ability/Content_Workflow_Abilities.php:497
 #: includes/Ability/Media_Extended_Abilities.php:129
-#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:198
-#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:249
-#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:319
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:201
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:252
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:322
 #: includes/Ability/Site_Ops_Abilities.php:204
 #: includes/class-ghost-writer.php:501
 #: includes/class-molt.php:75
@@ -415,12 +415,12 @@ msgid "Post not found."
 msgstr ""
 
 #. translators: %s: post type slug
-#: includes/Ability/Content_Abilities.php:313
+#: includes/Ability/Content_Abilities.php:331
 #, php-format
 msgid "Post type \"%s\" does not exist."
 msgstr ""
 
-#: includes/Ability/Content_Abilities.php:396
+#: includes/Ability/Content_Abilities.php:417
 #: includes/Ability/Content_Workflow_Abilities.php:506
 #: includes/Ability/GhostWriter_Molt_Abilities.php:188
 #: includes/Ability/Media_Extended_Abilities.php:132
@@ -428,46 +428,59 @@ msgstr ""
 msgid "You do not have permission to edit this post."
 msgstr ""
 
-#: includes/Ability/Content_Abilities.php:407
+#: includes/Ability/Content_Abilities.php:428
 msgid "Post was modified by someone else. Refetch with get-post and retry."
 msgstr ""
 
-#: includes/Ability/Content_Abilities.php:482
-msgid "You do not have permission to delete this post."
-msgstr ""
-
-#: includes/Ability/Content_Abilities.php:489
-msgid "Failed to delete post."
+#: includes/Ability/Content_Abilities.php:501
+#: includes/Ability/Media_Abilities.php:214
+#: includes/Ability/User_Comment_Extended_Abilities.php:450
+#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:232
+msgid "confirm=true is required to delete."
 msgstr ""
 
 #: includes/Ability/Content_Abilities.php:511
-#: includes/Ability/Content_Abilities.php:553
+msgid "You do not have permission to delete this post."
+msgstr ""
+
+#: includes/Ability/Content_Abilities.php:518
+msgid "Failed to delete post."
+msgstr ""
+
+#: includes/Ability/Content_Abilities.php:540
+#: includes/Ability/Content_Abilities.php:582
 msgid "Taxonomy not found."
 msgstr ""
 
-#: includes/Ability/Content_Abilities.php:560
+#: includes/Ability/Content_Abilities.php:589
 msgid "Term name is required."
 msgstr ""
 
-#: includes/Ability/Content_Abilities.php:580
-#: includes/Ability/Content_Abilities.php:601
+#: includes/Ability/Content_Abilities.php:609
+#: includes/Ability/Content_Abilities.php:633
 msgid "Term not found."
 msgstr ""
 
-#: includes/Ability/Content_Abilities.php:610
+#: includes/Ability/Content_Abilities.php:629
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:159
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:612
+msgid "confirm=true is required for this action."
+msgstr ""
+
+#: includes/Ability/Content_Abilities.php:642
 #: includes/Ability/Extension_Lifecycle_Abilities.php:106
 #: includes/Ability/Extension_Lifecycle_Abilities.php:223
-#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:185
-#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:521
-#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:695
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:188
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:527
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:704
 msgid "Invalid action."
 msgstr ""
 
-#: includes/Ability/Content_Abilities.php:622
+#: includes/Ability/Content_Abilities.php:654
 msgid "Block editor (serialize_blocks) is not available."
 msgstr ""
 
-#: includes/Ability/Content_Abilities.php:626
+#: includes/Ability/Content_Abilities.php:658
 msgid "No valid blocks provided. Each block needs blockName (e.g. core/paragraph) and optionally attrs, innerContent, innerBlocks."
 msgstr ""
 
@@ -662,7 +675,7 @@ msgid "Theme delete failed."
 msgstr ""
 
 #: includes/Ability/GEO/GEO_SEO_Execute_Trait.php:40
-#: includes/class-abilities.php:318
+#: includes/class-abilities.php:324
 msgid "API is in read-only mode. Write operations are disabled."
 msgstr ""
 
@@ -878,39 +891,39 @@ msgid "Delete Media"
 msgstr ""
 
 #: includes/Ability/Media_Abilities.php:85
-msgid "Delete a media attachment."
-msgstr ""
-
-#: includes/Ability/Media_Abilities.php:159
-#: includes/Ability/Media_Abilities.php:261
-msgid "Only HTTP and HTTPS URLs are allowed."
+msgid "Delete a media attachment. Requires confirm=true."
 msgstr ""
 
 #: includes/Ability/Media_Abilities.php:163
+#: includes/Ability/Media_Abilities.php:269
+msgid "Only HTTP and HTTPS URLs are allowed."
+msgstr ""
+
+#: includes/Ability/Media_Abilities.php:167
 msgid "URL failed security validation. Use a public HTTP or HTTPS URL."
 msgstr ""
 
-#: includes/Ability/Media_Abilities.php:212
+#: includes/Ability/Media_Abilities.php:220
 msgid "Media attachment not found."
 msgstr ""
 
-#: includes/Ability/Media_Abilities.php:216
+#: includes/Ability/Media_Abilities.php:224
 msgid "You do not have permission to delete this attachment."
 msgstr ""
 
-#: includes/Ability/Media_Abilities.php:223
+#: includes/Ability/Media_Abilities.php:231
 msgid "Failed to delete media."
 msgstr ""
 
-#: includes/Ability/Media_Abilities.php:264
+#: includes/Ability/Media_Abilities.php:272
 msgid "URL failed security validation."
 msgstr ""
 
-#: includes/Ability/Media_Abilities.php:288
+#: includes/Ability/Media_Abilities.php:296
 msgid "Provide featured_image_url or featured_image_base64."
 msgstr ""
 
-#: includes/Ability/Media_Abilities.php:312
+#: includes/Ability/Media_Abilities.php:320
 msgid "Invalid base64 image data."
 msgstr ""
 
@@ -985,102 +998,106 @@ msgid "Menu not found."
 msgstr ""
 
 #: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:124
-#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:164
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:167
 msgid "Menu item not found."
 msgstr ""
 
-#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:160
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:163
 msgid "Menu item ID required."
 msgstr ""
 
-#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:168
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:171
 msgid "Failed to delete menu item."
 msgstr ""
 
-#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:201
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:204
 msgid "You do not have permission to read meta for this post."
 msgstr ""
 
-#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:206
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:209
 msgid "This meta key is protected."
 msgstr ""
 
-#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:252
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:255
 msgid "You do not have permission to modify meta for this post."
 msgstr ""
 
-#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:256
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:259
 msgid "This meta key is protected and cannot be modified."
 msgstr ""
 
-#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:281
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:284
 msgid "Nested arrays are not supported for post meta values."
 msgstr ""
 
-#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:290
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:293
 msgid "Unsupported value type. Use string, number, boolean, or array of strings."
 msgstr ""
 
-#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:322
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:325
 msgid "You do not have permission to view revisions for this post."
 msgstr ""
 
-#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:325
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:328
 msgid "Revisions are not enabled for this post type."
 msgstr ""
 
-#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:377
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:380
 msgid "Revision not found."
 msgstr ""
 
-#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:381
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:384
 msgid "You do not have permission to restore revisions for this post."
 msgstr ""
 
-#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:385
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:388
 msgid "Failed to restore revision."
 msgstr ""
 
-#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:413
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:416
+msgid "confirm=true is required when action is trash or delete."
+msgstr ""
+
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:419
 msgid "Maximum 50 posts per bulk operation."
 msgstr ""
 
-#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:416
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:422
 msgid "No valid post IDs provided."
 msgstr ""
 
-#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:426
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:432
 msgid "Not found."
 msgstr ""
 
-#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:437
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:443
 msgid "Status required."
 msgstr ""
 
-#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:468
-#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:487
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:474
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:493
 msgid "Category ID required."
 msgstr ""
 
-#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:507
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:513
 msgid "Failed to delete."
 msgstr ""
 
-#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:618
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:627
 msgid "Hook is not a scheduled cron event."
 msgstr ""
 
 #. translators: %s: cron hook name
-#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:624
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:633
 #, php-format
 msgid "No callbacks registered for hook \"%s\"."
 msgstr ""
 
-#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:643
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:652
 msgid "Cannot delete core WordPress cron events."
 msgstr ""
 
-#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:674
+#: includes/Ability/MenuMeta/Menu_Meta_Revisions_Execute_Trait.php:683
 msgid "Cron event not found at that timestamp."
 msgstr ""
 
@@ -1097,63 +1114,63 @@ msgid "Manage Menu Item"
 msgstr ""
 
 #: includes/Ability/Menu_Meta_Revisions_Abilities.php:63
-msgid "Create, update, or delete a navigation menu item."
+msgid "Create, update, or delete a navigation menu item. When action is delete, confirm=true is required."
 msgstr ""
 
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:117
+#: includes/Ability/Menu_Meta_Revisions_Abilities.php:121
 msgid "Get Post Meta"
 msgstr ""
 
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:118
+#: includes/Ability/Menu_Meta_Revisions_Abilities.php:122
 msgid "Retrieve custom field values for a post."
 msgstr ""
 
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:139
+#: includes/Ability/Menu_Meta_Revisions_Abilities.php:143
 msgid "Update Post Meta"
 msgstr ""
 
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:140
+#: includes/Ability/Menu_Meta_Revisions_Abilities.php:144
 msgid "Set or delete a custom field on a post."
 msgstr ""
 
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:162
+#: includes/Ability/Menu_Meta_Revisions_Abilities.php:166
 msgid "List Revisions"
 msgstr ""
 
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:163
+#: includes/Ability/Menu_Meta_Revisions_Abilities.php:167
 msgid "List all revisions of a post."
 msgstr ""
 
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:179
+#: includes/Ability/Menu_Meta_Revisions_Abilities.php:183
 msgid "Restore Revision"
 msgstr ""
 
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:180
+#: includes/Ability/Menu_Meta_Revisions_Abilities.php:184
 msgid "Restore a post to a specific revision."
 msgstr ""
 
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:195
+#: includes/Ability/Menu_Meta_Revisions_Abilities.php:199
 msgid "Bulk Edit Posts"
 msgstr ""
 
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:196
-msgid "Batch update status, category, or delete multiple posts at once."
+#: includes/Ability/Menu_Meta_Revisions_Abilities.php:200
+msgid "Batch update status, category, or delete multiple posts at once. When action is trash or delete, confirm=true is required."
 msgstr ""
 
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:227
+#: includes/Ability/Menu_Meta_Revisions_Abilities.php:235
 msgid "List Cron Events"
 msgstr ""
 
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:228
+#: includes/Ability/Menu_Meta_Revisions_Abilities.php:236
 msgid "List all scheduled WordPress cron events."
 msgstr ""
 
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:247
+#: includes/Ability/Menu_Meta_Revisions_Abilities.php:255
 msgid "Manage Cron Event"
 msgstr ""
 
-#: includes/Ability/Menu_Meta_Revisions_Abilities.php:248
-msgid "Run or delete a scheduled cron event."
+#: includes/Ability/Menu_Meta_Revisions_Abilities.php:256
+msgid "Run or delete a scheduled cron event. When action is delete, confirm=true is required."
 msgstr ""
 
 #: includes/Ability/PinchDrop_Abilities.php:30
@@ -1660,14 +1677,14 @@ msgstr ""
 
 #: includes/Ability/User_Comment_Abilities.php:187
 #: includes/Ability/User_Comment_Abilities.php:209
-#: includes/Ability/User_Comment_Extended_Abilities.php:256
-#: includes/Ability/User_Comment_Extended_Abilities.php:305
+#: includes/Ability/User_Comment_Extended_Abilities.php:260
+#: includes/Ability/User_Comment_Extended_Abilities.php:309
 #: includes/class-ghost-writer.php:80
 msgid "User not found."
 msgstr ""
 
 #: includes/Ability/User_Comment_Abilities.php:214
-#: includes/Ability/User_Comment_Extended_Abilities.php:181
+#: includes/Ability/User_Comment_Extended_Abilities.php:185
 msgid "Invalid role."
 msgstr ""
 
@@ -1696,8 +1713,8 @@ msgid "Cannot modify an administrator's role via abilities."
 msgstr ""
 
 #: includes/Ability/User_Comment_Abilities.php:332
-#: includes/Ability/User_Comment_Extended_Abilities.php:397
-#: includes/Ability/User_Comment_Extended_Abilities.php:449
+#: includes/Ability/User_Comment_Extended_Abilities.php:401
+#: includes/Ability/User_Comment_Extended_Abilities.php:457
 msgid "Comment not found."
 msgstr ""
 
@@ -1754,59 +1771,59 @@ msgid "Delete Comment"
 msgstr ""
 
 #: includes/Ability/User_Comment_Extended_Abilities.php:145
-msgid "Delete or trash a comment."
+msgid "Delete or trash a comment. Requires confirm=true."
 msgstr ""
 
-#: includes/Ability/User_Comment_Extended_Abilities.php:175
+#: includes/Ability/User_Comment_Extended_Abilities.php:179
 msgid "Valid login and email are required."
 msgstr ""
 
-#: includes/Ability/User_Comment_Extended_Abilities.php:178
+#: includes/Ability/User_Comment_Extended_Abilities.php:182
 msgid "User login or email already exists."
 msgstr ""
 
-#: includes/Ability/User_Comment_Extended_Abilities.php:184
+#: includes/Ability/User_Comment_Extended_Abilities.php:188
 msgid "Administrator role cannot be assigned via this ability."
 msgstr ""
 
-#: includes/Ability/User_Comment_Extended_Abilities.php:191
+#: includes/Ability/User_Comment_Extended_Abilities.php:195
 msgid "Role has administrative capabilities and cannot be assigned via this ability."
 msgstr ""
 
-#: includes/Ability/User_Comment_Extended_Abilities.php:248
+#: includes/Ability/User_Comment_Extended_Abilities.php:252
 msgid "confirm=true is required."
 msgstr ""
 
-#: includes/Ability/User_Comment_Extended_Abilities.php:251
+#: includes/Ability/User_Comment_Extended_Abilities.php:255
 msgid "Cannot delete your own account via ability."
 msgstr ""
 
-#: includes/Ability/User_Comment_Extended_Abilities.php:259
+#: includes/Ability/User_Comment_Extended_Abilities.php:263
 msgid "Cannot delete an administrator via ability."
 msgstr ""
 
-#: includes/Ability/User_Comment_Extended_Abilities.php:263
+#: includes/Ability/User_Comment_Extended_Abilities.php:267
 msgid "Cannot delete a user with administrative capabilities via this ability."
 msgstr ""
 
-#: includes/Ability/User_Comment_Extended_Abilities.php:268
+#: includes/Ability/User_Comment_Extended_Abilities.php:272
 msgid "reassign user not found."
 msgstr ""
 
-#: includes/Ability/User_Comment_Extended_Abilities.php:273
+#: includes/Ability/User_Comment_Extended_Abilities.php:277
 msgid "Failed to delete user."
 msgstr ""
 
-#: includes/Ability/User_Comment_Extended_Abilities.php:347
+#: includes/Ability/User_Comment_Extended_Abilities.php:351
 msgid "Valid post_id and content are required."
 msgstr ""
 
-#: includes/Ability/User_Comment_Extended_Abilities.php:368
-#: includes/Ability/User_Comment_Extended_Abilities.php:421
+#: includes/Ability/User_Comment_Extended_Abilities.php:372
+#: includes/Ability/User_Comment_Extended_Abilities.php:425
 msgid "Invalid comment status."
 msgstr ""
 
-#: includes/Ability/User_Comment_Extended_Abilities.php:454
+#: includes/Ability/User_Comment_Extended_Abilities.php:462
 msgid "Failed to delete comment."
 msgstr ""
 
@@ -1821,7 +1838,7 @@ msgstr ""
 #: includes/Ability/Woo/Woo_Inventory_Execute_Trait.php:39
 #: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:89
 #: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:158
-#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:236
+#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:239
 msgid "Product not found."
 msgstr ""
 
@@ -1849,8 +1866,8 @@ msgstr ""
 #: includes/Ability/Woo/Woo_Operations_Insights_Execute_Trait.php:63
 #: includes/Ability/Woo/Woo_Operations_Insights_Execute_Trait.php:115
 #: includes/Ability/Woo/Woo_Operations_Insights_Execute_Trait.php:147
-#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:351
-#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:444
+#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:354
+#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:447
 msgid "Order not found."
 msgstr ""
 
@@ -1922,30 +1939,30 @@ msgstr ""
 msgid "Invalid product status."
 msgstr ""
 
-#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:241
+#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:244
 msgid "Failed to delete product."
 msgstr ""
 
-#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:318
+#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:321
 msgid "Could not load orders."
 msgstr ""
 
-#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:372
+#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:375
 msgid "line_items is required."
 msgstr ""
 
-#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:381
+#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:384
 msgid "Could not create order."
 msgstr ""
 
 #. translators: %d: WooCommerce product ID.
-#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:393
+#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:396
 #, php-format
 msgid "Product %d not found."
 msgstr ""
 
-#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:410
-#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:452
+#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:413
+#: includes/Ability/Woo/Woo_Products_Orders_Execute_Trait.php:455
 msgid "Invalid order status."
 msgstr ""
 
@@ -2146,51 +2163,59 @@ msgid "Delete WooCommerce Product"
 msgstr ""
 
 #: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:159
-msgid "Delete or trash a WooCommerce product."
+msgid "Delete or trash a WooCommerce product. Requires confirm=true."
 msgstr ""
 
-#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:183
+#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:187
 msgid "List WooCommerce Orders"
 msgstr ""
 
-#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:184
+#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:188
 msgid "List WooCommerce orders with filters and pagination."
 msgstr ""
 
-#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:230
+#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:234
 msgid "Get WooCommerce Order"
 msgstr ""
 
-#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:231
+#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:235
 msgid "Get a WooCommerce order by ID."
 msgstr ""
 
-#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:251
+#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:255
 msgid "Create WooCommerce Order"
 msgstr ""
 
-#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:252
+#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:256
 msgid "Create a WooCommerce order from product line items."
 msgstr ""
 
-#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:282
+#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:286
 msgid "Update WooCommerce Order"
 msgstr ""
 
-#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:283
+#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:287
 msgid "Update mutable WooCommerce order fields safely."
 msgstr ""
 
-#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:309
+#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:313
 msgid "Manage WooCommerce Order"
 msgstr ""
 
-#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:310
+#: includes/Ability/Woo/Woo_Register_Products_Orders_Trait.php:314
 msgid "Compatibility alias for order get/update status workflows."
 msgstr ""
 
 #: includes/class-abilities.php:209
 msgid "Abilities for content, media, options, and site management via OpenClaw."
+msgstr ""
+
+#: includes/class-abilities.php:317
+msgid "This ability is currently disabled."
+msgstr ""
+
+#: includes/class-abilities.php:320
+msgid "This ability requires approval. Use the incoming webhook so it can be queued, or approve it from WP Pinch → Approvals."
 msgstr ""
 
 #. translators: %d: attachment ID
@@ -2200,28 +2225,28 @@ msgid "Alt text generated for attachment #%d."
 msgstr ""
 
 #. translators: %d: number of pending approvals
-#: includes/class-approval-queue.php:147
+#: includes/class-approval-queue.php:175
 #, php-format
 msgid "Approvals (%d)"
 msgstr ""
 
-#: includes/class-approval-queue.php:150
+#: includes/class-approval-queue.php:178
 msgid "Approvals"
 msgstr ""
 
-#: includes/class-approval-queue.php:169
+#: includes/class-approval-queue.php:197
 msgid "Pending Approvals"
 msgstr ""
 
-#: includes/class-approval-queue.php:170
+#: includes/class-approval-queue.php:198
 msgid "Destructive abilities executed via the incoming webhook are queued here. Approve to run, or reject to discard."
 msgstr ""
 
-#: includes/class-approval-queue.php:172
+#: includes/class-approval-queue.php:200
 msgid "No pending approvals."
 msgstr ""
 
-#: includes/class-approval-queue.php:177
+#: includes/class-approval-queue.php:205
 #: includes/class-dashboard-widget.php:124
 #: includes/class-network-settings.php:221
 #: includes/Settings/Tabs/Abilities_Tab.php:39
@@ -2229,41 +2254,41 @@ msgstr ""
 msgid "Ability"
 msgstr ""
 
-#: includes/class-approval-queue.php:178
+#: includes/class-approval-queue.php:206
 msgid "Parameters"
 msgstr ""
 
-#: includes/class-approval-queue.php:179
+#: includes/class-approval-queue.php:207
 msgid "Queued"
 msgstr ""
 
-#: includes/class-approval-queue.php:180
+#: includes/class-approval-queue.php:208
 msgid "Actions"
 msgstr ""
 
-#: includes/class-approval-queue.php:200
+#: includes/class-approval-queue.php:228
 msgid "Approve"
 msgstr ""
 
-#: includes/class-approval-queue.php:201
+#: includes/class-approval-queue.php:229
 msgid "Reject"
 msgstr ""
 
-#: includes/class-approval-queue.php:221
+#: includes/class-approval-queue.php:249
 msgid "Approval item not found or already processed."
 msgstr ""
 
-#: includes/class-approval-queue.php:230
+#: includes/class-approval-queue.php:258
 msgid "Abilities API is not available."
 msgstr ""
 
-#: includes/class-approval-queue.php:288
-#: includes/class-approval-queue.php:313
+#: includes/class-approval-queue.php:321
+#: includes/class-approval-queue.php:346
 msgid "Invalid request."
 msgstr ""
 
-#: includes/class-approval-queue.php:293
-#: includes/class-approval-queue.php:318
+#: includes/class-approval-queue.php:326
+#: includes/class-approval-queue.php:351
 #: includes/Settings/Settings_Admin_Pages_Trait.php:119
 #: includes/Settings/Settings_Admin_Pages_Trait.php:179
 msgid "Permission denied."
@@ -2398,11 +2423,11 @@ msgstr ""
 msgid "Tide Report — daily digest: drafts, SEO, comments in one webhook"
 msgstr ""
 
-#: includes/class-mcp-server.php:86
+#: includes/class-mcp-server.php:98
 msgid "WP Pinch MCP Server"
 msgstr ""
 
-#: includes/class-mcp-server.php:87
+#: includes/class-mcp-server.php:99
 msgid "Full WordPress site management for OpenClaw and AI agents."
 msgstr ""
 
@@ -3150,7 +3175,7 @@ msgstr ""
 msgid "Invalid action. Use \"list\" or \"write\"."
 msgstr ""
 
-#: includes/Rest/Helpers.php:339
+#: includes/Rest/Helpers.php:343
 msgid "Response truncated for length."
 msgstr ""
 
@@ -3449,7 +3474,7 @@ msgid "Nonce verification failed."
 msgstr ""
 
 #: includes/Settings/Tabs/Abilities_Tab.php:33
-msgid "Uncheck abilities you want to disable. Disabled abilities will not be registered or available via MCP."
+msgid "Check abilities you want to disable. Disabled abilities will not be registered or available via MCP."
 msgstr ""
 
 #: includes/Settings/Tabs/Abilities_Tab.php:38
