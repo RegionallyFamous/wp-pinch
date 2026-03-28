@@ -4,7 +4,7 @@ Tags: ai, agent, openclaw, mcp, automation
 Requires at least: 6.9
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 3.1.1
+Stable tag: 3.1.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -128,6 +128,11 @@ Because the alternative was crab puns, and that felt a little... sideways. Plus,
 5. Audit log showing recent ability executions, webhooks, and chat messages.
 
 == Changelog ==
+
+= 3.1.2 =
+* Why it matters: Dependabot bumps land without you juggling three PRs; local PHPUnit finds polyfills without extra env setup.
+* Changed: `@wordpress/env` 11.2.0; npm lock (`fast-xml-parser`, `flatted`); `phpstan/phpstan` 2.1.44. Supersedes Dependabot #39–#41.
+* Fixed: Test bootstrap sets `WP_TESTS_PHPUNIT_POLYFILLS_PATH` to Composer `vendor/yoast/phpunit-polyfills` when unset.
 
 = 3.1.1 =
 * Why it matters: rich post content via hooks is preserved; dependency hygiene.

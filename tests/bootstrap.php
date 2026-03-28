@@ -27,10 +27,16 @@ if ( ! $_tests_dir ) {
 	$_tests_dir = rtrim( sys_get_temp_dir(), '/\\' ) . '/wordpress-tests-lib';
 }
 
-// Forward custom PHPUnit Polyfills configuration to PHPUnit bootstrap file.
-$_phpunit_polyfills_path = getenv( 'WP_TESTS_PHPUNIT_POLYFILLS_PATH' );
-if ( false !== $_phpunit_polyfills_path ) {
-	define( 'WP_TESTS_PHPUNIT_POLYFILLS_PATH', $_phpunit_polyfills_path );
+// PHPUnit Polyfills are required by the WP test bootstrap.
+// Prefer an explicit env/constant override; fall back to the Composer-installed copy.
+if ( ! defined( 'WP_TESTS_PHPUNIT_POLYFILLS_PATH' ) ) {
+	$_phpunit_polyfills_path = getenv( 'WP_TESTS_PHPUNIT_POLYFILLS_PATH' );
+	define(
+		'WP_TESTS_PHPUNIT_POLYFILLS_PATH',
+		false !== $_phpunit_polyfills_path
+			? $_phpunit_polyfills_path
+			: dirname( __DIR__ ) . '/vendor/yoast/phpunit-polyfills'
+	);
 }
 
 if ( ! file_exists( "{$_tests_dir}/includes/functions.php" ) ) {

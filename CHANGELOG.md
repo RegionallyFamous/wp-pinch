@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.2] - 2026-03-28
+
+Why this matters: Dependabot security and maintenance bumps (wp-env, PHPStan, XML stack) land in one release, and local PHPUnit runs without hand-wiring polyfill paths.
+
+### Changed
+
+- **npm** — `@wordpress/env` 11.1.x → 11.2.0; `fast-xml-parser` override → ^5.5.8; lockfile refresh including `flatted` 3.4.2 (supersedes Dependabot #39–#41).
+- **Composer** — `phpstan/phpstan` 2.1.40 → 2.1.44 (Dependabot #40).
+
+### Fixed
+
+- **PHPUnit bootstrap** — When `WP_TESTS_PHPUNIT_POLYFILLS_PATH` is unset, default to Composer `vendor/yoast/phpunit-polyfills` so local `vendor/bin/phpunit` runs without extra environment configuration.
+
 ## [3.1.1] - 2026-03-10
 
 Why this matters: rich post content sent via the Hook API (e.g. from OpenClaw) now keeps headings, links, and bold instead of being flattened; you get one less reason to patch the plugin on the server.
@@ -416,7 +429,9 @@ Key outcomes:
 ### Added
 - **Initial launch** — shipped MCP-connected WordPress abilities, governance automation, chat block, CLI/admin controls, audit logging, and CI foundations to make AI-assisted site management practical from day one.
 
-[Unreleased]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.1.0...HEAD
+[Unreleased]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.1.2...HEAD
+[3.1.2]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.1.1...v3.1.2
+[3.1.1]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.1.0...v3.1.1
 [3.1.0]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.0.7...v3.1.0
 [3.0.7]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.0.6...v3.0.7
 [3.0.6]: https://github.com/RegionallyFamous/wp-pinch/compare/v3.0.5...v3.0.6
