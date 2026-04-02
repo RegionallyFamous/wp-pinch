@@ -15,7 +15,7 @@
     "test:php": "wp-env run cli --env-cwd=wp-content/plugins/wp-pinch vendor/bin/phpunit --testdox"
   },
   "devDependencies": {
-    "@playwright/test": "^1.58.2",
+    "@playwright/test": "^1.59.1",
     "@wordpress/e2e-test-utils-playwright": "^1.40.0",
     "@wordpress/env": "^11.2.0",
     "@wordpress/scripts": "^31.7.0"
