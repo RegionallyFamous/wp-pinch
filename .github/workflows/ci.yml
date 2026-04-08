@@ -176,7 +176,7 @@ jobs:
           vendor/bin/phpunit --coverage-clover build/coverage/clover.xml
 
       - name: Upload to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           files: build/coverage/clover.xml
           fail_ci_if_error: false
@@ -298,7 +298,7 @@ jobs:
           composer install --no-dev --prefer-dist --no-progress
 
       - name: Start wp-env
-        uses: nick-fields/retry@v3
+        uses: nick-fields/retry@v4
         with:
           timeout_minutes: 10
           max_attempts: 3
@@ -306,7 +306,7 @@ jobs:
           command: npx wp-env start --update
 
       - name: Run Plugin Check
-        uses: nick-fields/retry@v3
+        uses: nick-fields/retry@v4
         with:
           timeout_minutes: 10
           max_attempts: 2
