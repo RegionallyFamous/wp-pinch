@@ -1,7 +1,7 @@
 ---
 name: pinch-to-post
 version: 5.5.1
-description: Manage WordPress sites through WP Pinch MCP tools. Part of WP Pinch (wp-pinch.com).
+description: "Create and edit posts, manage plugins and themes, configure site settings, manage users, WooCommerce orders, run governance scans, and generate content via 88+ MCP tools. Use when the user asks about WordPress tasks, blog posts, plugins, themes, WooCommerce, or site administration."
 author: RegionallyFamous
 project: https://github.com/RegionallyFamous/wp-pinch
 homepage: https://wp-pinch.com
