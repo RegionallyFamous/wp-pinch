@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@wordpress/block-editor": "^15.15.0",
-    "@wordpress/blocks": "^15.13.0",
+    "@wordpress/blocks": "^15.18.0",
     "@wordpress/components": "^32.2.0",
     "@wordpress/element": "^6.43.0",
     "@wordpress/i18n": "^6.18.0",
