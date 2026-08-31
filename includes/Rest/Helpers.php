@@ -392,4 +392,29 @@ class Helpers {
 		$out = implode( "\n", $output );
 		return array( '' !== $out ? $out . "\n" : '', $carry ?? '' );
 	}
+
+	/**
+	 * GET the gateway status endpoint, tolerating both path generations.
+	 *
+	 * OpenClaw 1.x serves the status probe at /api/v1/status; OpenClaw 2.0
+	 * removed the /api route prefix and serves /v1/status. Probe the legacy
+	 * path first (no behavior change for 1.x gateways) and retry the 2.0
+	 * path only on a 404.
+	 *
+	 * @param string $gateway_url Gateway base URL.
+	 * @param array  $args        Request args (timeout, auth header).
+	 * @param bool   $safe        Use wp_safe_remote_get() (SSRF-hardened) instead
+	 *                            of wp_remote_get(); matches each caller's
+	 *                            previous transport.
+	 * @return array|\WP_Error HTTP response array or WP_Error.
+	 */
+	public static function gateway_status_request( string $gateway_url, array $args, bool $safe = false ) {
+		$base     = trailingslashit( $gateway_url );
+		$get      = $safe ? 'wp_safe_remote_get' : 'wp_remote_get';
+		$response = $get( $base . 'api/v1/status', $args );
+		if ( ! is_wp_error( $response ) && 404 === (int) wp_remote_retrieve_response_code( $response ) ) {
+			$response = $get( $base . 'v1/status', $args );
+		}
+		return $response;
+	}
 }

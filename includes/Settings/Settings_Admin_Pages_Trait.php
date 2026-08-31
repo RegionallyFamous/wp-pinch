@@ -138,14 +138,15 @@ trait Settings_Admin_Pages_Trait {
 			wp_send_json_error( __( 'Gateway URL failed security validation. Use a public HTTP or HTTPS URL.', 'wp-pinch' ) );
 		}
 
-		$response = wp_safe_remote_get(
-			$status_url,
+		$response = Rest\Helpers::gateway_status_request(
+			$url,
 			array(
 				'timeout' => 10,
 				'headers' => array(
 					'Authorization' => 'Bearer ' . $token,
 				),
-			)
+			),
+			true
 		);
 
 		if ( is_wp_error( $response ) ) {

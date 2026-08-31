@@ -217,8 +217,8 @@ class Site_Health {
 			return $result;
 		}
 
-		$response = wp_remote_get(
-			trailingslashit( $gateway_url ) . 'api/v1/status',
+		$response = Rest\Helpers::gateway_status_request(
+			$gateway_url,
 			array(
 				'timeout' => 10,
 				'headers' => array(

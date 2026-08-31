@@ -53,8 +53,8 @@ class Status_Command {
 		$error_msg = '';
 
 		if ( ! empty( $gateway_url ) && ! empty( $api_token ) ) {
-			$response = wp_remote_get(
-				trailingslashit( $gateway_url ) . 'api/v1/status',
+			$response = \WP_Pinch\Rest\Helpers::gateway_status_request(
+				$gateway_url,
 				array(
 					'timeout' => 10,
 					'headers' => array(
