@@ -68,12 +68,13 @@ class Status {
 		if ( $result['configured'] ) {
 			$status_url = trailingslashit( $gateway_url ) . 'api/v1/status';
 			if ( wp_http_validate_url( $status_url ) ) {
-				$response = wp_safe_remote_get(
-					$status_url,
+				$response = Helpers::gateway_status_request(
+					$gateway_url,
 					array(
 						'timeout' => 5,
 						'headers' => array( 'Authorization' => 'Bearer ' . $api_token ),
-					)
+					),
+					true
 				);
 			} else {
 				$response = new \WP_Error( 'invalid_gateway', __( 'Gateway URL failed security validation.', 'wp-pinch' ) );

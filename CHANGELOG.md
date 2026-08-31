@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Gateway status probes (Site Health test, status REST route, settings connection test, `wp pinch status`) fall back to OpenClaw 2.0's `/v1/status` when the legacy `/api/v1/status` path returns 404. OpenClaw 2.0 removed the `/api` route prefix, which made every probe report the gateway unreachable while chat kept working.
+
 ## [3.1.2] - 2026-03-28
 
 Why this matters: Dependabot security and maintenance bumps (wp-env, PHPStan, XML stack) land in one release, and local PHPUnit runs without hand-wiring polyfill paths.
